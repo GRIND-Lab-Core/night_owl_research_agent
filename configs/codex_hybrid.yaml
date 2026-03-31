@@ -1,0 +1,40 @@
+mode: codex-hybrid
+topic: ""
+
+backend:
+  orchestrator: claude-sonnet-4-6
+  coding_workers:
+    provider: openai            # Uses OPENAI_API_KEY
+    model: gpt-4o-mini          # or gpt-4o, o1-mini for harder problems
+    max_workers: 4              # Run up to 4 parallel coding tasks
+    task_types:
+      - code_generation
+      - data_analysis
+      - plotting
+      - statistical_analysis
+
+literature:
+  max_papers: 25
+  sources:
+    - arxiv
+    - semantic_scholar
+  geo_query_expansion: true
+  recency_weight: 0.35
+
+experiment:
+  max_iterations: 3
+  sandbox_timeout_sec: 300
+  auto_install_packages: false
+  save_intermediate: true
+
+writing:
+  temperature: 0.7
+  journal: IJGIS
+  output_format: markdown
+  review_rounds: 2
+
+output:
+  base_dir: output
+  checkpoint_dir: .checkpoints
+  log_dir: harness/logs
+  save_intermediate: true

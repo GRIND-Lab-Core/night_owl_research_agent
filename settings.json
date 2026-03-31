@@ -1,0 +1,100 @@
+{
+  "model": "claude-sonnet-4-6",
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(jupyter:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(unzip:*)",
+      "Bash(tar:*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Read(*)",
+      "Write(output/**)",
+      "Write(GeoBenchmark/**)",
+      "Write(ResearchArchitect/**)",
+      "Write(.checkpoints/**)",
+      "Write(harness/logs/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/hooks/pre_tool_use.sh \"$CLAUDE_TOOL_INPUT\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/hooks/post_tool_use.sh \"$CLAUDE_TOOL_INPUT\" \"$CLAUDE_TOOL_RESPONSE\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/hooks/post_tool_use.sh \"$CLAUDE_TOOL_INPUT\" \"$CLAUDE_TOOL_RESPONSE\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/hooks/stop_hook.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash harness/hooks/notification.sh \"$CLAUDE_NOTIFICATION\""
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "GEO_AGENT_VERSION": "247",
+    "GEO_AGENT_OUTPUT_DIR": "output",
+    "GEO_AGENT_CHECKPOINT_DIR": ".checkpoints",
+    "GEO_AGENT_LOG_DIR": "harness/logs",
+    "PYTHONPATH": ".",
+    "GDAL_DATA": "",
+    "PROJ_LIB": ""
+  }
+}

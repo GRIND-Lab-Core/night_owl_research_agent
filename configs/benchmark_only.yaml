@@ -1,0 +1,42 @@
+mode: benchmark-only
+topic: "Spatial regression benchmark"
+
+backend:
+  orchestrator: claude-sonnet-4-6
+  coding_workers:
+    provider: claude
+    model: claude-sonnet-4-6
+    max_workers: 1
+    task_types:
+      - code_generation
+      - data_analysis
+
+literature:
+  max_papers: 0  # Skip literature review
+
+experiment:
+  max_iterations: 1
+  sandbox_timeout_sec: 600
+  auto_install_packages: false
+  save_intermediate: true
+
+writing:
+  temperature: 0.5
+  journal: ""
+  output_format: markdown
+  review_rounds: 0  # No writing/review
+
+benchmark:
+  datasets:
+    - california_housing
+    - us_county_health
+  models:
+    - ols
+    - gwr
+    - mgwr
+
+output:
+  base_dir: GeoBenchmark/results
+  checkpoint_dir: .checkpoints
+  log_dir: harness/logs
+  save_intermediate: true

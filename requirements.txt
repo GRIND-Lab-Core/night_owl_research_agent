@@ -1,0 +1,69 @@
+# GeoResearchAgent-247 Dependencies
+# Core
+anthropic>=0.40.0
+openai>=1.50.0          # for Codex worker integration
+pydantic>=2.0
+pyyaml>=6.0
+click>=8.1
+rich>=13.0              # beautiful terminal output
+python-dotenv>=1.0
+
+# Spatial / GIS
+geopandas>=0.14
+shapely>=2.0
+pyproj>=3.6
+fiona>=1.9
+rasterio>=1.3
+earthpy>=0.9
+folium>=0.15
+mapclassify>=2.6
+contextily>=1.5         # basemaps
+
+# Spatial Statistics
+mgwr>=2.2.1             # GWR and MGWR
+statsmodels>=0.14
+pysal>=23.7             # PySAL ecosystem
+libpysal>=4.9
+esda>=2.5               # spatial autocorrelation
+spreg>=1.4              # spatial regression
+pointpats>=2.4
+
+# Geostatistics
+pykrige>=1.7            # kriging
+gstools>=1.5            # variogram modeling and geostatistics
+
+# Machine Learning
+scikit-learn>=1.4
+xgboost>=2.0
+lightgbm>=4.0
+
+# Data Science
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11
+matplotlib>=3.8
+seaborn>=0.13
+
+# Remote Sensing
+rasterio>=1.3
+spectral>=0.23          # hyperspectral
+sentinelsat>=1.1        # Sentinel satellite data
+
+# LLM / AI
+anthropic>=0.40.0
+tiktoken>=0.7
+arxiv>=2.1              # ArXiv API
+semanticscholar>=0.7    # Semantic Scholar API
+
+# Document Generation
+pypandoc>=1.13          # Markdown → LaTeX → PDF
+jinja2>=3.1             # template rendering
+markdown>=3.6
+
+# Development
+pytest>=7.4
+black>=24.0
+ruff>=0.3
+mypy>=1.8
+jupyter>=1.0
+ipykernel>=6.0

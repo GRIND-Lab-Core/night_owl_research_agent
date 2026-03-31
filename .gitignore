@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Outputs and runtime files
+output/
+.checkpoints/
+harness/logs/
+experiment_state.json
+.cache/
+
+# Secrets
+.env
+*.env
+*.key
+secrets.json
+
+# Data (too large for git — use download_data.py)
+GeoBenchmark/datasets/california_housing/*.csv
+GeoBenchmark/datasets/boston_housing/*.csv
+GeoBenchmark/datasets/beijing_pm25/*.csv
+GeoBenchmark/datasets/us_county_health/*.csv
+GeoBenchmark/results/
+*.geojson
+*.gpkg
+*.tif
+*.tiff
+*.nc
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compiled docs
+*.pdf
+*.aux
+*.log
+*.bbl
+*.blg

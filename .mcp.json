@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."],
+      "description": "Local file system access for the project directory"
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "description": "Fetch web content: ArXiv papers, data portals, journal pages"
+    },
+    "geo_mcp": {
+      "command": "python",
+      "args": ["mcp/geo_mcp_server.py"],
+      "env": {
+        "CENSUS_API_KEY": "${CENSUS_API_KEY}",
+        "GEE_PROJECT": "${GEE_PROJECT}",
+        "OVERPASS_API_URL": "https://overpass-api.de/api/interpreter"
+      },
+      "description": "Custom geo MCP: GADM boundaries, OSM data, Census, GEE access"
+    },
+    "arxiv_mcp": {
+      "command": "python",
+      "args": ["mcp/arxiv_mcp.py"],
+      "description": "ArXiv paper search, abstract fetch, citation parsing"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "GitHub integration for reading repos and managing code"
+    },
+    "brave_search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      },
+      "description": "Web search for literature, datasets, and documentation"
+    }
+  }
+}

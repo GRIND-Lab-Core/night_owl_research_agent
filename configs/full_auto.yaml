@@ -1,0 +1,40 @@
+mode: full-auto
+topic: ""  # Set via --topic flag or GEO_AGENT_TOPIC env var
+
+backend:
+  orchestrator: claude-opus-4-6
+  coding_workers:
+    provider: claude
+    model: claude-sonnet-4-6
+    max_workers: 2
+    task_types:
+      - code_generation
+      - data_analysis
+      - plotting
+      - statistical_analysis
+
+literature:
+  max_papers: 30
+  sources:
+    - arxiv
+    - semantic_scholar
+  geo_query_expansion: true
+  recency_weight: 0.4
+
+experiment:
+  max_iterations: 3
+  sandbox_timeout_sec: 600
+  auto_install_packages: false
+  save_intermediate: true
+
+writing:
+  temperature: 0.7
+  journal: IJGIS  # Override with --journal
+  output_format: markdown
+  review_rounds: 2
+
+output:
+  base_dir: output
+  checkpoint_dir: .checkpoints
+  log_dir: harness/logs
+  save_intermediate: true
