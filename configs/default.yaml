@@ -1,10 +1,19 @@
-mode: quick
+mode: default
 topic: ""
+journal: ""
 
+# ─── Runtime Backend ─────────────────────────────────────────────────────────
+# Set by launch.py or --backend CLI flag.
+# Options: "api" (Anthropic API key required) | "claude-code" (subscription)
+runtime_backend: api
+
+# ─── Model Settings ──────────────────────────────────────────────────────────
 backend:
-  orchestrator: claude-sonnet-4-6
+  orchestrator: claude-sonnet-4-6      # Main reasoning and planning
+  writer: claude-sonnet-4-6            # Paper writing and synthesis
+  fast: claude-haiku-4-5-20251001      # Scoring, formatting, quick tasks
   coding_workers:
-    provider: claude
+    provider: claude                   # "claude" or "openai" (Codex hybrid)
     model: claude-sonnet-4-6
     max_workers: 1
     task_types:
@@ -12,38 +21,133 @@ backend:
       - data_analysis
       - plotting
 
+# ─── Literature Search ───────────────────────────────────────────────────────
 literature:
-  max_papers: 20
+  max_papers: 40
   sources:
     - arxiv
     - semantic_scholar
+    - crossref
   geo_query_expansion: true
   recency_weight: 0.3
+  year_range:
+    start: 2019
+    end: 2026
+  min_citation_count: 0              # 0 = no filter
+  max_results_per_query: 50
+  arxiv_max_results: 30
 
+  # Priority venues for geo/RS/GIScience
+  priority_venues:
+    journals:
+      - "International Journal of Geographical Information Science"
+      - "Remote Sensing of Environment"
+      - "ISPRS Journal of Photogrammetry and Remote Sensing"
+      - "IEEE Transactions on Geoscience and Remote Sensing"
+      - "Annals of the American Association of Geographers"
+      - "Computers, Environment and Urban Systems"
+      - "International Journal of Applied Earth Observation and Geoinformation"
+      - "Transactions in GIS"
+      - "Geophysical Research Letters"
+      - "Environmental Health Perspectives"
+      - "Science of the Total Environment"
+      - "Nature Communications"
+      - "Nature Geoscience"
+      - "International Journal of Digital Earth"
+      - "Annals of GIS"
+    conferences:
+      - "ACM SIGSPATIAL"
+      - "ICLR"
+      - "NeurIPS"
+      - "CVPR"
+      - "IGARSS"
+      - "ISPRS Congress"
+      - "AAAI"
+
+# ─── Research Loop (Autoresearch-Inspired) ───────────────────────────────────
+research_loop:
+  max_iterations_per_section: 5      # Maximum write-revise cycles per section
+  min_iterations_per_section: 2      # Always do at least this many
+  quality_threshold: 7.5             # Accept section if score >= this
+  improvement_threshold: 0.3         # Min improvement per iteration to continue
+  git_commit_on_accept: true         # Commit each accepted section to git
+  sections_order:
+    - abstract                       # Placeholder first; rewritten at end
+    - introduction
+    - literature_review
+    - methodology
+    - results
+    - discussion
+    - conclusion
+    - abstract_final                 # Rewritten after all sections accepted
+
+# ─── Paper Quality Scoring ───────────────────────────────────────────────────
+scoring:
+  weights:
+    novelty: 0.30
+    rigor: 0.25
+    literature_coverage: 0.20
+    clarity: 0.15
+    impact: 0.10
+  literature_review:
+    min_papers: 30
+    min_recent_papers: 15            # Published in last 3 years
+    min_geo_venue_papers: 10         # From priority geo/RS/GIScience venues
+  abstract:
+    max_words: 250
+    required_elements:
+      - problem_statement
+      - knowledge_gap
+      - methodology
+      - key_results
+      - contribution
+  spatial_regression:
+    require_ols_baseline: true
+    require_gwr_comparison: true
+    require_mgwr_comparison: true
+    require_morans_i_residuals: true
+
+# ─── Experiment Settings ─────────────────────────────────────────────────────
 experiment:
-  max_iterations: 2
+  max_iterations: 3
   sandbox_timeout_sec: 300
   auto_install_packages: false
   save_intermediate: true
 
+# ─── Writing Settings ────────────────────────────────────────────────────────
 writing:
   temperature: 0.7
-  journal: IJGIS
   output_format: markdown
-  review_rounds: 1
+  review_rounds: 2
+  citation_style: APA7
 
+# ─── Output Settings ─────────────────────────────────────────────────────────
 output:
   base_dir: output
+  papers_dir: outputs/papers
+  reports_dir: outputs/reports
+  cache_dir: memory/paper-cache
   checkpoint_dir: .checkpoints
   log_dir: harness/logs
   save_intermediate: true
+  timestamp_format: "%Y-%m-%d"
 
+# ─── Rate Limiting ───────────────────────────────────────────────────────────
+rate_limits:
+  semantic_scholar_calls_per_minute: 100
+  arxiv_calls_per_minute: 10
+  claude_api_calls_per_minute: 50
+  retry_attempts: 3
+  retry_delay_seconds: 2
+
+# ─── Memory Settings ─────────────────────────────────────────────────────────
 memory:
   session_dir: .checkpoints
   long_term_dir: .memory
   lt_max_entries: 200
   lt_token_budget: 32000
 
+# ─── Token Optimizer ─────────────────────────────────────────────────────────
 token_optimizer:
   prompt_compression: true
   response_caching: true
@@ -53,3 +157,85 @@ token_optimizer:
   context_token_budget: 3000
   hard_limit_tokens: null
   cache_dir: .cache/responses
+
+# ─── Domain Keywords (used for literature search expansion) ──────────────────
+domain_keywords:
+  geoscience:
+    - "geophysics"
+    - "Earth systems"
+    - "hydrology"
+    - "hydrogeology"
+    - "geology"
+    - "atmospheric science"
+    - "seismology"
+    - "geomorphology"
+    - "climate change"
+    - "land surface"
+  remote_sensing:
+    - "remote sensing"
+    - "satellite imagery"
+    - "SAR"
+    - "synthetic aperture radar"
+    - "Sentinel-1"
+    - "Sentinel-2"
+    - "Landsat"
+    - "MODIS"
+    - "change detection"
+    - "object detection"
+    - "semantic segmentation"
+    - "hyperspectral"
+    - "LiDAR"
+    - "multispectral"
+  giscience:
+    - "GIScience"
+    - "geographic information science"
+    - "spatial statistics"
+    - "spatial econometrics"
+    - "geographically weighted regression"
+    - "GWR"
+    - "MGWR"
+    - "spatial autocorrelation"
+    - "kriging"
+    - "geostatistics"
+    - "spatial analysis"
+    - "cartography"
+  geoai:
+    - "GeoAI"
+    - "geospatial artificial intelligence"
+    - "spatial deep learning"
+    - "geo-foundation model"
+    - "location embedding"
+    - "place representation"
+    - "geospatial machine learning"
+    - "spatial representation learning"
+    - "remote sensing deep learning"
+    - "geographic information science AI"
+    - "Prithvi"
+    - "SatCLIP"
+    - "GeoCLIP"
+  disaster_resilience:
+    - "disaster resilience"
+    - "disaster management"
+    - "damage assessment"
+    - "early warning system"
+    - "community resilience"
+    - "emergency response"
+    - "natural hazard"
+    - "flood mapping"
+    - "wildfire detection"
+    - "post-disaster recovery"
+    - "social vulnerability"
+    - "hazard exposure"
+  environmental_health:
+    - "environmental health"
+    - "environmental epidemiology"
+    - "air quality"
+    - "heat island"
+    - "environmental justice"
+    - "exposure assessment"
+    - "environmental exposure"
+    - "green space"
+    - "noise pollution"
+    - "environmental inequality"
+    - "PM2.5"
+    - "particulate matter"
