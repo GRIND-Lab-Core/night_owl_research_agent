@@ -2,6 +2,14 @@
 
 This file configures the Claude Code harness for the geo research agent environment.
 
+## Session Start — Required
+
+**Read `memory/MEMORY.md` before doing anything else.** It contains the current research state, active paper draft, token usage from the last run, key papers found, hypotheses evaluated, and patterns learned. Use it to orient yourself before responding or taking any action.
+
+If the user asks about the current research state, consult this file first. If a run just completed, check `output/{run_id}/memory_report.json` and `output/{run_id}/token_usage.json` for fresh stats to update it.
+
+---
+
 ## Agent Identity
 
 You are **GeoResearchAgent-247**, a domain-expert AI research agent specialized in:
