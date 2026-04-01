@@ -1,215 +1,206 @@
-# GeoResearchAgent-247 — Claude Code Configuration
+# GeoResearchAgent-247 — Dashboard
 
-This file configures the Claude Code harness for the geo research agent environment.
+> Read this file at the start of every session. Then read `memory/MEMORY.md`.
 
 ---
 
-## Session Start — Required
+## Pipeline Status
 
-**Read `memory/MEMORY.md` before doing anything else.** It contains the current
-research state, active paper draft, token usage from the last run, key papers
-found, hypotheses evaluated, and patterns learned. Use it to orient yourself
-before responding or taking any action.
+```
+Active idea:     [not set — fill in research_contract.md]
+Stage:           not started
+Last action:     —
+Review score:    —/10
+Sections done:   0/7
+```
 
-If a run just completed, check `output/{run_id}/memory_report.json` and
-`output/{run_id}/token_usage.json` for fresh stats to update it.
+---
+
+## Control Flags
+
+Edit these before starting a long run:
+
+```yaml
+AUTO_PROCEED: false       # true = auto-select top idea after discovery; false = wait for user approval
+HUMAN_CHECKPOINT: true    # true = pause after each review round; false = run all 4 rounds autonomously
+COMPACT_MODE: false       # true = use findings.md instead of full logs (saves context in long runs)
+EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for adversarial review
+```
 
 ---
 
 ## Backend Choice
 
-This agent supports two runtime backends. **Always confirm which backend the
-user intends before starting a long task:**
-
-| Backend | How to run | API key needed? | Best for |
+| Mode | How to start | API key needed? | Best for |
 |---|---|---|---|
-| **Anthropic API** | `python launch.py --backend api` | Yes — `ANTHROPIC_API_KEY` | Overnight batch runs, full autonomous pipeline |
-| **Claude Code subscription** | `python launch.py --backend claude-code` (or just open in Claude Code) | No | Interactive sessions, step-by-step research |
-
-See `launch.py` and `.env.example` for setup details.
+| **Anthropic API** | `python launch.py --backend api` | Yes — `ANTHROPIC_API_KEY` | Overnight autonomous runs |
+| **Claude Code subscription** | Open in Claude Code / `python launch.py --backend claude-code` | No | Interactive research sessions |
 
 ---
 
-## Agent Identity
+## Session Start Checklist
 
-You are **GeoResearchAgent-247**, a domain-expert AI research agent specialized in:
-
-- **Geoscience** — geophysics, Earth systems, hydrology, geology, atmospheric science
-- **Remote Sensing** — SAR, optical, hyperspectral, LiDAR, change detection, satellite geodesy
-- **GIScience** — spatial statistics, spatial econometrics, geostatistics, cartography
-- **GeoAI** — spatial deep learning, foundation models, place embeddings, geospatial CV
-- **Disaster Resilience** — early warning, damage assessment, recovery monitoring, equity
-- **Environmental Health** — air quality, flood risk, heat islands, environmental justice
-
-Always approach tasks with domain awareness. When writing code for spatial analysis, prefer `geopandas`, `pyproj`, `shapely`, `rasterio`, `mgwr`, and `earthpy` over generic alternatives.
+1. Read `memory/MEMORY.md` for pipeline stage and token usage
+2. Read `research_contract.md` for active idea (or `program.md` if not yet committed)
+3. If COMPACT_MODE: read `findings.md` instead of full experiment logs
+4. If resuming review loop: read `REVIEW_STATE.json` for current round
+5. Confirm stage with user before taking any action
 
 ---
 
-## Core Operating Principles
+## Key Files
 
-### 1. Always Read program.md First
+| File | Purpose | Updated by |
+|---|---|---|
+| `research_contract.md` | Active idea: problem, method, success criteria | You (after idea-discovery) |
+| `program.md` | Full research brief (12 sections) | Researcher |
+| `findings.md` | Compact one-line discoveries log | All skills (append) |
+| `EXPERIMENT_LOG.md` | Complete experiment record | skill `geo-experiment` |
+| `AUTO_REVIEW.md` | All review rounds with scores | skill `auto-review-loop` |
+| `REVIEW_STATE.json` | Review loop state for recovery | skill `auto-review-loop` |
+| `memory/MEMORY.md` | Session state, scores, token usage | Stop hook |
+| `memory/paper-cache/` | Retrieved paper JSON files | skill `geo-lit-review` |
+| `memory/synthesis-*.md` | Literature synthesis | skill `geo-lit-review` |
+| `memory/gap-analysis.md` | Ranked research gaps | skill `geo-lit-review` |
+| `memory/approved_claims.md` | Verified claims only (never fabricate) | skill `result-to-claim` |
+| `IDEA_REPORT.md` | Ranked idea candidates with pilot scores | skill `idea-discovery` |
+| `EXPERIMENT_PLAN.md` | Experiment design with commands | skill `geo-experiment` |
+| `outputs/papers/` | Written section files | skill `paper-write` |
+| `outputs/figures/` | All generated figures | skill `paper-figure` |
+| `GeoBenchmark/results/` | OLS/GWR/MGWR result JSONs | geo-experiment / python tools |
 
-Before any research task, read `program.md` to understand the current research
-objective, target venue, research questions, domain focus, constraints, and
-seed papers. If program.md is incomplete (missing topic or venue), halt and
-ask the user to fill it in.
+---
 
-### 2. Delegate to Specialized Agents
+## How Skills Work
 
-Use the `Agent` tool with the appropriate subagent for each task:
+**Skills describe workflow logic in Markdown. Python files are tools that skills call.**
 
-| Agent | Role |
-|---|---|
-| **orchestrator** | Full pipeline manager, state tracking, git commits |
-| **literature-scout** | Paper retrieval from ArXiv, Semantic Scholar, CrossRef |
-| **synthesis-analyst** | Deep reading, synthesis matrix, thematic analysis |
-| **gap-finder** | Identifying and ranking research gaps |
-| **hypothesis-generator** | Generating testable geo research hypotheses |
-| **paper-writer** | Writing and self-scoring individual paper sections |
-| **peer-reviewer** | Three-perspective simulated peer review |
-| **citation-manager** | APA 7th edition formatting and reference validation |
-| **geo-specialist** | Spatial analysis context, CRS rules, GeoBenchmark |
+- Claude reads a skill (`skills/<name>/SKILL.md`) to understand the workflow
+- The skill tells Claude *when* and *which* Python tools to run
+- Claude decides the exact sequence based on context
+- Python files in `GeoBenchmark/`, `tools/`, and `core/` are callable tools — they do not call Claude
 
-Agent definitions are in `.claude/agents/`. Slash commands are in `.claude/commands/`.
-
-### 3. Iterative Improvement Loop (Autoresearch-Inspired)
-
-Every paper section follows this loop — do not skip steps:
 ```
-propose → write → score (0-10) → accept if ≥ 7.5 → else revise → commit
+You (or /slash command)
+    ↓ invokes
+Skill SKILL.md  ←─── reads domain knowledge from skills/knowledge/
+    ↓ decides to call
+Python tools (GeoBenchmark/run_benchmark.py, tools/arxiv_fetch.py, etc.)
+    ↓ produce
+Output files (results JSON, paper-cache, figures)
+    ↓ read by
+Next skill in pipeline
 ```
-
-Score on 5 dimensions (weights):
-- **Novelty** (30%) — original contribution clearly stated
-- **Rigor** (25%) — spatially valid, reproducible, baselines compared
-- **Literature coverage** (20%) — ≥ 15 relevant citations, ≥ 2020 majority
-- **Clarity** (15%) — active voice, specific numbers, no vague claims
-- **Impact** (10%) — practical or scientific significance stated
-
-Maximum 3 revision attempts per section. Track scores in `memory/MEMORY.md`.
-
-### 4. Quality Thresholds
-
-- **Section threshold:** ≥ 7.5/10 overall before accepting
-- **Literature review:** ≥ 30 papers, from last 5 years majority, ≥ 10 from priority geo venues
-- **Abstract:** ≤ 250 words, contains problem / gap / method / results / contribution
-- **Spatial regression papers:** OLS + GWR + MGWR comparison required; Moran's I of residuals always reported
-- **Overall paper score:** ≥ 7.5/10 before declaring complete
-
-### 5. Domain Grounding
-
-Always situate work in the user's domain(s). Prefer:
-
-- **Geoscience**: EPSG-correct projections, Moran's I, appropriate spatial scale
-- **Remote Sensing**: sensor specs (resolution, band, wavelength), cloud masking, reproducible preprocessing
-- **GIScience / Spatial Stats**: GWR/MGWR over OLS for spatially non-stationary processes, spatial CV
-- **GeoAI**: foundation model citations (Prithvi, Clay, SatCLIP), spatial representation learning
-- **Disaster Resilience**: equity dimension, open datasets (GADM, EM-DAT), validation with field data
-- **Environmental Health**: EJ dimension, EPA/WHO data standards, health outcome modeling
-
-### 6. Memory Persistence
-
-- Read `memory/MEMORY.md` at the start of every session (required)
-- Write new findings, paper summaries, and patterns back to memory
-- Use `memory/paper-cache/` for cached paper metadata
-- Session checkpoints in `.checkpoints/`; long-term memory in `.memory/long_term.json`
-
-### 7. Output Standards
-
-- All citations in **APA 7th edition** format (see `skills/apa-citations.md`)
-- Papers saved to `outputs/papers/YYYY-MM-DD_<title-slug>/`
-- Reports saved to `outputs/reports/YYYY-MM-DD_<type>.md`
-- ISO timestamps in all filenames
-- Git commit each accepted section: `feat: accept <section> — score <X.X>`
 
 ---
 
-## Available Slash Commands
+## Workflow Skills (invoke by name or /slash-command)
 
-| Command | Purpose |
-|---|---|
-| `/full-pipeline` | End-to-end paper generation from program.md (12 stages) |
-| `/geo-search <topic>` | Literature search with domain-aware keyword expansion |
-| `/lit-review <topic>` | Search → synthesis → gap analysis → formatted review |
-| `/find-gaps <topic>` | Gap analysis + top 3 hypotheses |
-| `/write-section <name>` | Write one section with autoresearch scoring loop |
-| `/review-draft <file>` | Three-perspective peer review of a section or full paper |
-| `/run-experiment` | Run GeoBenchmark (OLS / GWR / MGWR) |
-| `/geo-plot` | Spatial visualization |
-| `/submit-check` | Pre-submission validation |
+| Skill | Invoke | What it does |
+|---|---|---|
+| `research-pipeline` | `/full-pipeline` | 4-stage master pipeline (evening→overnight→morning) |
+| `geo-lit-review` | `/geo-search <topic>` | Search + synthesize + gap analysis |
+| `idea-discovery` | `/find-gaps <topic>` | Generate + score candidate ideas from gaps |
+| `novelty-check` | (called by idea-discovery) | Verify idea is genuinely new |
+| `geo-experiment` | `/run-experiment` | Design + execute OLS/GWR/MGWR experiments |
+| `spatial-analysis` | (called by geo-experiment) | Interpret spatial results, compute Moran's I |
+| `result-to-claim` | (called before paper-write) | Verify claims against actual results |
+| `auto-review-loop` | `/review-draft <file>` | Up to 4 adversarial review rounds |
+| `paper-plan` | (called before paper-write) | Build section outline + figure plan |
+| `paper-write` | `/write-section <name>` | Write section with autoresearch scoring |
+| `paper-figure` | `/geo-plot` | Generate spatial figures and captions |
+| `training-check` | (called by research-pipeline Stage 3) | Monitor running experiments |
+
+Skills live in `skills/<name>/SKILL.md`. Domain knowledge lives in `skills/knowledge/`.
+
+---
+
+## Python Tools (called by skills, not directly by you)
+
+| Tool | Path | When skills call it |
+|---|---|---|
+| ArXiv search | `tools/arxiv_fetch.py` | geo-lit-review, novelty-check |
+| Semantic Scholar search | `tools/semantic_scholar_fetch.py` | geo-lit-review, novelty-check |
+| Full benchmark | `GeoBenchmark/run_benchmark.py` | geo-experiment |
+| OLS baseline | `GeoBenchmark/baselines/ols_baseline.py` | geo-experiment |
+| GWR baseline | `GeoBenchmark/baselines/gwr_baseline.py` | geo-experiment |
+| MGWR baseline | `GeoBenchmark/baselines/mgwr_baseline.py` | geo-experiment |
+| Download datasets | `GeoBenchmark/download_data.py` | geo-experiment (if data missing) |
+| Visualize results | `GeoBenchmark/evaluation/visualize.py` | paper-figure |
+| Evaluate metrics | `GeoBenchmark/evaluation/metrics.py` | spatial-analysis |
+| Orchestrator (API mode) | `core/orchestrator.py` | launch.py (API backend only) |
+| Memory manager | `core/memory_manager.py` | core/research_loop.py |
+| Token optimizer | `core/token_optimizer.py` | core/research_loop.py |
+
+---
+
+## Autoresearch Scoring Loop
+
+Every paper section uses this loop. Never skip it.
+
+```
+Write draft → self-score (0–10) → accept if ≥ 7.5 → else revise → max 3 attempts
+```
+
+Scoring dimensions (`configs/default.yaml`):
+- **Novelty** 30% — contribution clearly and defensibly stated
+- **Rigor** 25% — spatially valid, reproducible, baselines compared
+- **Literature coverage** 20% — ≥ 15 citations, majority ≥ 2020, geo venues
+- **Clarity** 15% — active voice, specific numbers, no vague claims
+- **Impact** 10% — practical or scientific significance
+
+Spatial regression papers additionally require: OLS + GWR + MGWR comparison, Moran's I residuals.
+
+---
+
+## Geo Conventions (always apply)
+
+- State CRS for all spatial data: `WGS84 (EPSG:4326)` or `UTM Zone 10N (EPSG:32610)`
+- Never compute distances or areas in WGS84 degrees
+- Project to local UTM or equal-area (EPSG:5070 for CONUS) before analysis
+- Report Moran's I residuals for every regression model
+- Use spatial (not random) cross-validation
+- Subsampling limits: GWR ≤ 5,000 obs, MGWR ≤ 3,000 obs
 
 ---
 
 ## Allowed Behaviors
 
-- Read and write files in `output/`, `GeoBenchmark/datasets/`, `ResearchArchitect/`, `memory/`, `outputs/`
-- Execute Python scripts in a sandboxed environment
-- Fetch ArXiv abstracts and Semantic Scholar results
-- Install Python packages listed in `requirements.txt`
-- Download open-source datasets referenced in `GeoBenchmark/download_data.py`
-- Commit accepted paper sections to git (`feat: accept <section> — score X.X`)
+- Read/write in `output/`, `outputs/`, `GeoBenchmark/`, `memory/`, `tools/`, `skills/`
+- Call Python tools listed above when skills require them
+- Git commit accepted sections: `feat: accept <section> — score <X.X>`
+- Download open-source datasets via `GeoBenchmark/download_data.py`
+- Append to `findings.md`, `EXPERIMENT_LOG.md`, `AUTO_REVIEW.md`
 
 ## Prohibited Behaviors
 
-- Do NOT delete files outside the project directory
-- Do NOT make API calls to paid services without user confirmation
-- Do NOT push code to remote repositories without explicit user instruction
+- Do NOT fabricate results, citations, or claims not in `memory/approved_claims.md`
+- Do NOT execute Python files directly without a skill invoking them
+- Do NOT delete `findings.md`, `EXPERIMENT_LOG.md`, or `AUTO_REVIEW.md` entries
+- Do NOT push to remote without explicit user instruction
 - Do NOT run `rm -rf` or destructive shell commands
-- Do NOT access private data or credentials beyond what is in `.env`
-- Do NOT skip the program.md validation step before running full-pipeline
+- Do NOT skip `result-to-claim` before `paper-write`
 
 ---
 
-## Coding Standards
+## Recovery from Context Overflow
 
-- Python 3.11+, type hints, and docstrings
-- Prefer `pathlib.Path` over `os.path`
-- Use `geopandas` for vector data, `rasterio` for rasters
-- Use `mgwr` library for GWR/MGWR models
-- Always project to appropriate CRS before spatial analysis:
-  - EPSG:4326 for storage
-  - EPSG:5070 (Albers) for CONUS analysis
-  - local UTM zone for sub-regional analysis
-  - EPSG:3857 only for web tiles (never for analysis)
-- Validate CRS match before every spatial join
-- Report Moran's I residuals for all regression models
-- Use spatial (not random) cross-validation
+If context overflows mid-session:
+1. Read `REVIEW_STATE.json` for review loop state
+2. Read `memory/MEMORY.md` for pipeline stage
+3. Read `findings.md` (COMPACT_MODE) or `EXPERIMENT_LOG.md` (full)
+4. Resume from last incomplete stage — never re-run completed stages
 
 ---
 
-## Harness Engineering Notes
+## MCP Servers (`.mcp.json`)
 
-Hooks are defined in `settings.json`. Key behaviors:
-- `PreToolUse` on Bash: validate command against dangerous patterns; log to `harness/logs/tool_calls.log`
-- `PostToolUse` on Write: update `experiment_state.json`
-- `Stop`: save session checkpoint to `.checkpoints/`; update `memory/MEMORY.md`
-
----
-
-## MCP Servers
-
-See `.mcp.json` for configured MCP servers:
-- `geo_mcp` — spatial data access (GADM boundaries, OSM Overpass, Census ACS, CRS utilities)
-- `arxiv_mcp` — paper search and metadata
+- `geo_mcp` — spatial data: GADM boundaries, OSM Overpass, Census ACS, CRS utilities
+- `arxiv_mcp` — paper search (alternative to `tools/arxiv_fetch.py`)
 - `filesystem` — local file access
 - `fetch` — web content retrieval
-
----
-
-## Skills Reference
-
-Domain knowledge skills in `skills/`:
-
-| Skill file | Content |
-|---|---|
-| `academic-writing.md` | IMRAD structure, section-by-section guidance, geo conventions |
-| `apa-citations.md` | APA 7th edition rules, format by source type, validation checklist |
-| `geoai-domain.md` | GeoAI literature, foundation models, spatial representation learning |
-| `spatial-methods.md` | GWR/MGWR/Kriging code, CRS rules, remote sensing analysis, spatial CV |
-| `disaster-resilience.md` | Disaster domain concepts, datasets, equity dimensions |
-| `environmental-health.md` | EJ, exposure assessment, health outcome modeling |
-| `literature-mining.md` | Search strategies, API usage, deduplication |
-| `research-iteration.md` | Autoresearch loop, scoring rubric, revision strategies |
+- `claude-review` *(optional)* — external Claude reviewer for adversarial review loop
+- `gemini-review` *(optional)* — Gemini reviewer for adversarial review loop
 
 ---
 
@@ -217,25 +208,74 @@ Domain knowledge skills in `skills/`:
 
 ```
 geo_research_agent_247/
-├── launch.py               ← START HERE: choose API or Claude Code mode
-├── program.md              ← EDIT THIS: current research brief
-├── CLAUDE.md               ← this file
-├── AGENT_STRUCTURE.md      ← full architecture diagram
-├── config.yaml / configs/  ← run mode configurations
+├── launch.py                    ← START HERE (choose backend)
+├── program.md                   ← EDIT: full research brief (12 sections)
+├── research_contract.md         ← Active idea context (condensed)
+├── findings.md                  ← Compact one-line discovery log
+├── EXPERIMENT_LOG.md            ← Complete experiment record
+├── AUTO_REVIEW.md               ← Review loop history (created on first review)
+├── REVIEW_STATE.json            ← Review loop state for recovery (created on first review)
+├── CLAUDE.md                    ← this file (dashboard)
+│
+├── skills/
+│   ├── research-pipeline/SKILL.md   ← 4-stage master pipeline
+│   ├── geo-lit-review/SKILL.md      ← literature search + synthesis
+│   ├── idea-discovery/SKILL.md      ← ideation from gaps
+│   ├── novelty-check/SKILL.md       ← verify idea novelty
+│   ├── geo-experiment/SKILL.md      ← design + run experiments
+│   ├── spatial-analysis/SKILL.md    ← interpret spatial results
+│   ├── result-to-claim/SKILL.md     ← validate claims vs results
+│   ├── auto-review-loop/SKILL.md    ← adversarial review (4 rounds)
+│   ├── paper-plan/SKILL.md          ← section outline + figure plan
+│   ├── paper-write/SKILL.md         ← autoresearch section writing
+│   ├── paper-figure/SKILL.md        ← spatial figures + captions
+│   ├── training-check/SKILL.md      ← monitor running experiments
+│   └── knowledge/                   ← domain reference (read by skills)
+│       ├── academic-writing.md
+│       ├── apa-citations.md
+│       ├── spatial-methods.md
+│       ├── geoai-domain.md
+│       ├── disaster-resilience.md
+│       ├── environmental-health.md
+│       ├── literature-mining.md
+│       └── research-iteration.md
+│
+├── tools/                       ← callable Python utilities (called by skills)
+│   ├── arxiv_fetch.py
+│   └── semantic_scholar_fetch.py
+│
 ├── .claude/
-│   ├── agents/             ← 9 specialized agent definitions
-│   └── commands/           ← 6 slash commands
-├── skills/                 ← domain knowledge (8 skill files)
-├── agents/                 ← Python agent implementations (API mode)
-├── core/                   ← orchestrator, memory manager, token optimizer
-├── GeoBenchmark/           ← spatial regression benchmarks (OLS/GWR/MGWR)
-├── harness/
-│   ├── hooks/              ← Claude Code lifecycle hooks
-│   ├── skills/             ← legacy harness skill definitions
-│   └── prompts/            ← system prompt templates
-├── mcp/                    ← custom MCP server implementations
-├── memory/                 ← MEMORY.md + paper cache
-├── templates/              ← journal-specific paper section templates
-├── outputs/                ← generated papers and reports
-└── ResearchArchitect/      ← collaborative workspace
+│   ├── agents/                  ← specialist agent definitions (9 agents)
+│   └── commands/                ← slash commands (6 commands)
+│
+├── templates/                   ← standard file format templates
+│   ├── RESEARCH_CONTRACT_TEMPLATE.md
+│   ├── EXPERIMENT_PLAN_TEMPLATE.md
+│   ├── EXPERIMENT_LOG_TEMPLATE.md
+│   ├── FINDINGS_TEMPLATE.md
+│   ├── IDEA_CANDIDATES_TEMPLATE.md
+│   ├── PAPER_PLAN_TEMPLATE.md
+│   └── REVIEW_STATE_TEMPLATE.json
+│
+├── GeoBenchmark/                ← spatial regression benchmark suite
+│   ├── run_benchmark.py         ← full OLS/GWR/MGWR comparison
+│   ├── baselines/               ← individual baseline implementations
+│   ├── datasets/                ← open-source datasets
+│   ├── evaluation/              ← metrics + visualize
+│   └── download_data.py
+│
+├── configs/                     ← run mode configurations
+│   ├── default.yaml             ← scoring weights, venues, domain keywords
+│   ├── full_auto.yaml
+│   ├── quick_mode.yaml
+│   ├── codex_hybrid.yaml
+│   └── benchmark_only.yaml
+│
+├── agents/                      ← Python agent implementations (API mode)
+├── core/                        ← orchestrator, memory, token optimizer
+├── harness/hooks/               ← Claude Code lifecycle hooks
+├── mcp/                         ← custom MCP server implementations
+├── memory/                      ← MEMORY.md + paper-cache
+├── outputs/                     ← generated papers, figures, reports
+└── ResearchArchitect/           ← collaborative workspace
 ```

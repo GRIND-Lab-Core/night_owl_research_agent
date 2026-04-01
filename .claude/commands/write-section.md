@@ -1,6 +1,6 @@
 ---
 name: write-section
-description: "Write a specific paper section with autoresearch iterative scoring (write → score → revise until ≥ 7.5). Usage: /write-section <section-name> [--topic <topic>]"
+description: "Invoke skills result-to-claim then paper-write for a specific section. Verifies claims vs results first, then runs autoresearch loop (write → score → revise until ≥ 7.5). Reads memory/outline.md and memory/approved_claims.md. Git commits accepted section. Usage: /write-section <section-name>"
 ---
 
 # Command: /write-section

@@ -1,6 +1,6 @@
 ---
 name: lit-review
-description: "Automated literature review for a geo/RS/GIScience topic. Runs: search → synthesis → gap analysis → formatted review section. Output: outputs/reports/lit-review-<topic>-<date>.md. Usage: /lit-review <topic>"
+description: "Invoke skill geo-lit-review. Calls tools/arxiv_fetch.py + tools/semantic_scholar_fetch.py, builds synthesis matrix, runs gap analysis. Output: memory/synthesis-*.md, memory/gap-analysis.md, outputs/reports/lit-review-*.md. Usage: /lit-review <topic>"
 ---
 
 # Command: /lit-review

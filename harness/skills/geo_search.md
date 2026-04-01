@@ -1,11 +1,11 @@
 ---
 name: geo-search
-description: Domain-aware literature search for geoscience, remote sensing, and GIScience topics. Expands queries with geo-specific terminology and returns structured summaries.
+description: Invoke skill geo-lit-review for a geo topic. The skill calls tools/arxiv_fetch.py and tools/semantic_scholar_fetch.py — do not call these tools directly. Results saved to memory/paper-cache/.
 ---
 
-Perform a comprehensive literature search for: $ARGUMENTS
+Invoke skill `skills/geo-lit-review/SKILL.md` for: $ARGUMENTS
 
-Follow these steps:
+The skill calls the appropriate Python tools. Follow these steps:
 
 1. **Query expansion**: Identify the sub-domain (GIScience / Remote Sensing / Geoscience) and expand the query with relevant technical terms (e.g., if query mentions "house prices" + spatial, add "spatial heterogeneity", "GWR", "spatial lag").
 

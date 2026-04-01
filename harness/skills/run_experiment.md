@@ -1,11 +1,11 @@
 ---
 name: run-experiment
-description: Execute a geospatial benchmark or custom experiment. Handles data loading, model fitting, evaluation, and result visualization.
+description: Invoke skill geo-experiment to design and execute spatial experiments (OLS/GWR/MGWR). Reads EXPERIMENT_PLAN.md if it exists; otherwise runs geo-experiment in DESIGN mode first. Python tools are called by the skill, not directly.
 ---
 
-Run experiment with configuration: $ARGUMENTS
+Invoke skill `skills/geo-experiment/SKILL.md` with arguments: $ARGUMENTS
 
-Follow these steps:
+The skill decides which Python tools to call (GeoBenchmark/run_benchmark.py, baselines, etc.) based on context. Follow these steps:
 
 1. **Parse arguments**: Accept either a YAML config path or a model name + dataset name.
    - If a YAML path is given, load it from `configs/`

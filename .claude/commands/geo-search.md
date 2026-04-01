@@ -1,6 +1,6 @@
 ---
 name: geo-search
-description: "Literature search for a geo/RS/GIScience topic. Searches ArXiv, Semantic Scholar, and CrossRef with domain-aware keyword expansion from configs/default.yaml. Prioritizes geo venues (RSE, IJGIS, IEEE TGRS, etc.). Saves results to memory/paper-cache/. Usage: /geo-search <topic>"
+description: "Invoke skill geo-lit-review for a geo topic. Calls tools/arxiv_fetch.py and tools/semantic_scholar_fetch.py with domain-aware keyword expansion, builds synthesis matrix, identifies research gaps. Saves to memory/paper-cache/ and memory/synthesis-*.md. Usage: /geo-search <topic>"
 ---
 
 # Command: /geo-search

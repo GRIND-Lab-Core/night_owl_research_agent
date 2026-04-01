@@ -1,6 +1,6 @@
 ---
 name: full-pipeline
-description: "Full end-to-end paper generation for geo/RS/GIScience from program.md: validates program.md, runs literature search, synthesis, gap analysis, hypothesis generation, geo-specialist review, constructs outline, writes all sections iteratively with autoresearch scoring, runs peer review, validates references, and saves the final assembled paper. Progress tracked in memory/MEMORY.md; each accepted section committed to git."
+description: "Full end-to-end geo research pipeline (ARIS-style, 4 stages). Reads CLAUDE.md control flags then invokes skill research-pipeline: idea discovery → experiment design → autonomous spatial experiments (OLS/GWR/MGWR) → adversarial review loop → paper writing. State persists to REVIEW_STATE.json, findings.md, EXPERIMENT_LOG.md, and memory/MEMORY.md for overnight/recovery runs."
 ---
 
 # Command: /full-pipeline

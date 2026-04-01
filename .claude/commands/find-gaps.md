@@ -1,6 +1,6 @@
 ---
 name: find-gaps
-description: "Identify research gaps in a geo/RS/GIScience topic from existing literature. Outputs a ranked gap list and top 3 actionable hypotheses. Usage: /find-gaps <topic>"
+description: "Invoke skills idea-discovery and novelty-check. Generates 6-10 candidate research ideas from literature gaps, scores each, runs novelty verification. Produces IDEA_REPORT.md with ranked ideas. Usage: /find-gaps <topic>"
 ---
 
 # Command: /find-gaps
