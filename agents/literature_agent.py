@@ -11,6 +11,13 @@ from typing import Any
 import anthropic
 
 from core.config import AgentConfig
+from core.token_optimizer import (
+    ResponseCache,
+    TokenLedger,
+    build_windowed_prompt,
+    optimized_call,
+    truncate_papers,
+)
 
 GEO_DOMAIN_KEYWORDS = {
     "giscience": [
@@ -49,9 +56,18 @@ class LiteratureAgent:
     a structured literature review with gap analysis and novel hypotheses.
     """
 
-    def __init__(self, client: anthropic.Anthropic, config: AgentConfig) -> None:
+    def __init__(
+        self,
+        client: anthropic.Anthropic,
+        config: AgentConfig,
+        ledger: TokenLedger | None = None,
+        cache: ResponseCache | None = None,
+    ) -> None:
         self.client = client
         self.config = config
+        self.ledger = ledger
+        self.cache = cache
+        self._abstract_budget = config.token_optimizer.abstract_token_budget
 
     def run(self, topic: str, geo_context: dict[str, Any] | None = None) -> dict[str, Any]:
         """
@@ -85,26 +101,23 @@ class LiteratureAgent:
         """Use Claude to generate optimized search queries with geo-domain expansion."""
         domain = geo_context.get("domain", "giscience")
         domain_kws = " OR ".join(GEO_DOMAIN_KEYWORDS.get(domain, [])[:5])
+        n_queries = max(2, self.config.literature.max_papers // 5)
 
-        prompt = f"""Generate {self.config.literature.max_papers // 5} optimized ArXiv/Semantic Scholar search queries for:
-
-Topic: {topic}
-Domain: {domain}
-Domain keywords: {domain_kws}
-
-Rules:
-- Each query should target a different aspect of the topic
-- Include both specific method terms and broader conceptual terms
-- Format: one query per line, no numbering
-- Optimize for recall (broad) not precision for the first 2 queries, then precision for the rest"""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            f"Generate {n_queries} ArXiv search queries for: {topic}\n"
+            f"Domain: {domain} | Keywords: {domain_kws}\n"
+            "One query per line. Vary specificity: first 2 broad, rest precise."
         )
-        queries = [q.strip() for q in response.content[0].text.strip().split("\n") if q.strip()]
-        return queries[:6]  # cap at 6 queries
+        text = optimized_call(
+            self.client, LITERATURE_SYSTEM_PROMPT, prompt,
+            task_type="query_generation",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="simple",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
+        queries = [q.strip() for q in text.strip().split("\n") if q.strip()]
+        return queries[:6]
 
     def _fetch_papers(self, queries: list[str]) -> list[dict[str, str]]:
         """
@@ -126,7 +139,8 @@ Rules:
                         papers.append({
                             "title": result.title,
                             "authors": [str(a) for a in result.authors[:3]],
-                            "abstract": result.summary[:500],
+                            # Truncate abstract to budget at fetch time — saves tokens in synthesis
+                            "abstract": result.summary[: self._abstract_budget * 4],
                             "year": result.published.year,
                             "url": result.entry_id,
                             "source": "arxiv",
@@ -139,57 +153,68 @@ Rules:
 
     def _synthesize(self, topic: str, papers: list[dict], geo_context: dict[str, Any]) -> str:
         """Synthesize papers into a structured literature review."""
+        # Truncate abstracts to per-paper budget before assembling the prompt
+        opt_cfg = self.config.token_optimizer
+        papers_trunc = truncate_papers(papers[:20], budget_per_paper=self._abstract_budget)
+
         papers_text = "\n\n".join(
             f"**{p.get('title', 'Unknown')}** ({p.get('year', 'n.d.')})\n"
             f"Authors: {', '.join(p.get('authors', ['Unknown']))}\n"
             f"Abstract: {p.get('abstract', 'Not available')}"
-            for p in papers[:20]  # use top 20 for synthesis
+            for p in papers_trunc
         )
 
-        prompt = f"""Write a structured literature review for the following research topic.
-
-## Topic
-{topic}
-
-## Domain Context
-{json.dumps(geo_context, indent=2)}
-
-## Retrieved Papers
-{papers_text}
-
-## Required Sections
-1. **Introduction to the Research Area** — overview and significance
-2. **Key Methods and Approaches** — what methods have been used and their limitations
-3. **Key Findings** — major empirical findings in the literature
-4. **Research Gaps** — what is missing, contradictory, or underexplored
-5. **Proposed Novel Hypotheses** — 3 specific, testable hypotheses grounded in the gaps
-
-Be specific. Reference actual papers when possible. Use academic writing style."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=4096,
-            system=LITERATURE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+        # Use context windowing: domain context gets lower priority than papers
+        context_block = build_windowed_prompt(
+            sections=[
+                ("Topic", topic, 2.0),
+                ("Domain Context", json.dumps(geo_context), 1.0),
+                ("Retrieved Papers", papers_text, 1.8),
+            ],
+            token_budget=opt_cfg.context_token_budget,
+            header="Synthesize a literature review from the materials below.",
         )
-        return response.content[0].text
+
+        instructions = (
+            "\n\nRequired sections:\n"
+            "1. Introduction to the Research Area\n"
+            "2. Key Methods and Limitations\n"
+            "3. Key Findings\n"
+            "4. Research Gaps\n"
+            "5. Proposed Novel Hypotheses (3, testable, grounded in gaps)\n\n"
+            "Be specific. Reference papers by title. Use academic writing style."
+        )
+
+        return optimized_call(
+            self.client, LITERATURE_SYSTEM_PROMPT, context_block + instructions,
+            task_type="synthesis",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="complex",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
 
     def _extract_hypotheses(self, review_text: str) -> list[dict[str, str]]:
         """Extract structured hypotheses from the review text."""
-        prompt = f"""Extract the research hypotheses from this literature review.
-Return a JSON array of objects, each with: "id", "hypothesis", "rationale", "suggested_method", "suggested_dataset".
+        from core.token_optimizer import truncate_field
+        review_snippet = truncate_field(review_text, 1_500)  # limit context for JSON extraction
 
-Literature Review:
-{review_text[:3000]}
-
-Return ONLY valid JSON, no other text."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            "Extract research hypotheses from the review below.\n"
+            'Return a JSON array; each object: {"id","hypothesis","rationale","suggested_method","suggested_dataset"}.\n'
+            "Return ONLY valid JSON.\n\n"
+            f"Review:\n{review_snippet}"
+        )
+        text = optimized_call(
+            self.client, "", prompt,
+            task_type="json",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="simple",
+            ledger=self.ledger,
+            cache=self.cache,
         )
         try:
-            return json.loads(response.content[0].text)
+            return json.loads(text)
         except json.JSONDecodeError:
-            return [{"id": "H1", "hypothesis": "See literature review", "rationale": "", "suggested_method": "", "suggested_dataset": ""}]
+            return [{"id": "H1", "hypothesis": "See literature review", "rationale": "",
+                     "suggested_method": "", "suggested_dataset": ""}]

@@ -14,6 +14,7 @@ from typing import Any
 import anthropic
 
 from core.config import AgentConfig
+from core.token_optimizer import ResponseCache, TokenLedger, optimized_call, truncate_field
 
 EXPERIMENT_SYSTEM_PROMPT = """\
 You are a rigorous geoscientist designing reproducible experiments.
@@ -37,12 +38,16 @@ class ExperimentAgent:
         client: anthropic.Anthropic,
         config: AgentConfig,
         run_dir: Path,
+        ledger: TokenLedger | None = None,
+        cache: ResponseCache | None = None,
     ) -> None:
         self.client = client
         self.config = config
         self.run_dir = run_dir
         self.results_dir = run_dir / "results"
         self.results_dir.mkdir(exist_ok=True)
+        self.ledger = ledger
+        self.cache = cache
 
     def run(
         self,
@@ -75,35 +80,26 @@ class ExperimentAgent:
 
     def _design_experiment(self, hypothesis: dict[str, Any], geo_context: dict[str, Any]) -> dict[str, Any]:
         """Use Claude to design an experiment plan for a hypothesis."""
-        prompt = f"""Design a rigorous experiment to test this hypothesis:
+        # Compact the hypothesis dict to save tokens
+        hyp_str = truncate_field(json.dumps(hypothesis, indent=2), 300)
+        domain = geo_context.get("domain", "giscience")
 
-## Hypothesis
-{json.dumps(hypothesis, indent=2)}
-
-## Domain Context
-{json.dumps(geo_context, indent=2)}
-
-Return a JSON object with:
-- "title": short experiment title
-- "dataset": recommended open dataset (name + source)
-- "dependent_var": dependent variable
-- "independent_vars": list of independent variables
-- "model": primary model (e.g. "MGWR")
-- "baseline": baseline model(s) for comparison
-- "evaluation_metrics": list of metrics
-- "spatial_validation": how to account for spatial autocorrelation
-- "code_tasks": list of coding subtasks (strings)
-
-Return ONLY valid JSON."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=1024,
-            system=EXPERIMENT_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            f"Design an experiment for this hypothesis (domain: {domain}):\n{hyp_str}\n\n"
+            'Return JSON only with keys: "title","dataset","dependent_var",'
+            '"independent_vars","model","baseline","evaluation_metrics",'
+            '"spatial_validation","code_tasks"'
+        )
+        text = optimized_call(
+            self.client, EXPERIMENT_SYSTEM_PROMPT, prompt,
+            task_type="json",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="default",
+            ledger=self.ledger,
+            cache=self.cache,
         )
         try:
-            return json.loads(response.content[0].text)
+            return json.loads(text)
         except json.JSONDecodeError:
             return {"title": "Experiment", "model": "MGWR", "baseline": "OLS", "code_tasks": []}
 
@@ -131,16 +127,14 @@ The script must:
             result = coding_backend.run_task(task, context=plan)
             return result.get("code", "")
         else:
-            # Use Claude for code generation
-            response = self.client.messages.create(
-                model=self.config.backend.orchestrator,
-                max_tokens=4096,
-                messages=[
-                    {"role": "user", "content": f"Write Python code only (no explanation):\n\n{task}"}
-                ],
+            code = optimized_call(
+                self.client, "", f"Write Python code only (no explanation):\n\n{task}",
+                task_type="code",
+                preferred_model=self.config.backend.orchestrator,
+                task_complexity="complex",
+                ledger=self.ledger,
+                cache=self.cache,
             )
-            code = response.content[0].text
-            # Strip markdown fences
             if "```python" in code:
                 code = code.split("```python")[1].split("```")[0]
             return code.strip()
@@ -175,28 +169,26 @@ The script must:
 
     def _analyze_results(self, execution_result: dict[str, Any], plan: dict[str, Any]) -> str:
         """Use Claude to interpret execution results."""
-        prompt = f"""Analyze these experiment results for a geospatial study.
+        plan_str = truncate_field(json.dumps(plan), 300)
+        stdout_str = truncate_field(execution_result.get("stdout", ""), 500)
+        stderr_str = truncate_field(execution_result.get("stderr", ""), 200)
 
-## Experiment Plan
-{json.dumps(plan, indent=2)[:500]}
-
-## Execution Output
-Status: {execution_result.get('status')}
-Stdout: {execution_result.get('stdout', '')[:1000]}
-Stderr: {execution_result.get('stderr', '')[:500]}
-
-Provide a brief (3–4 sentences) interpretation:
-1. What do the results show?
-2. Do they support the hypothesis?
-3. Any spatial patterns worth noting?
-4. Limitations of this experiment."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            f"Analyze geospatial experiment results.\n"
+            f"Plan: {plan_str}\n"
+            f"Status: {execution_result.get('status')}\n"
+            f"Output: {stdout_str}\nErrors: {stderr_str}\n\n"
+            "In 3–4 sentences: what do results show, do they support the hypothesis, "
+            "spatial patterns, and key limitations."
         )
-        return response.content[0].text
+        return optimized_call(
+            self.client, "", prompt,
+            task_type="hypothesis",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="simple",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
 
     @staticmethod
     def _extract_methods(results: list[dict[str, Any]]) -> list[str]:

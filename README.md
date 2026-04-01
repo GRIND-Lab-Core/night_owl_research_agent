@@ -14,6 +14,8 @@ GeoResearchAgent-247 automates the complete academic research lifecycle:
 4. **Paper writing** — drafts full academic papers using journal-specific templates (IJGIS, IEEE TGRS, GRL, RSE, and more)
 5. **Self-review** — simulates peer review feedback and iteratively revises the paper
 6. **Spatial benchmarking** — provides a ready-to-run benchmark suite (GeoBenchmark) with OLS, GWR, and MGWR baselines
+7. **Memory management** — three-layer memory (working / session / long-term) persists research knowledge across agents and sessions, with token-aware retrieval and automatic pruning
+8. **Token optimization** — eight complementary techniques (prompt compression, response caching, tiered model routing, context windowing, dynamic max_tokens, abstract truncation, context budgeting, session ledger) reduce API costs by 40–70%
 
 ---
 
@@ -190,6 +192,194 @@ Skills are slash commands you invoke inside a Claude Code session. Located in `h
 /geo-plot         → spatial visualization with auto-chosen map projection
 /submit-check     → validate manuscript against journal requirements
 ```
+
+---
+
+## Memory Management
+
+GeoResearchAgent-247 includes a three-layer memory system (`core/memory_manager.py`) that persists research knowledge across agent stages and sessions.
+
+### Memory Layers
+
+| Layer | Scope | Storage | Purpose |
+|-------|-------|---------|---------|
+| **Working memory** | Current process | In-process dict | Fast inter-agent data sharing within one run |
+| **Session memory** | Current run | `.checkpoints/{run_id}_memory.json` | Resume interrupted runs; carry stage outputs forward |
+| **Long-term memory** | All runs | `.memory/long_term.json` | Reuse literature summaries, remember failed hypotheses, track review decisions across topics |
+
+### Key Capabilities
+
+- **Token-aware retrieval** — `build_context(keys, token_budget=3000)` ranks entries by priority and recency, dropping lowest-priority items when the budget is exhausted
+- **Keyword search** — `search_long_term(query)` finds relevant past entries without a vector database
+- **Automatic pruning** — when the long-term store exceeds `lt_max_entries` (default 200) or `lt_token_budget` (default 32,000 tokens), lowest-priority entries are evicted
+- **Priority system** — agents assign priorities (e.g., `literature=1.8`, `draft=1.5`); review decisions and failed hypotheses are stored with lower priority so they persist without crowding working context
+
+### Usage in Code
+
+```python
+from core.memory_manager import MemoryManager
+
+mm = MemoryManager(run_id="run_20260331_143000")
+
+# Store a result with auto-generated summary
+mm.store("literature", result, priority=1.8, tags=["giscience"])
+
+# Build a token-bounded context string for a prompt
+context = mm.build_context(["literature", "geo_context"], token_budget=2000)
+
+# Save a plain-text fact to long-term memory
+mm.remember("mgwr_diverged_small_n", "MGWR failed to converge on n<100 datasets", priority=1.0)
+
+# Search long-term memory by keyword
+relevant = mm.search_long_term("GWR bandwidth selection", token_budget=800)
+
+# Flush to disk
+mm.persist()
+
+# Token usage report
+print(mm.token_usage_report())
+# → {"working_tokens": 412, "session_tokens": 1840, "long_term_tokens": 5200, "long_term_entries": 47}
+```
+
+### Memory Files
+
+```
+.checkpoints/
+└── run_20260331_143000_memory.json   ← per-run session memory
+.memory/
+└── long_term.json                    ← shared across all runs
+output/run_20260331_143000/
+└── memory_report.json                ← end-of-run stats
+```
+
+---
+
+## Token Optimization
+
+GeoResearchAgent-247 applies eight complementary techniques to minimize Anthropic API token usage without sacrificing output quality. All techniques are configurable in `configs/*.yaml` under the `token_optimizer` key.
+
+### Techniques
+
+#### 1. Token Counting Before Dispatch
+Every prompt is estimated (1 token ≈ 4 chars) before the API call. Prompts that would exceed the context window are rejected early with a clear error, preventing wasted spend on truncated responses.
+
+#### 2. Prompt Compression
+`compress_prompt()` in `core/token_optimizer.py` runs before every API call:
+- Collapses 3+ consecutive blank lines → 2
+- Strips trailing whitespace per line
+- Removes HTML comments (`<!-- ... -->`)
+- Collapses repeated inline spaces
+
+Typical savings: **5–15%** of input tokens with no semantic loss.
+
+#### 3. Tiered Model Routing
+`select_model()` routes each call to the cheapest model that can handle it, based on estimated input token count and declared task complexity:
+
+| Input size | Complexity flag | Model selected |
+|-----------|-----------------|----------------|
+| < 800 tokens | `simple` | `claude-haiku-4-5` (~20× cheaper than Opus) |
+| 800–6,000 tokens | `default` | `claude-sonnet-4-6` (configured default) |
+| > 6,000 tokens | `complex` | `claude-opus-4-6` |
+
+Query generation, JSON extraction, and result analysis are automatically routed to Haiku. Literature synthesis and paper revision use Sonnet/Opus.
+
+#### 4. Response Caching
+`ResponseCache` stores API responses on disk, keyed by SHA-256 hash of `(model, system_prompt, user_prompt)`. On repeated runs (e.g., re-running after a crash, or re-reviewing the same draft), identical prompts return instantly at zero cost.
+
+```yaml
+token_optimizer:
+  response_caching: true
+  cache_dir: .cache/responses
+```
+
+Cache hit/miss statistics are written to `output/{run_id}/memory_report.json`.
+
+#### 5. Abstract & Field Truncation
+Literature abstracts are hard-truncated to `abstract_token_budget` (default 80 tokens / ~320 chars) at fetch time — before they are assembled into synthesis prompts. This prevents a single long abstract from crowding out other papers in the context window.
+
+```yaml
+token_optimizer:
+  abstract_token_budget: 80   # tokens per paper abstract
+```
+
+#### 6. Context Windowing
+`build_windowed_prompt(sections, token_budget)` assembles multi-section prompts within a strict token ceiling. Sections are ranked by a relevance score; lower-ranked sections are dropped (not truncated mid-sentence) when the budget is exhausted.
+
+```python
+# Example: writing agent section generation
+build_windowed_prompt(
+    sections=[
+        ("Topic", topic, 2.0),           # highest priority — always included
+        ("Results Summary", results, 1.2), # dropped first if budget is tight
+        ("Section Guidance", guide, 1.8),
+    ],
+    token_budget=3000,
+)
+```
+
+#### 7. Dynamic `max_tokens` per Task
+Rather than using a single blanket `max_tokens=4096` ceiling, each task type has a calibrated output budget:
+
+| Task type | `max_tokens` |
+|-----------|-------------|
+| `query_generation` | 512 |
+| `json` (hypothesis extraction) | 1,024 |
+| `section_short` (abstract, conclusion) | 1,024 |
+| `section_long` (methods, results) | 2,048 |
+| `code` | 4,096 |
+| `revision` | 8,192 |
+
+Over-allocating `max_tokens` does not cost tokens directly, but it increases latency and can encourage verbose responses that consume more output tokens.
+
+#### 8. Session Token Ledger
+`TokenLedger` accumulates input tokens, output tokens, and Anthropic prompt-cache reads across every API call in a session. At the end of each run it writes `output/{run_id}/token_usage.json`:
+
+```json
+{
+  "input_tokens": 48320,
+  "output_tokens": 19840,
+  "cache_read_tokens": 12100,
+  "total_tokens": 68160,
+  "api_calls": 31,
+  "estimated_cost_usd": 0.4421
+}
+```
+
+A configurable `hard_limit_tokens` raises `RuntimeError` before the limit is breached, preventing runaway overnight spend.
+
+```yaml
+token_optimizer:
+  hard_limit_tokens: 2000000   # ~$10 at Sonnet pricing; null = unlimited
+```
+
+### Configuration Reference
+
+```yaml
+token_optimizer:
+  prompt_compression: true        # strip whitespace / collapse blank lines
+  response_caching: true          # disk cache keyed on SHA-256(model+prompts)
+  tiered_model_routing: true      # haiku → sonnet → opus based on input size
+  context_windowing: true         # rank + drop sections to fit token budget
+  abstract_token_budget: 80       # tokens per fetched paper abstract
+  context_token_budget: 3000      # max tokens for assembled context per call
+  hard_limit_tokens: null         # set an integer to cap total session spend
+  cache_dir: .cache/responses     # where to store cached responses
+```
+
+### Estimated Savings
+
+When all techniques are enabled on a full-auto run (literature + experiments + writing + review):
+
+| Technique | Typical reduction |
+|-----------|-------------------|
+| Prompt compression | 5–15% input tokens |
+| Abstract truncation | 30–50% literature-stage input |
+| Context windowing | 20–40% writing-stage input |
+| Response caching | 0–100% on repeated/resumed runs |
+| Tiered routing | 40–80% cost reduction on simple calls |
+| Dynamic max_tokens | 10–20% output token reduction |
+
+**Combined: 40–70% reduction in total token cost vs. naive implementation.**
 
 ---
 

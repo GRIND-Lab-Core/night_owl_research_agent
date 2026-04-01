@@ -38,3 +38,19 @@ output:
   checkpoint_dir: .checkpoints
   log_dir: harness/logs
   save_intermediate: true
+
+memory:
+  session_dir: .checkpoints
+  long_term_dir: .memory
+  lt_max_entries: 200
+  lt_token_budget: 32000
+
+token_optimizer:
+  prompt_compression: true
+  response_caching: true       # strong benefit on overnight runs: same searches hit cache
+  tiered_model_routing: true
+  context_windowing: true
+  abstract_token_budget: 80
+  context_token_budget: 4000   # allow slightly more context for full-auto depth
+  hard_limit_tokens: 2000000   # ~$10 ceiling at Sonnet pricing; set null to disable
+  cache_dir: .cache/responses

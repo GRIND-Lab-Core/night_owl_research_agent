@@ -12,6 +12,8 @@ from typing import Any
 import anthropic
 
 from .config import AgentConfig
+from .memory_manager import MemoryManager
+from .token_optimizer import ResponseCache, TokenLedger
 
 
 class ResearchLoop:
@@ -28,6 +30,24 @@ class ResearchLoop:
         self.run_dir = run_dir
         self.client = anthropic.Anthropic()
         self.state: dict[str, Any] = {}
+
+        # Memory manager — three-layer store (working / session / long-term)
+        self.memory = MemoryManager(
+            run_id=run_dir.name,
+            session_dir=config.memory.session_dir,
+            long_term_dir=config.memory.long_term_dir,
+        )
+        self.memory.LT_MAX_ENTRIES = config.memory.lt_max_entries
+        self.memory.LT_TOKEN_BUDGET = config.memory.lt_token_budget
+
+        # Token tracking
+        self.ledger = TokenLedger(hard_limit=config.token_optimizer.hard_limit_tokens)
+        self.cache = (
+            ResponseCache(cache_dir=config.token_optimizer.cache_dir)
+            if config.token_optimizer.response_caching
+            else None
+        )
+
         self._load_checkpoint()
 
     # ------------------------------------------------------------------
@@ -65,6 +85,9 @@ class ResearchLoop:
         checkpoint_file = checkpoint_dir / f"{self.run_dir.name}.json"
         with open(checkpoint_file, "w") as f:
             json.dump(self.state, f, indent=2, default=str)
+        # Also persist memory and write token ledger
+        self.memory.persist()
+        self.ledger.save(self.run_dir / "token_usage.json")
 
     # ------------------------------------------------------------------
     # Stage implementations
@@ -83,18 +106,29 @@ class ResearchLoop:
         """Search and synthesize literature."""
         from agents.literature_agent import LiteratureAgent
 
-        agent = LiteratureAgent(client=self.client, config=self.config)
+        agent = LiteratureAgent(
+            client=self.client, config=self.config,
+            ledger=self.ledger, cache=self.cache,
+        )
         result = agent.run(
             topic=self.config.topic,
             geo_context=self.state.get("geo_context", {}),
         )
 
-        # Save intermediate output
         out_path = self.run_dir / "literature_review.md"
         out_path.write_text(result.get("markdown", ""))
 
         hypotheses_path = self.run_dir / "hypotheses.json"
         hypotheses_path.write_text(json.dumps(result.get("hypotheses", []), indent=2))
+
+        # Store summary in memory for downstream agents to reuse
+        self.memory.store(
+            "literature",
+            result,
+            summary=result.get("markdown", "")[:600],
+            priority=1.8,
+            tags=["literature", self.config.token_optimizer and "cached" or ""],
+        )
 
         self.save_checkpoint()
         return result
@@ -108,9 +142,10 @@ class ResearchLoop:
             client=self.client,
             config=self.config,
             run_dir=self.run_dir,
+            ledger=self.ledger,
+            cache=self.cache,
         )
 
-        # Optionally delegate coding to Codex workers
         coding_backend = None
         if self.config.backend.coding_workers.provider == "openai":
             coding_backend = CodexWorker(config=self.config.backend.coding_workers)
@@ -124,6 +159,14 @@ class ResearchLoop:
         out_path = self.run_dir / "experiment_log.json"
         out_path.write_text(json.dumps(result, indent=2, default=str))
 
+        self.memory.store(
+            "experiment",
+            result,
+            summary=json.dumps(result.get("results", [{}])[0].get("analysis", ""), default=str)[:400],
+            priority=1.6,
+            tags=["experiment"],
+        )
+
         self.save_checkpoint()
         return result
 
@@ -131,7 +174,10 @@ class ResearchLoop:
         """Generate the paper draft."""
         from agents.writing_agent import WritingAgent
 
-        agent = WritingAgent(client=self.client, config=self.config)
+        agent = WritingAgent(
+            client=self.client, config=self.config,
+            ledger=self.ledger, cache=self.cache,
+        )
         result = agent.run(
             topic=self.config.topic,
             literature=self.state.get("literature", {}),
@@ -143,6 +189,14 @@ class ResearchLoop:
         draft_path = self.run_dir / "draft_v1.md"
         draft_path.write_text(result.get("paper", ""))
 
+        self.memory.store(
+            "draft",
+            result.get("paper", ""),
+            summary=result.get("paper", "")[:400],
+            priority=1.5,
+            tags=["draft", self.config.writing.journal],
+        )
+
         self.save_checkpoint()
         return result
 
@@ -150,7 +204,10 @@ class ResearchLoop:
         """Run simulated peer review."""
         from agents.review_agent import ReviewAgent
 
-        agent = ReviewAgent(client=self.client, config=self.config)
+        agent = ReviewAgent(
+            client=self.client, config=self.config,
+            ledger=self.ledger, cache=self.cache,
+        )
         draft_key = "paper" if round_num == 1 else "revised_paper"
         draft = self.state.get("writing", {}).get(draft_key, "")
 
@@ -163,6 +220,14 @@ class ResearchLoop:
         review_path = self.run_dir / f"review_round_{round_num}.md"
         review_path.write_text(result.get("feedback", ""))
 
+        # Save review decision to long-term memory for future research on same topic
+        self.memory.remember(
+            f"review_{self.config.topic[:40]}_round{round_num}",
+            f"Decision: {result.get('decision')} | {result.get('feedback','')[:200]}",
+            priority=1.2,
+            tags=["review", self.config.writing.journal],
+        )
+
         self.save_checkpoint()
         return result
 
@@ -170,7 +235,10 @@ class ResearchLoop:
         """Revise paper based on review feedback."""
         from agents.writing_agent import WritingAgent
 
-        agent = WritingAgent(client=self.client, config=self.config)
+        agent = WritingAgent(
+            client=self.client, config=self.config,
+            ledger=self.ledger, cache=self.cache,
+        )
         result = agent.revise(
             paper=self.state.get("writing", {}).get("paper", ""),
             feedback=self.state.get(f"review_round_{round_num}", {}).get("feedback", ""),
@@ -183,9 +251,8 @@ class ResearchLoop:
         return result
 
     def _save_final_outputs(self) -> None:
-        """Copy the final paper version to paper_final.md."""
+        """Copy the final paper version to paper_final.md and write token/memory reports."""
         final_paper = ""
-        # Find the latest revision
         for round_num in range(self.config.writing.review_rounds, 0, -1):
             rev = self.state.get(f"review_round_{round_num}", {})
             if rev.get("revised_paper"):
@@ -197,6 +264,22 @@ class ResearchLoop:
         if final_paper:
             (self.run_dir / "paper_final.md").write_text(final_paper)
 
+        # Token usage report
+        token_summary = self.ledger.summary()
+        self.ledger.save(self.run_dir / "token_usage.json")
+
+        # Memory usage report
+        mem_report = self.memory.token_usage_report()
+        (self.run_dir / "memory_report.json").write_text(
+            json.dumps({"token_ledger": token_summary, "memory": mem_report}, indent=2)
+        )
+
+        # Cache stats
+        if self.cache:
+            cache_stats = self.cache.stats()
+            self.state["cache_stats"] = cache_stats
+
+        self.state["token_usage"] = token_summary
         self.save_checkpoint()
 
     # ------------------------------------------------------------------

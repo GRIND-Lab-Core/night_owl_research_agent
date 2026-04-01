@@ -13,9 +13,12 @@ env/
 # Outputs and runtime files
 output/
 .checkpoints/
+.memory/
 harness/logs/
 experiment_state.json
 .cache/
+token_usage.json
+memory_report.json
 
 # Secrets
 .env

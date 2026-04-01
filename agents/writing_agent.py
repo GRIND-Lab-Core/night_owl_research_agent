@@ -11,6 +11,13 @@ from typing import Any
 import anthropic
 
 from core.config import AgentConfig
+from core.token_optimizer import (
+    ResponseCache,
+    TokenLedger,
+    build_windowed_prompt,
+    optimized_call,
+    truncate_field,
+)
 
 WRITING_SYSTEM_PROMPT = """\
 You are an expert academic writer specializing in geoscience, remote sensing, and GIScience.
@@ -33,10 +40,19 @@ class WritingAgent:
     with support for section-by-section generation and iterative revision.
     """
 
-    def __init__(self, client: anthropic.Anthropic, config: AgentConfig) -> None:
+    def __init__(
+        self,
+        client: anthropic.Anthropic,
+        config: AgentConfig,
+        ledger: TokenLedger | None = None,
+        cache: ResponseCache | None = None,
+    ) -> None:
         self.client = client
         self.config = config
         self.template_dir = Path("templates")
+        self.ledger = ledger
+        self.cache = cache
+        self._ctx_budget = config.token_optimizer.context_token_budget
 
     def run(
         self,
@@ -69,29 +85,29 @@ class WritingAgent:
 
     def revise(self, paper: str, feedback: str) -> dict[str, Any]:
         """Revise the paper based on reviewer feedback."""
-        prompt = f"""Revise the following paper based on the reviewer feedback.
+        # Truncate both inputs so revision stays within context window
+        paper_trunc = truncate_field(paper, 6_000)
+        feedback_trunc = truncate_field(feedback, 1_200)
 
-## Reviewer Feedback
-{feedback}
-
-## Original Paper
-{paper}
-
-## Instructions
-- Address each reviewer comment specifically
-- Add a "Response to Reviewers" section at the end documenting changes made
-- Maintain the paper's original length (±10%)
-- Do not change correct content that was not criticized
-
-Return the complete revised paper."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=8192,
-            system=WRITING_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            "Revise the paper below based on the reviewer feedback.\n\n"
+            f"## Reviewer Feedback\n{feedback_trunc}\n\n"
+            f"## Original Paper\n{paper_trunc}\n\n"
+            "Instructions:\n"
+            "- Address each reviewer comment specifically\n"
+            "- Add a 'Response to Reviewers' section at the end\n"
+            "- Maintain original length (±10%)\n"
+            "Return the complete revised paper."
         )
-        return {"revised_paper": response.content[0].text}
+        text = optimized_call(
+            self.client, WRITING_SYSTEM_PROMPT, prompt,
+            task_type="revision",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="complex",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
+        return {"revised_paper": text}
 
     def write_section(self, section_name: str, context: dict[str, Any]) -> str:
         """Public method: write a single section. Used by /write-section skill."""
@@ -102,33 +118,37 @@ Return the complete revised paper."""
     # ------------------------------------------------------------------
 
     def _write_section(self, section: str, context: dict[str, Any]) -> str:
-        """Generate a single paper section."""
+        """Generate a single paper section using windowed context and tiered models."""
         section_guidance = self._get_section_guidance(section, context.get("journal", ""))
-        prompt = f"""Write the **{section.replace('_', ' ').title()}** section for a {context.get('journal', 'scientific')} paper.
+        geo_ctx = context.get("geo_context", {})
+        results_raw = json.dumps(context.get("results", {}), default=str)
 
-## Paper Topic
-{context.get('topic', '')}
-
-## Key Context
-- Research domain: {context.get('geo_context', {}).get('domain', 'GIScience')}
-- Methods used: {', '.join(context.get('methods_used', ['spatial regression']))}
-- Hypotheses: {json.dumps(context.get('hypotheses', [])[:2], indent=2)}
-
-## Results Summary
-{json.dumps(context.get('results', {}), indent=2)[:1000]}
-
-## Section Guidance
-{section_guidance}
-
-Write the complete {section} section. Use Markdown formatting."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=2048,
-            system=WRITING_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+        # Use context windowing: pack the most relevant fields within budget
+        task_type = "section_long" if section in ("methods", "results", "discussion") else "section_short"
+        user_prompt = build_windowed_prompt(
+            sections=[
+                (f"Write: {section.replace('_', ' ').title()} ({context.get('journal', '')} paper)", "", 2.5),
+                ("Topic", context.get("topic", ""), 2.0),
+                ("Domain & Methods",
+                 f"Domain: {geo_ctx.get('domain', 'GIScience')}\n"
+                 f"Methods: {', '.join(context.get('methods_used', ['spatial regression']))}",
+                 1.5),
+                ("Hypotheses", json.dumps(context.get("hypotheses", [])[:2]), 1.3),
+                ("Results Summary", truncate_field(results_raw, 400), 1.2),
+                ("Section Guidance", section_guidance, 1.8),
+            ],
+            token_budget=self._ctx_budget,
+            header=f"Write the complete **{section.replace('_', ' ').title()}** section. Use Markdown.",
         )
-        return response.content[0].text
+
+        return optimized_call(
+            self.client, WRITING_SYSTEM_PROMPT, user_prompt,
+            task_type=task_type,
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="default",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
 
     def _get_section_guidance(self, section: str, journal: str) -> str:
         """Return journal-specific guidance for a section."""

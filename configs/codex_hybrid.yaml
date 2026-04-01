@@ -38,3 +38,19 @@ output:
   checkpoint_dir: .checkpoints
   log_dir: harness/logs
   save_intermediate: true
+
+memory:
+  session_dir: .checkpoints
+  long_term_dir: .memory
+  lt_max_entries: 200
+  lt_token_budget: 32000
+
+token_optimizer:
+  prompt_compression: true
+  response_caching: true
+  tiered_model_routing: false  # keep Claude for all orchestration in hybrid mode
+  context_windowing: true
+  abstract_token_budget: 80
+  context_token_budget: 3000
+  hard_limit_tokens: null
+  cache_dir: .cache/responses

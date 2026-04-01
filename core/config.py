@@ -54,6 +54,32 @@ class OutputConfig(BaseModel):
     save_intermediate: bool = True
 
 
+class MemoryConfig(BaseModel):
+    """Configuration for the three-layer memory manager."""
+    session_dir: str = ".checkpoints"
+    long_term_dir: str = ".memory"
+    # Max entries in long-term store before pruning
+    lt_max_entries: int = 200
+    # Max tokens the long-term store may occupy
+    lt_token_budget: int = 32_000
+
+
+class TokenOptimizerConfig(BaseModel):
+    """Configuration for token optimization strategies."""
+    # Enable/disable individual techniques
+    prompt_compression: bool = True
+    response_caching: bool = True
+    tiered_model_routing: bool = True
+    context_windowing: bool = True
+    # Budgets
+    abstract_token_budget: int = 80        # tokens per paper abstract
+    context_token_budget: int = 3_000      # tokens for injected context per call
+    # Hard limit: raise RuntimeError if cumulative tokens exceed this (None = unlimited)
+    hard_limit_tokens: int | None = None
+    # Cache directory
+    cache_dir: str = ".cache/responses"
+
+
 class AgentConfig(BaseModel):
     """Top-level configuration for GeoResearchAgent-247."""
 
@@ -67,6 +93,8 @@ class AgentConfig(BaseModel):
     experiment: ExperimentConfig = Field(default_factory=ExperimentConfig)
     writing: WritingConfig = Field(default_factory=WritingConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
+    memory: MemoryConfig = Field(default_factory=MemoryConfig)
+    token_optimizer: TokenOptimizerConfig = Field(default_factory=TokenOptimizerConfig)
 
 
 def load_config(config_path: str | Path) -> AgentConfig:

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import anthropic
 from core.config import AgentConfig
+from core.token_optimizer import ResponseCache, TokenLedger, optimized_call, truncate_field
 
 JOURNAL_REVIEW_CRITERIA = {
     "IJGIS": [
@@ -70,9 +71,17 @@ class ReviewAgent:
     Provides structured feedback mirroring real journal review processes.
     """
 
-    def __init__(self, client: anthropic.Anthropic, config: AgentConfig) -> None:
+    def __init__(
+        self,
+        client: anthropic.Anthropic,
+        config: AgentConfig,
+        ledger: TokenLedger | None = None,
+        cache: ResponseCache | None = None,
+    ) -> None:
         self.client = client
         self.config = config
+        self.ledger = ledger
+        self.cache = cache
 
     def run(self, paper: str, journal: str, round_num: int = 1) -> dict[str, str]:
         """
@@ -111,51 +120,45 @@ class ReviewAgent:
         round_num: int,
     ) -> str:
         criteria_str = "\n".join(f"- {c}" for c in criteria)
-        prompt = f"""You are {persona['name']}, an expert reviewer in {persona['expertise']}.
-Your review style: {persona['style']}.
+        # Truncate paper to budget — review quality degrades little past ~4k tokens
+        paper_trunc = truncate_field(paper, 4_000)
 
-Review the following paper for {journal} (Round {round_num}).
-
-## Evaluation Criteria
-{criteria_str}
-
-## Paper
-{paper[:6000]}
-
-## Your Review
-Provide a detailed review with:
-1. **Summary** (2–3 sentences)
-2. **Major Concerns** (numbered list — issues that must be addressed)
-3. **Minor Concerns** (bulleted — optional improvements)
-4. **Recommendation**: Major Revision / Minor Revision / Accept / Reject
-
-Be constructive but critical. Focus on geo/spatial aspects specifically."""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            f"You are {persona['name']}, expert in {persona['expertise']} ({persona['style']}).\n"
+            f"Review for {journal} (Round {round_num}).\n\n"
+            f"Criteria:\n{criteria_str}\n\n"
+            f"Paper:\n{paper_trunc}\n\n"
+            "Provide:\n1. Summary (2–3 sentences)\n"
+            "2. Major Concerns (numbered)\n3. Minor Concerns (bullets)\n"
+            "4. Recommendation: Major Revision / Minor Revision / Accept / Reject\n"
+            "Focus on geo/spatial aspects."
         )
-        return f"## {persona['name']}\n\n{response.content[0].text}"
+        text = optimized_call(
+            self.client, "", prompt,
+            task_type="review",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="default",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
+        return f"## {persona['name']}\n\n{text}"
 
     def _get_editor_summary(self, reviews: list[str], journal: str) -> str:
-        combined_reviews = "\n\n---\n\n".join(reviews)
-        prompt = f"""As the Editor-in-Chief of {journal}, summarize the reviews and make a decision.
-
-## Reviewer Comments
-{combined_reviews}
-
-Provide:
-1. **Editorial Decision**: Accept / Minor Revision / Major Revision / Reject
-2. **Rationale** (2–3 sentences)
-3. **Priority Issues** to address (if not Accept/Reject)"""
-
-        response = self.client.messages.create(
-            model=self.config.backend.orchestrator,
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
+        combined = truncate_field("\n\n---\n\n".join(reviews), 2_000)
+        prompt = (
+            f"As Editor-in-Chief of {journal}, summarize these reviews and decide.\n\n"
+            f"Reviews:\n{combined}\n\n"
+            "Provide:\n1. Editorial Decision (Accept/Minor Revision/Major Revision/Reject)\n"
+            "2. Rationale (2–3 sentences)\n3. Priority issues to address"
         )
-        return response.content[0].text
+        return optimized_call(
+            self.client, "", prompt,
+            task_type="section_short",
+            preferred_model=self.config.backend.orchestrator,
+            task_complexity="simple",
+            ledger=self.ledger,
+            cache=self.cache,
+        )
 
     def _format_combined_review(self, reviews: list[str], editor_summary: str) -> str:
         return (
