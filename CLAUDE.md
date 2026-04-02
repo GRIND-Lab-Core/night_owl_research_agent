@@ -40,11 +40,18 @@ EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for ad
 
 ## Session Start Checklist
 
-1. Read `memory/MEMORY.md` for pipeline stage and token usage
-2. Read `research_contract.md` for active idea (or `program.md` if not yet committed)
-3. If COMPACT_MODE: read `findings.md` instead of full experiment logs
-4. If resuming review loop: read `REVIEW_STATE.json` for current round
-5. Confirm stage with user before taking any action
+1. Read `handoff.json` — fastest way to recover current stage, last action, and what to do next
+2. Read `memory/MEMORY.md` for pipeline stage and token usage
+3. Read `research_contract.md` for active idea (or `program.md` if not yet committed)
+4. If COMPACT_MODE: read `findings.md` instead of full experiment logs
+5. If resuming review loop: read `REVIEW_STATE.json` for current round and per-criterion scores
+6. Confirm stage with user before taking any action
+
+**`handoff.json` fields to act on immediately:**
+- `pipeline.next_step` — the one thing to do first
+- `recovery.human_checkpoint_needed` — if true, pause and show user before proceeding
+- `review_state.pending_fixes` — implements these before resuming the review loop
+- `recovery.resume_skill` — the skill to invoke to resume
 
 ---
 
@@ -57,7 +64,8 @@ EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for ad
 | `findings.md` | Compact one-line discoveries log | All skills (append) |
 | `EXPERIMENT_LOG.md` | Complete experiment record | skill `geo-experiment` |
 | `AUTO_REVIEW.md` | All review rounds with scores | skill `auto-review-loop` |
-| `REVIEW_STATE.json` | Review loop state for recovery | skill `auto-review-loop` |
+| `REVIEW_STATE.json` | Review loop state (per-criterion scores) | skill `auto-review-loop` |
+| `handoff.json` | Structured context-reset handoff (written on Stop) | stop hook |
 | `memory/MEMORY.md` | Session state, scores, token usage | Stop hook |
 | `memory/paper-cache/` | Retrieved paper JSON files | skill `geo-lit-review` |
 | `memory/synthesis-*.md` | Literature synthesis | skill `geo-lit-review` |
@@ -139,17 +147,30 @@ Skills live in `skills/<name>/SKILL.md`. Domain knowledge lives in `skills/knowl
 Every paper section uses this loop. Never skip it.
 
 ```
-Write draft → self-score (0–10) → accept if ≥ 7.5 → else revise → max 3 attempts
+paper-writer writes draft
+    ↓
+peer-reviewer scores it (separate context — generator-evaluator separation)
+    ↓
+All 5 dimension floors met AND weighted avg ≥ 7.5? → ACCEPT
+    ↓ (else)
+paper-writer revises (max 3 attempts total)
+    ↓
+If still not accepted after 3 attempts → flag for human review
 ```
 
-Scoring dimensions (`configs/default.yaml`):
-- **Novelty** 30% — contribution clearly and defensibly stated
-- **Rigor** 25% — spatially valid, reproducible, baselines compared
-- **Literature coverage** 20% — ≥ 15 citations, majority ≥ 2020, geo venues
-- **Clarity** 15% — active voice, specific numbers, no vague claims
-- **Impact** 10% — practical or scientific significance
+**The writer does NOT score its own work.** Always use `peer-reviewer` as evaluator.
 
-Spatial regression papers additionally require: OLS + GWR + MGWR comparison, Moran's I residuals.
+Scoring dimensions and hard floors (`configs/default.yaml` + `auto-review-loop/SKILL.md`):
+
+| Dimension | Weight | Hard floor | What to check |
+|---|---|---|---|
+| Novelty | 30% | ≥ 6.5 | Contribution distinguished from sound2sight, UrbanCLIP, GeoGen |
+| Rigor | 25% | ≥ 7.0 | OLS+GWR+MGWR compared; Moran's I value reported; pipeline reproducible |
+| Literature coverage | 20% | ≥ 6.5 | ≥ 15 citations, majority ≥ 2020, includes key GeoAI/soundscape papers |
+| Clarity | 15% | ≥ 6.0 | Active voice; specific numbers; no "may", "could", "might" |
+| Impact | 10% | ≥ 6.0 | Practical application or scientific significance stated |
+
+Accept requires: weighted avg ≥ 7.5 AND all five floors met (failing one floor = reject, regardless of average).
 
 ---
 
@@ -180,16 +201,84 @@ Spatial regression papers additionally require: OLS + GWR + MGWR comparison, Mor
 - Do NOT push to remote without explicit user instruction
 - Do NOT run `rm -rf` or destructive shell commands
 - Do NOT skip `result-to-claim` before `paper-write`
+- Do NOT self-score your own written sections — always use `peer-reviewer` as evaluator
+- Do NOT proceed to paper writing if any experiment result is FAILED in `EXPERIMENT_LOG.md` and that result is claimed in the paper
+- Do NOT silently lower experiment pass/fail criteria mid-execution — write `CONTRACT_VIOLATION.md` instead
+
+---
+
+## Context-Reset Protocol
+
+Context overflow is handled by structured handoffs, not compaction. Compaction causes "context anxiety" — models prematurely wrap work as context fills, producing shallow outputs.
+
+### On Session End (automated)
+The Stop hook writes `handoff.json` with:
+- Current pipeline stage and next step
+- Review loop state (round, per-criterion scores, pending fixes)
+- Latest experiment results (compact — just key metrics)
+- Paper draft state (accepted/pending sections)
+- Recovery hints (what to read, which skill to resume, whether human review is needed)
+
+### On Session Start (you must do this)
+1. Read `handoff.json` — it tells you exactly where you are and what to do next
+2. Read only the files listed in `handoff.recovery.read_first`
+3. Do NOT re-read all experiment logs unless `handoff.recovery.read_first` specifically lists them
+
+### Mid-Session Context Reset (when context is nearly full)
+If you notice context is getting large and you still have work to do:
+1. Write current state to `findings.md` (one-line summary of what was just learned)
+2. Append current experiment results to `EXPERIMENT_LOG.md`
+3. Update `REVIEW_STATE.json` with current scores and pending fixes
+4. Tell the user: "Context is getting large — I recommend starting a new session. `handoff.json` will be updated on stop."
+5. Do NOT continue trying to squeeze more work into an overfull context
+
+### What to Resume vs Re-run
+- **Never re-run** experiments marked SUCCESS in `EXPERIMENT_LOG.md`
+- **Never re-run** sections marked ACCEPTED in `REVIEW_STATE.json` or `memory/MEMORY.md`
+- **Always resume** from the stage listed in `handoff.pipeline.stage`
+- If in doubt, check `findings.md` — it is the authoritative compact log of all discoveries
+
+---
+
+## Generator-Evaluator Separation
+
+The entity that writes content does NOT score it. This is enforced everywhere:
+
+| Stage | Generator | Evaluator |
+|---|---|---|
+| Paper sections | `paper-writer` agent | `peer-reviewer` agent (separate context) |
+| Experiment results | `geo-experiment` skill | `spatial-analysis` skill |
+| Claims validation | `geo-experiment` + `paper-writer` | `result-to-claim` skill |
+| Review rounds | previous writer context | `auto-review-loop` → `peer-reviewer` (no writer context) |
+
+If you find yourself both writing and scoring in the same context window, stop and re-invoke the evaluator skill in a fresh invocation.
+
+---
+
+## Harness Stress-Test Checklist
+
+Re-examine these assumptions periodically — as models improve, some harness scaffolding becomes unnecessary overhead:
+
+| Component | Assumption it encodes | Still needed? |
+|---|---|---|
+| `result-to-claim` gate | Models fabricate results if not checked | Check every 3 months |
+| 3-attempt write loop | Models rarely hit 7.5 on first draft | Check if first-draft scores are rising |
+| Generator-evaluator split | Models can't evaluate their own work objectively | Check if self-scores correlate with external review |
+| Max 4 review rounds | Beyond 4 rounds, returns diminish | Check if rounds 3-4 are improving scores |
+| `--max-n 3000` MGWR limit | MGWR OOM above 3K obs | Check with updated hardware/library versions |
+| Structured handoff.json | Models lose context across sessions | Check if native memory improves this |
+| Hard per-criterion floors | Weighted average hides weak dimensions | Revisit thresholds annually |
 
 ---
 
 ## Recovery from Context Overflow
 
 If context overflows mid-session:
-1. Read `REVIEW_STATE.json` for review loop state
-2. Read `memory/MEMORY.md` for pipeline stage
-3. Read `findings.md` (COMPACT_MODE) or `EXPERIMENT_LOG.md` (full)
-4. Resume from last incomplete stage — never re-run completed stages
+1. Read `handoff.json` for current stage and next step (fastest recovery)
+2. Read `REVIEW_STATE.json` for review loop per-criterion state
+3. Read `memory/MEMORY.md` for pipeline overview
+4. Read `findings.md` (COMPACT_MODE) or `EXPERIMENT_LOG.md` (full)
+5. Resume from last incomplete stage — never re-run completed stages
 
 ---
 
@@ -214,7 +303,8 @@ geo_research_agent_247/
 ├── findings.md                  ← Compact one-line discovery log
 ├── EXPERIMENT_LOG.md            ← Complete experiment record
 ├── AUTO_REVIEW.md               ← Review loop history (created on first review)
-├── REVIEW_STATE.json            ← Review loop state for recovery (created on first review)
+├── REVIEW_STATE.json            ← Review loop state, per-criterion scores (created on first review)
+├── handoff.json                 ← Structured context-reset handoff (written by stop hook)
 ├── CLAUDE.md                    ← this file (dashboard)
 │
 ├── skills/

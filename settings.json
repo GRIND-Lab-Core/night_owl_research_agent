@@ -23,10 +23,19 @@
       "WebSearch(*)",
       "Read(*)",
       "Write(output/**)",
+      "Write(outputs/**)",
       "Write(GeoBenchmark/**)",
       "Write(ResearchArchitect/**)",
       "Write(.checkpoints/**)",
-      "Write(harness/logs/**)"
+      "Write(harness/logs/**)",
+      "Write(memory/**)",
+      "Write(findings.md)",
+      "Write(EXPERIMENT_LOG.md)",
+      "Write(AUTO_REVIEW.md)",
+      "Write(REVIEW_STATE.json)",
+      "Write(EXPERIMENT_PLAN.md)",
+      "Write(handoff.json)",
+      "Write(research_contract.md)"
     ],
     "deny": [
       "Bash(rm -rf *)",

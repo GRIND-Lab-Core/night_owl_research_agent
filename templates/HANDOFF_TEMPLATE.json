@@ -1,0 +1,68 @@
+{
+  "_comment": "Written by stop_hook.sh on every session end. Read this FIRST on session start.",
+  "schema_version": 1,
+  "timestamp": "YYYY-MM-DDTHH:MM:SSZ",
+  "session_id": "session_XXXXXXXXXX",
+
+  "pipeline": {
+    "stage": "Stage 6: Section Writing — results next",
+    "last_completed_step": "methodology section accepted (score 8.2)",
+    "next_step": "write results section",
+    "auto_proceed": true
+  },
+
+  "review_state": {
+    "round": 2,
+    "score": 7.1,
+    "per_criterion": {
+      "novelty":   {"score": 8.0, "floor": 6.5, "pass": true},
+      "rigor":     {"score": 6.8, "floor": 7.0, "pass": false},
+      "literature":{"score": 7.5, "floor": 6.5, "pass": true},
+      "clarity":   {"score": 7.0, "floor": 6.0, "pass": true},
+      "impact":    {"score": 6.5, "floor": 6.0, "pass": true}
+    },
+    "all_floors_met": false,
+    "verdict": "needs revision — rigor floor missed",
+    "pending_fixes": ["Report Moran's I p-value for MGWR residuals", "Add MGWR vs GWR ΔR² comparison"],
+    "status": "in_progress",
+    "timestamp": "YYYY-MM-DDTHH:MM:SSZ"
+  },
+
+  "last_experiment": {
+    "dataset": "soundscape_nyc_london_sg",
+    "best_model": "MGWR",
+    "best_r2": 0.67,
+    "morans_i": 0.08,
+    "ols_r2": 0.43,
+    "gwr_r2": 0.61,
+    "mgwr_r2": 0.67
+  },
+
+  "paper": {
+    "sections_accepted": ["abstract", "introduction", "literature_review", "methodology"],
+    "sections_pending": ["results", "discussion", "conclusion"],
+    "last_written": "methodology_v2.md",
+    "last_score": 8.2
+  },
+
+  "token_budget": {
+    "total_used": 142000,
+    "estimated_cost_usd": 0.43,
+    "budget_remaining_pct": null
+  },
+
+  "recovery": {
+    "read_first": [
+      "memory/MEMORY.md",
+      "research_contract.md",
+      "REVIEW_STATE.json",
+      "AUTO_REVIEW.md"
+    ],
+    "resume_skill": "auto-review-loop",
+    "human_checkpoint_needed": false,
+    "notes": [
+      "Rigor floor missed — implement pending_fixes before resuming review",
+      "Moran's I for MGWR residuals: value computed but not written to paper yet"
+    ]
+  }
+}

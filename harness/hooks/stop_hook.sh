@@ -202,7 +202,187 @@ MEMORY_FILE.write_text(content)
 print(f"memory/MEMORY.md updated ({TS})")
 PYEOF
 
+# ── Write structured handoff.json for context-reset recovery ──────────────────
+python3 - <<'PYEOF'
+import json, os, glob
+from pathlib import Path
+from datetime import datetime, timezone
+
+TS = datetime.now(timezone.utc).isoformat()
+
+handoff = {
+    "timestamp": TS,
+    "schema_version": 1,
+    "session_id": os.environ.get("GEO_AGENT_SESSION_ID", "unknown"),
+
+    # Pipeline position — what stage are we at and what was last done?
+    "pipeline": {
+        "stage": None,
+        "last_completed_step": None,
+        "next_step": None,
+        "auto_proceed": None,
+    },
+
+    # Review loop state — full copy from REVIEW_STATE.json if it exists
+    "review_state": None,
+
+    # Most recent experiment results (compact — just what the next agent needs)
+    "last_experiment": {
+        "dataset": None,
+        "best_model": None,
+        "best_r2": None,
+        "morans_i": None,
+        "ols_r2": None,
+        "gwr_r2": None,
+        "mgwr_r2": None,
+    },
+
+    # Paper draft state
+    "paper": {
+        "sections_accepted": [],
+        "sections_pending": [],
+        "last_written": None,
+        "last_score": None,
+    },
+
+    # Token budget remaining (from token_usage.json if available)
+    "token_budget": {
+        "total_used": None,
+        "estimated_cost_usd": None,
+        "budget_remaining_pct": None,
+    },
+
+    # Recovery hints — what the next session should do first
+    "recovery": {
+        "read_first": [],
+        "resume_skill": None,
+        "human_checkpoint_needed": False,
+        "notes": [],
+    },
+}
+
+# ── Load REVIEW_STATE.json ─────────────────────────────────────────────────────
+review_state_path = Path("REVIEW_STATE.json")
+if review_state_path.exists():
+    try:
+        rs = json.loads(review_state_path.read_text())
+        handoff["review_state"] = rs
+        round_n = rs.get("round", 0)
+        score = rs.get("score", 0)
+        status = rs.get("status", "in_progress")
+        if status != "complete":
+            handoff["pipeline"]["stage"] = "Stage 6: Section Writing — review loop"
+            handoff["pipeline"]["next_step"] = f"resume auto-review-loop at round {round_n + 1}"
+            handoff["recovery"]["resume_skill"] = "auto-review-loop"
+            handoff["recovery"]["read_first"].append("REVIEW_STATE.json")
+            handoff["recovery"]["read_first"].append("AUTO_REVIEW.md")
+            if score < 6.0:
+                handoff["recovery"]["human_checkpoint_needed"] = True
+                handoff["recovery"]["notes"].append(
+                    f"Review score is {score}/10 — below 6.0; human review recommended"
+                )
+    except Exception as e:
+        handoff["recovery"]["notes"].append(f"REVIEW_STATE.json parse error: {e}")
+
+# ── Load latest GeoBenchmark results ─────────────────────────────────────────
+bench_results_dir = Path("GeoBenchmark/results")
+if bench_results_dir.exists():
+    result_files = sorted(bench_results_dir.glob("**/*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
+    by_dataset: dict = {}
+    for rf in result_files[:20]:
+        try:
+            r = json.loads(rf.read_text())
+            if isinstance(r, dict) and r.get("model"):
+                ds = Path(r.get("dataset", "unknown")).stem
+                by_dataset.setdefault(ds, {})[r["model"]] = r
+        except Exception:
+            pass
+    if by_dataset:
+        ds_name = next(iter(by_dataset))
+        models = by_dataset[ds_name]
+        r2s = {m: models[m].get("r2", 0) for m in models}
+        best = max(r2s, key=r2s.get) if r2s else None
+        handoff["last_experiment"] = {
+            "dataset": ds_name,
+            "best_model": best,
+            "best_r2": r2s.get(best),
+            "morans_i": models.get(best, {}).get("morans_i_residuals"),
+            "ols_r2": r2s.get("OLS"),
+            "gwr_r2": r2s.get("GWR"),
+            "mgwr_r2": r2s.get("MGWR"),
+        }
+
+# ── Load paper draft state ────────────────────────────────────────────────────
+sections_dir = Path("outputs/papers")
+accepted, pending = [], []
+EXPECTED_SECTIONS = ["abstract", "introduction", "literature_review",
+                     "methodology", "results", "discussion", "conclusion"]
+if sections_dir.exists():
+    written = {f.stem.lower() for f in sections_dir.glob("*.md")}
+    for s in EXPECTED_SECTIONS:
+        if any(s in w for w in written):
+            accepted.append(s)
+        else:
+            pending.append(s)
+    # Most recently written section
+    latest = max(sections_dir.glob("*.md"), key=lambda f: f.stat().st_mtime, default=None)
+    handoff["paper"]["last_written"] = str(latest.name) if latest else None
+
+handoff["paper"]["sections_accepted"] = accepted
+handoff["paper"]["sections_pending"] = pending
+
+# Derive overall stage if not already set by review loop
+if not handoff["pipeline"]["stage"]:
+    if len(accepted) == len(EXPECTED_SECTIONS):
+        handoff["pipeline"]["stage"] = "Stage 7: References"
+        handoff["pipeline"]["next_step"] = "compile references and finalize paper"
+        handoff["recovery"]["resume_skill"] = "paper-write"
+    elif accepted:
+        next_sec = pending[0] if pending else None
+        handoff["pipeline"]["stage"] = f"Stage 6: Section Writing — {next_sec or 'unknown'} next"
+        handoff["pipeline"]["next_step"] = f"write {next_sec} section"
+        handoff["recovery"]["resume_skill"] = "paper-write"
+    elif Path("EXPERIMENT_LOG.md").exists():
+        handoff["pipeline"]["stage"] = "Stage 5: Outline or Section Writing"
+        handoff["pipeline"]["next_step"] = "run paper-plan or paper-write"
+        handoff["recovery"]["resume_skill"] = "paper-plan"
+    elif Path("memory/gap-analysis.md").exists():
+        handoff["pipeline"]["stage"] = "Stage 3-4: Gap Analysis or Hypothesis Generation"
+        handoff["pipeline"]["next_step"] = "run idea-discovery or geo-experiment"
+        handoff["recovery"]["resume_skill"] = "idea-discovery"
+    else:
+        handoff["pipeline"]["stage"] = "Stage 1-2: Literature Search or Synthesis"
+        handoff["pipeline"]["next_step"] = "run geo-lit-review"
+        handoff["recovery"]["resume_skill"] = "geo-lit-review"
+
+# ── Load token usage ──────────────────────────────────────────────────────────
+output_dirs = sorted(
+    [d for d in Path("output").glob("run_*") if d.is_dir()],
+    key=lambda d: d.stat().st_mtime,
+    reverse=True,
+) if Path("output").exists() else []
+
+if output_dirs:
+    token_path = output_dirs[0] / "token_usage.json"
+    if token_path.exists():
+        try:
+            tu = json.loads(token_path.read_text())
+            handoff["token_budget"]["total_used"] = tu.get("total_tokens")
+            handoff["token_budget"]["estimated_cost_usd"] = tu.get("estimated_cost_usd")
+        except Exception:
+            pass
+
+# ── Standard recovery read list ───────────────────────────────────────────────
+for f in ["memory/MEMORY.md", "research_contract.md", "findings.md"]:
+    if Path(f).exists() and f not in handoff["recovery"]["read_first"]:
+        handoff["recovery"]["read_first"].insert(0, f)
+
+# ── Write handoff.json ────────────────────────────────────────────────────────
+Path("handoff.json").write_text(json.dumps(handoff, indent=2, default=str))
+print(f"handoff.json written ({TS}) — next stage: {handoff['pipeline']['stage']}")
+PYEOF
+
 # Send desktop notification
-bash harness/hooks/notification.sh "GeoResearchAgent-247 session ended — MEMORY.md updated" 2>/dev/null || true
+bash harness/hooks/notification.sh "GeoResearchAgent-247 session ended — MEMORY.md + handoff.json updated" 2>/dev/null || true
 
 exit 0
