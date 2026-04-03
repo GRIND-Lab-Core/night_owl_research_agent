@@ -54,7 +54,7 @@ geo_research_agent_247/
 │   ├── result-to-claim/SKILL.md    ← Validate claims vs actual results (safety gate)
 │   ├── auto-review-loop/SKILL.md   ← Adversarial review (4 rounds, per-criterion floors)
 │   ├── paper-plan/SKILL.md         ← Build section outline + figure plan
-│   ├── paper-write/SKILL.md        ← Write sections with autoresearch scoring loop
+│   ├── paper-write/SKILL.md        ← Write sections with iterative scoring loop
 │   ├── paper-figure/SKILL.md       ← Generate spatial figures + captions
 │   ├── training-check/SKILL.md     ← Monitor running experiments
 │   ├── submit-check/SKILL.md       ← Validate manuscript vs journal requirements

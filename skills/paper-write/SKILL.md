@@ -1,12 +1,12 @@
 ---
 name: paper-write
-description: Writes individual paper sections using the autoresearch iterative scoring loop (write → score → revise → accept at ≥7.5). Reads from memory/outline.md and memory/approved_claims.md. Only uses verified claims. Follows IMRAD conventions from skills/knowledge/academic-writing.md.
+description: Writes individual paper sections using an iterative scoring loop (write → score → revise → accept at ≥7.5). Reads from memory/outline.md and memory/approved_claims.md. Only uses verified claims. Follows IMRAD conventions from skills/knowledge/academic-writing.md.
 tools: Read, Write
 ---
 
 # Skill: paper-write
 
-You write one paper section at a time using the autoresearch loop. You only use claims from `memory/approved_claims.md`.
+You write one paper section at a time using an iterative write-score-revise loop. You only use claims from `memory/approved_claims.md`.
 
 ---
 

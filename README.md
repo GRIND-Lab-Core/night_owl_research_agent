@@ -199,7 +199,7 @@ Skills are slash commands invoked inside a Claude Code session. Defined in `.cla
 | `/find-gaps <topic>` | Search literature, identify gaps, generate and score ideas |
 | `/lit-review <topic>` | Search + synthesize + gap analysis + write literature review section |
 | `/geo-search <topic>` | Targeted ArXiv + Semantic Scholar search |
-| `/write-section <name>` | Write one paper section with autoresearch scoring loop |
+| `/write-section <name>` | Write one paper section with iterative scoring loop |
 | `/review-draft <file>` | Adversarial review loop (up to 4 rounds, generator-evaluator separation) |
 
 **Review loop outputs** are written to `outputs/AUTO_REVIEW.md` and `outputs/REVIEW_STATE.json`.

@@ -115,7 +115,7 @@ Next skill in pipeline
 | `result-to-claim` | (called before paper-write) | Verify claims against actual results |
 | `auto-review-loop` | `/review-draft <file>` | Up to 4 adversarial review rounds |
 | `paper-plan` | (called before paper-write) | Build section outline + figure plan |
-| `paper-write` | `/write-section <name>` | Write section with autoresearch scoring |
+| `paper-write` | `/write-section <name>` | Write section with iterative scoring |
 | `paper-figure` | `/geo-plot` | Generate spatial figures and captions |
 | `training-check` | (called by research-pipeline Stage 3) | Monitor running experiments |
 
@@ -317,7 +317,7 @@ geo_research_agent_247/
 │   ├── result-to-claim/SKILL.md     ← validate claims vs results
 │   ├── auto-review-loop/SKILL.md    ← adversarial review (4 rounds)
 │   ├── paper-plan/SKILL.md          ← section outline + figure plan
-│   ├── paper-write/SKILL.md         ← autoresearch section writing
+│   ├── paper-write/SKILL.md         ← section writing with iterative scoring
 │   ├── paper-figure/SKILL.md        ← spatial figures + captions
 │   ├── training-check/SKILL.md      ← monitor running experiments
 │   └── knowledge/                   ← domain reference (read by skills)

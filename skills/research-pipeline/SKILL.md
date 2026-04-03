@@ -10,7 +10,7 @@ flags:
 
 # Skill: research-pipeline
 
-End-to-end geo research pipeline (Karpathy autoresearch + ARIS patterns). You are the pipeline conductor — you sequence sub-skills, check gates, and persist state across sessions.
+End-to-end geo research pipeline. You are the pipeline conductor — you sequence sub-skills, check gates, and persist state across sessions.
 
 ---
 
@@ -90,7 +90,7 @@ If approved, write the selected idea to `research_contract.md` (template: `templ
 ## Morning: Polish & Write
 
 1. Run skill `paper-plan` — build section outline from research_contract + findings + review feedback.
-2. Run skill `paper-write` — write each section using autoresearch scoring loop (score ≥ 7.5 to accept).
+2. Run skill `paper-write` — write each section using iterative scoring loop (score ≥ 7.5 to accept).
 3. Run skill `paper-figure` — generate spatial visualizations (maps, coefficient plots, comparison tables).
 4. Run `.claude/commands/review-draft.md` for final peer review.
 5. Run `.claude/commands/find-gaps.md` on your own paper to pre-empt reviewer concerns.

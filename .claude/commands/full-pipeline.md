@@ -1,11 +1,11 @@
 ---
 name: full-pipeline
-description: "Full end-to-end geo research pipeline (ARIS-style, 4 stages). Reads CLAUDE.md control flags then invokes skill research-pipeline: idea discovery → experiment design → autonomous spatial experiments (OLS/GWR/MGWR) → adversarial review loop → paper writing. State persists to outputs/REVIEW_STATE.json, findings.md, EXPERIMENT_LOG.md, and memory/MEMORY.md for overnight/recovery runs."
+description: "Full end-to-end geo research pipeline (4 stages). Reads CLAUDE.md control flags then invokes skill research-pipeline: idea discovery → experiment design → autonomous spatial experiments (OLS/GWR/MGWR) → adversarial review loop → paper writing. State persists to outputs/REVIEW_STATE.json, findings.md, EXPERIMENT_LOG.md, and memory/MEMORY.md for overnight/recovery runs."
 ---
 
 # Command: /full-pipeline
 
-Full end-to-end research pipeline for GeoResearchAgent-247. Delegates all stages to specialist agents with autoresearch iterative scoring (propose → write → score → revise → commit).
+Full end-to-end research pipeline for GeoResearchAgent-247. Delegates all stages to specialist agents with iterative scoring (propose → write → score → revise → commit).
 
 ---
 
@@ -103,7 +103,7 @@ Skip if Stage 5 complete. Write memory/outline.md.
 
 ---
 
-## Step 8: Section Writing Loop (autoresearch)
+## Step 8: Section Writing Loop
 
 For each section (abstract → introduction → literature_review → methodology → results → discussion → conclusion):
 
