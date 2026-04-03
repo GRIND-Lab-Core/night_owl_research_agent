@@ -46,7 +46,7 @@ def choose_backend() -> str:
     print(f"  {CYAN}1{RESET}  {BOLD}Anthropic API{RESET}  (requires ANTHROPIC_API_KEY)")
     print(f"     • Full autonomous pipeline — runs without you in the loop")
     print(f"     • Token optimizer, response cache, tiered model routing")
-    print(f"     • GeoBenchmark, Codex hybrid mode, harness hooks")
+    print(f"     • geo_benchmark, Codex hybrid mode, harness hooks")
     print(f"     • Best for: overnight batch runs, reproducible experiments\n")
     print(f"  {CYAN}2{RESET}  {BOLD}Claude Code subscription{RESET}  (no API key needed)")
     print(f"     • Claude Code itself is the AI runtime — uses your claude.ai plan")
@@ -137,7 +137,7 @@ def run_api_mode(args: argparse.Namespace) -> None:
     if args.journal:
         cmd += ["--journal", args.journal]
     if args.mode == "benchmark":
-        cmd = [py, "GeoBenchmark/run_benchmark.py"]
+        cmd = [py, "geo_benchmark/run_benchmark.py"]
 
     print(f"\n{BOLD}Command:{RESET} {' '.join(cmd)}\n")
     confirm = input(f"{BOLD}Launch? [Y/n]: {RESET}").strip().lower()
@@ -177,7 +177,7 @@ No API key required — your claude.ai subscription powers the agents.
     {CYAN}/geo-search{RESET}          Literature search using ArXiv + Semantic Scholar
     {CYAN}/lit-review <topic>{RESET}  Build literature review for a topic
     {CYAN}/find-gaps <topic>{RESET}   Identify research gaps from literature
-    {CYAN}/run-experiment{RESET}      Run GeoBenchmark (OLS / GWR / MGWR)
+    {CYAN}/run-experiment{RESET}      Run geo_benchmark (OLS / GWR / MGWR)
     {CYAN}/write-section{RESET}       Write a specific paper section
     {CYAN}/review-paper{RESET}        Simulated peer review
     {CYAN}/geo-plot{RESET}            Spatial visualization
@@ -238,7 +238,7 @@ def build_parser() -> argparse.ArgumentParser:
           python launch.py --backend api                        # API, use program.md
           python launch.py --backend claude-code                # subscription mode
           python launch.py --backend api --topic "GWR for urban heat island" --journal RSE
-          python launch.py --backend api --mode benchmark       # GeoBenchmark only
+          python launch.py --backend api --mode benchmark       # geo_benchmark only
           python launch.py --backend api --mode codex           # Claude + Codex hybrid
         """),
     )

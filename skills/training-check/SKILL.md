@@ -1,6 +1,6 @@
 ---
 name: training-check
-description: Monitors running spatial experiments and GeoBenchmark jobs. Checks output files, log files, and process status. Categorizes results as OK, STALLED, FAILED, or COMPLETE. Fires alerts by appending to findings.md. Run every 15 minutes during Stage 3 of research-pipeline.
+description: Monitors running spatial experiments and geo_benchmark jobs. Checks output files, log files, and process status. Categorizes results as OK, STALLED, FAILED, or COMPLETE. Fires alerts by appending to findings.md. Run every 15 minutes during Stage 3 of research-pipeline.
 tools: Bash, Read, Write
 ---
 

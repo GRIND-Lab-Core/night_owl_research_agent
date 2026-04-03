@@ -1,6 +1,6 @@
 ---
 name: spatial-analysis
-description: Interprets spatial regression results. Reads GeoBenchmark outputs, computes and explains Moran's I, R², AICc comparisons, coefficient maps. Decides which spatial model best fits the data and why. Writes analysis narrative to findings.md and memory/MEMORY.md.
+description: Interprets spatial regression results. Reads geo_benchmark outputs, computes and explains Moran's I, R², AICc comparisons, coefficient maps. Decides which spatial model best fits the data and why. Writes analysis narrative to findings.md and memory/MEMORY.md.
 tools: Bash, Read, Write
 ---
 
@@ -12,7 +12,7 @@ You interpret spatial analysis results and decide what they mean for the researc
 
 ## Phase 1: Load Results
 
-Read from `GeoBenchmark/results/` and `EXPERIMENT_LOG.md`:
+Read from `geo_benchmark/results/` and `EXPERIMENT_LOG.md`:
 - OLS results JSON: R², Adj-R², RMSE, MAE, AIC, BIC, Moran's I residuals
 - GWR results JSON: R² (global), AICc, bandwidth, Moran's I residuals
 - MGWR results JSON: R² (global), AICc, per-variable bandwidths, Moran's I residuals
@@ -64,7 +64,7 @@ import geopandas as gpd, libpysal, esda, json
 
 Or call the evaluation module:
 ```bash
-python GeoBenchmark/evaluation/metrics.py --results [path] --output [path]
+python geo_benchmark/evaluation/metrics.py --results [path] --output [path]
 ```
 
 ---
@@ -79,4 +79,4 @@ Write 3-5 paragraph analysis to `memory/spatial_analysis_YYYY-MM-DD.md`:
 - Para 5: Implications for the research question
 
 Append key findings to `findings.md` (one line each).
-Update `memory/MEMORY.md` GeoBenchmark Results table.
+Update `memory/MEMORY.md` geo_benchmark Results table.

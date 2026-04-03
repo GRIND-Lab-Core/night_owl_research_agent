@@ -274,12 +274,12 @@ gdf.crs.to_epsg()                        # get EPSG code
 
 ---
 
-## 7. GeoBenchmark Integration
+## 7. geo_benchmark Integration
 
-When a paper involves spatial regression, **always compare OLS / GWR / MGWR** using the GeoBenchmark suite:
+When a paper involves spatial regression, **always compare OLS / GWR / MGWR** using the geo_benchmark suite:
 
 ```bash
-python GeoBenchmark/run_benchmark.py \
+python geo_benchmark/run_benchmark.py \
     --dataset your_data.csv \
     --target y_column \
     --lat lat_col --lon lon_col \
@@ -294,7 +294,7 @@ Report in paper:
 | GWR | | | | |
 | MGWR | | | | |
 
-**Standard phrasing:** "We benchmark against OLS and GWR baselines using the GeoBenchmark suite. MGWR provides per-variable bandwidth estimation, allowing detection of multi-scale spatial non-stationarity in predictor effects."
+**Standard phrasing:** "We benchmark against OLS and GWR baselines using the geo_benchmark suite. MGWR provides per-variable bandwidth estimation, allowing detection of multi-scale spatial non-stationarity in predictor effects."
 
 ---
 

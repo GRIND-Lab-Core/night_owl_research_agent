@@ -17,7 +17,7 @@ End-to-end geo research pipeline (Karpathy autoresearch + ARIS patterns). You ar
 ## Startup: Check & Resume
 
 1. Read `memory/MEMORY.md` for current pipeline stage.
-2. Read `REVIEW_STATE.json` if it exists — resume from saved round.
+2. Read `outputs/REVIEW_STATE.json` if it exists — resume from saved round.
 3. Read `research_contract.md` if it exists; otherwise read `program.md`.
 4. Read `findings.md` (compact) if COMPACT_MODE is true; read full `EXPERIMENT_LOG.md` otherwise.
 5. Display current pipeline position and confirm with user before proceeding.
@@ -33,7 +33,7 @@ End-to-end geo research pipeline (Karpathy autoresearch + ARIS patterns). You ar
 2. Run skill `idea-discovery` — generate 6-10 candidate research ideas from literature gaps.
 3. Run skill `novelty-check` on each idea — eliminate incremental or already-solved ideas.
 4. Select top 2-3 ideas by novelty + feasibility score.
-5. For each surviving idea, run a brief pilot: call `python GeoBenchmark/run_benchmark.py` with a small sample dataset to estimate signal. Budget: ≤ 3 GPU/CPU hours total.
+5. For each surviving idea, run a brief pilot: call `python geo_benchmark/run_benchmark.py` with a small sample dataset to estimate signal. Budget: ≤ 3 GPU/CPU hours total.
 6. Write results to `IDEA_REPORT.md` (see template at `templates/IDEA_CANDIDATES_TEMPLATE.md`).
 
 **Gate 1**: If AUTO_PROCEED is false, stop here and ask user: "Approve top idea? (y/n/edit)".
@@ -53,7 +53,7 @@ If approved, write the selected idea to `research_contract.md` (template: `templ
    - Proposed method with parameter choices
    - Ablation variants
    - Success criteria (R² improvement, Moran's I residuals, etc.)
-3. Write experiment scripts as needed, reusing existing code in `GeoBenchmark/` and `agents/`.
+3. Write experiment scripts as needed, reusing existing code in `geo_benchmark/` and `agents/`.
 4. Run a sanity-check experiment: smallest dataset, fastest model. Auto-debug up to 3 times if it errors.
 
 **Gate 2** (if HUMAN_CHECKPOINT is true): Show experiment plan to user before deploying full suite.
@@ -79,7 +79,7 @@ If approved, write the selected idea to `research_contract.md` (template: `templ
 
 **Steps**:
 1. Run skill `auto-review-loop` — this handles all review rounds internally.
-2. After review loop completes, read final score from `REVIEW_STATE.json`.
+2. After review loop completes, read final score from `outputs/REVIEW_STATE.json`.
 
 **If score ≥ 7.5**: Proceed to paper writing.
 **If score 6–7.4**: Proceed to paper writing with noted limitations.
@@ -100,7 +100,7 @@ If approved, write the selected idea to `research_contract.md` (template: `templ
 ## Recovery Instructions
 
 If context overflows mid-pipeline:
-1. Read `REVIEW_STATE.json` to find current stage/round.
+1. Read `outputs/REVIEW_STATE.json` to find current stage/round.
 2. Read `memory/MEMORY.md` for pipeline state flags.
 3. Read `findings.md` for compact discovery summary (COMPACT_MODE).
 4. Resume from the interrupted stage — do NOT re-run completed stages.

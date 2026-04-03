@@ -1,10 +1,10 @@
 """
-GeoBenchmark Runner — executes all or selected baselines and generates comparison report.
+geo_benchmark Runner — executes all or selected baselines and generates comparison report.
 
 Usage:
-    python GeoBenchmark/run_benchmark.py --all
-    python GeoBenchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
-    python GeoBenchmark/run_benchmark.py --dataset us_county_health --models ols,mgwr --output results/
+    python geo_benchmark/run_benchmark.py --all
+    python geo_benchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
+    python geo_benchmark/run_benchmark.py --dataset us_county_health --models ols,mgwr --output results/
 """
 
 from __future__ import annotations
@@ -24,9 +24,9 @@ DATASETS = ["california_housing", "boston_housing", "beijing_pm25", "us_county_h
 MODELS = ["ols", "gwr", "mgwr", "kriging", "rf_spatial"]
 
 MODEL_MODULES = {
-    "ols": "GeoBenchmark.baselines.ols_baseline",
-    "gwr": "GeoBenchmark.baselines.gwr_baseline",
-    "mgwr": "GeoBenchmark.baselines.mgwr_baseline",
+    "ols": "geo_benchmark.baselines.ols_baseline",
+    "gwr": "geo_benchmark.baselines.gwr_baseline",
+    "mgwr": "geo_benchmark.baselines.mgwr_baseline",
 }
 
 
@@ -54,7 +54,7 @@ def run_model(model_name: str, dataset_path: Path, output_dir: Path, target: str
 
 def print_comparison_table(results: list[dict]) -> None:
     """Print a rich comparison table of all model results."""
-    table = Table(title="GeoBenchmark Results", show_header=True, header_style="bold cyan")
+    table = Table(title="geo_benchmark Results", show_header=True, header_style="bold cyan")
     table.add_column("Model", style="bold")
     table.add_column("R²", justify="right")
     table.add_column("RMSE", justify="right")
@@ -96,7 +96,7 @@ def print_comparison_table(results: list[dict]) -> None:
 def generate_report(results: list[dict], dataset_name: str, output_dir: Path) -> None:
     """Generate a Markdown comparison report."""
     report = [
-        f"# GeoBenchmark Results: {dataset_name}\n",
+        f"# geo_benchmark Results: {dataset_name}\n",
         f"Generated: {pd.Timestamp.now().isoformat()}\n\n",
         "## Model Comparison\n\n",
         "| Model | R² | RMSE | MAE | AICc | Moran's I | Runtime (s) |\n",
@@ -138,11 +138,11 @@ def generate_report(results: list[dict], dataset_name: str, output_dir: Path) ->
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run GeoBenchmark")
+    parser = argparse.ArgumentParser(description="Run geo_benchmark")
     parser.add_argument("--all", action="store_true", help="Run all datasets and models")
     parser.add_argument("--dataset", type=str, help="Dataset name")
     parser.add_argument("--models", type=str, default="ols,gwr,mgwr", help="Comma-separated model list")
-    parser.add_argument("--output", type=str, default="GeoBenchmark/results/", help="Output directory")
+    parser.add_argument("--output", type=str, default="geo_benchmark/results/", help="Output directory")
     parser.add_argument("--target", type=str, default="target", help="Target variable column name")
     args = parser.parse_args()
 
@@ -157,10 +157,10 @@ def main() -> None:
     for dataset_name in datasets_to_run:
         console.rule(f"[bold cyan]Dataset: {dataset_name}[/bold cyan]")
 
-        dataset_path = Path("GeoBenchmark/datasets") / dataset_name / f"{dataset_name}.csv"
+        dataset_path = Path("geo_benchmark/datasets") / dataset_name / f"{dataset_name}.csv"
         if not dataset_path.exists():
             console.print(f"[yellow]Dataset not found: {dataset_path}[/yellow]")
-            console.print("Run: python GeoBenchmark/download_data.py first")
+            console.print("Run: python geo_benchmark/download_data.py first")
             continue
 
         dataset_results = []

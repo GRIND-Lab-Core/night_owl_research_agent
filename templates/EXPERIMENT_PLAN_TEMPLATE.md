@@ -24,14 +24,14 @@
 
 **Command:**
 ```bash
-python GeoBenchmark/baselines/ols_baseline.py \
+python geo_benchmark/baselines/ols_baseline.py \
   --dataset [path/to/data.csv] \
   --target [outcome_col] \
   --features [col1] [col2] [col3] \
-  --output GeoBenchmark/results/exp1_ols.json
+  --output geo_benchmark/results/exp1_ols.json
 ```
 
-**Expected output**: `GeoBenchmark/results/exp1_ols.json`
+**Expected output**: `geo_benchmark/results/exp1_ols.json`
 **Success criteria**: R² > 0, Moran's I p-value computed
 **Notes**: [any preprocessing needed]
 
@@ -41,17 +41,17 @@ python GeoBenchmark/baselines/ols_baseline.py \
 
 **Command:**
 ```bash
-python GeoBenchmark/baselines/gwr_baseline.py \
+python geo_benchmark/baselines/gwr_baseline.py \
   --dataset [path/to/data.csv] \
   --target [outcome_col] \
   --lat-col [lat] --lon-col [lon] \
   --features [col1] [col2] [col3] \
   --kernel bisquare --adaptive \
   --max-n 5000 \
-  --output GeoBenchmark/results/exp2_gwr.json
+  --output geo_benchmark/results/exp2_gwr.json
 ```
 
-**Expected output**: `GeoBenchmark/results/exp2_gwr.json` + `exp2_gwr_local_coefficients.csv`
+**Expected output**: `geo_benchmark/results/exp2_gwr.json` + `exp2_gwr_local_coefficients.csv`
 **Success criteria**: AICc < OLS AICc, Moran's I residuals < OLS Moran's I
 **Notes**: Subsample flag `--max-n 5000` if dataset > 5000 rows
 
@@ -61,16 +61,16 @@ python GeoBenchmark/baselines/gwr_baseline.py \
 
 **Command:**
 ```bash
-python GeoBenchmark/baselines/mgwr_baseline.py \
+python geo_benchmark/baselines/mgwr_baseline.py \
   --dataset [path/to/data.csv] \
   --target [outcome_col] \
   --lat-col [lat] --lon-col [lon] \
   --features [col1] [col2] [col3] \
   --max-n 3000 --max-features 8 \
-  --output GeoBenchmark/results/exp3_mgwr.json
+  --output geo_benchmark/results/exp3_mgwr.json
 ```
 
-**Expected output**: `GeoBenchmark/results/exp3_mgwr.json`
+**Expected output**: `geo_benchmark/results/exp3_mgwr.json`
 **Success criteria**: Per-variable bandwidths computed; AICc competitive with GWR
 **Notes**: More intensive than GWR; max 3000 obs, max 8 features
 

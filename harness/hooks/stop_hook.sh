@@ -59,9 +59,9 @@ if run_dir and (run_dir / "hypotheses.json").exists():
     except Exception:
         pass
 
-# Benchmark results (look in GeoBenchmark/results/)
+# Benchmark results (look in geo_benchmark/results/)
 bench_rows = []
-for result_file in sorted(Path("GeoBenchmark/results").glob("**/*.json"))[:5] if Path("GeoBenchmark/results").exists() else []:
+for result_file in sorted(Path("geo_benchmark/results").glob("**/*.json"))[:5] if Path("geo_benchmark/results").exists() else []:
     try:
         r = json.loads(result_file.read_text())
         if isinstance(r, dict) and r.get("model"):
@@ -196,7 +196,7 @@ def replace_table_data(content, section_header, new_rows):
 if hypotheses:
     content = replace_table_data(content, "Hypotheses Evaluated", fmt_hypotheses())
 if bench_rows:
-    content = replace_table_data(content, "GeoBenchmark Results", fmt_benchmark())
+    content = replace_table_data(content, "geo_benchmark Results", fmt_benchmark())
 
 MEMORY_FILE.write_text(content)
 print(f"memory/MEMORY.md updated ({TS})")
@@ -223,7 +223,7 @@ handoff = {
         "auto_proceed": None,
     },
 
-    # Review loop state — full copy from REVIEW_STATE.json if it exists
+    # Review loop state — full copy from outputs/REVIEW_STATE.json if it exists
     "review_state": None,
 
     # Most recent experiment results (compact — just what the next agent needs)
@@ -261,8 +261,8 @@ handoff = {
     },
 }
 
-# ── Load REVIEW_STATE.json ─────────────────────────────────────────────────────
-review_state_path = Path("REVIEW_STATE.json")
+# ── Load outputs/REVIEW_STATE.json ─────────────────────────────────────────────────────
+review_state_path = Path("outputs/REVIEW_STATE.json")
 if review_state_path.exists():
     try:
         rs = json.loads(review_state_path.read_text())
@@ -274,18 +274,18 @@ if review_state_path.exists():
             handoff["pipeline"]["stage"] = "Stage 6: Section Writing — review loop"
             handoff["pipeline"]["next_step"] = f"resume auto-review-loop at round {round_n + 1}"
             handoff["recovery"]["resume_skill"] = "auto-review-loop"
-            handoff["recovery"]["read_first"].append("REVIEW_STATE.json")
-            handoff["recovery"]["read_first"].append("AUTO_REVIEW.md")
+            handoff["recovery"]["read_first"].append("outputs/REVIEW_STATE.json")
+            handoff["recovery"]["read_first"].append("outputs/AUTO_REVIEW.md")
             if score < 6.0:
                 handoff["recovery"]["human_checkpoint_needed"] = True
                 handoff["recovery"]["notes"].append(
                     f"Review score is {score}/10 — below 6.0; human review recommended"
                 )
     except Exception as e:
-        handoff["recovery"]["notes"].append(f"REVIEW_STATE.json parse error: {e}")
+        handoff["recovery"]["notes"].append(f"outputs/REVIEW_STATE.json parse error: {e}")
 
-# ── Load latest GeoBenchmark results ─────────────────────────────────────────
-bench_results_dir = Path("GeoBenchmark/results")
+# ── Load latest geo_benchmark results ─────────────────────────────────────────
+bench_results_dir = Path("geo_benchmark/results")
 if bench_results_dir.exists():
     result_files = sorted(bench_results_dir.glob("**/*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
     by_dataset: dict = {}

@@ -51,7 +51,7 @@ worker = CodexWorker(config)
 result = worker.run_task(
     task_description="Write GWR analysis for california_housing dataset",
     context={
-        "dataset_path": "GeoBenchmark/datasets/california_housing/california_housing.csv",
+        "dataset_path": "geo_benchmark/datasets/california_housing/california_housing.csv",
         "dependent_var": "target",
         "independent_vars": ["medinc", "houseage", "averooms"],
         "output_dir": "output/gwr_analysis/",

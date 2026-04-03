@@ -93,9 +93,9 @@ geo_research_agent_247/
 │   ├── quick_mode.yaml         ← Fast single-agent mode
 │   ├── full_auto.yaml          ← Fully autonomous overnight mode
 │   ├── codex_hybrid.yaml       ← Claude orchestrator + Codex workers
-│   └── benchmark_only.yaml     ← Run GeoBenchmark without writing paper
+│   └── benchmark_only.yaml     ← Run geo_benchmark without writing paper
 │
-├── GeoBenchmark/               ← Geospatial regression benchmark suite
+├── geo_benchmark/               ← Geospatial regression benchmark suite
 │   ├── README.md               ← Benchmark documentation
 │   ├── download_data.py        ← Auto-download all open datasets
 │   ├── run_benchmark.py        ← Run all baselines and generate report
@@ -118,7 +118,7 @@ geo_research_agent_247/
 │   └── notebooks/
 │       └── benchmark_demo.ipynb
 │
-├── ResearchArchitect/          ← Collaborative content — add your own work here
+├── research_architect/          ← Collaborative content — add your own work here
 │   └── (empty — for collaborators to populate)
 │
 └── tests/                      ← Unit and integration tests
@@ -137,7 +137,7 @@ geo_research_agent_247/
 | **Modular participation** | Use individual agents standalone or chain them into a full loop |
 | **Harness Engineering** | Pre/post hooks enforce safety, logging, and state persistence |
 | **Dual coding backend** | Choose Claude Code only OR Claude as orchestrator + Codex workers |
-| **Reproducible benchmarks** | GeoBenchmark provides fixed datasets, baselines, and metrics |
+| **Reproducible benchmarks** | geo_benchmark provides fixed datasets, baselines, and metrics |
 | **Journal-aligned output** | Templates match exact formatting of target journals |
 | **MCP extensibility** | Drop in new MCP servers to add capabilities without touching core code |
 
@@ -181,7 +181,7 @@ User Input (research topic / hypothesis)
 | `quick` | Single-pass: idea → draft in ~10 min | `configs/quick_mode.yaml` |
 | `full-auto` | Complete loop overnight: lit review → experiments → paper → review | `configs/full_auto.yaml` |
 | `codex-hybrid` | Claude orchestrates, Codex runs coding tasks in parallel | `configs/codex_hybrid.yaml` |
-| `benchmark-only` | Run GeoBenchmark baselines only | `configs/benchmark_only.yaml` |
+| `benchmark-only` | Run geo_benchmark baselines only | `configs/benchmark_only.yaml` |
 | `partial` | Call individual agents via CLI flags or skills | `--agents literature,writing` |
 
 ---

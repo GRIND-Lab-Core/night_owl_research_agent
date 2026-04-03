@@ -1,7 +1,7 @@
-# GeoBenchmark Datasets
+# geo_benchmark Datasets
 
 All datasets are automatically downloaded by `download_data.py`.
-Run: `python GeoBenchmark/download_data.py`
+Run: `python geo_benchmark/download_data.py`
 
 ---
 
@@ -49,7 +49,7 @@ Run: `python GeoBenchmark/download_data.py`
 
 ## Adding New Datasets
 
-1. Create a folder: `GeoBenchmark/datasets/your_dataset/`
+1. Create a folder: `geo_benchmark/datasets/your_dataset/`
 2. Add a CSV with `lat`, `lon`, `target` columns and feature columns
 3. Add a `metadata.json`:
 ```json

@@ -33,7 +33,7 @@ Define what "working" looks like with specific, measurable thresholds:
 
 | Criterion | Threshold | Measurement |
 |---|---|---|
-| [e.g., MGWR R² improvement over OLS] | ≥ 0.05 | GeoBenchmark results JSON |
+| [e.g., MGWR R² improvement over OLS] | ≥ 0.05 | geo_benchmark results JSON |
 | [e.g., Moran's I residuals after MGWR] | < 0.10 (p ≥ 0.05) | esda.Moran output |
 | [e.g., Section quality score] | ≥ 7.5/10 | Auto-review loop |
 
@@ -50,7 +50,7 @@ Define what "working" looks like with specific, measurable thresholds:
 ## Constraints
 
 - [ ] Open-access data only
-- [ ] Reproducible without GPU (CPU-only GeoBenchmark)
+- [ ] Reproducible without GPU (CPU-only geo_benchmark)
 - [ ] Word limit: [N words] for [venue]
 - [ ] [Other constraint]
 

@@ -13,7 +13,7 @@ GeoResearchAgent-247 automates the complete academic research lifecycle:
 3. **Experiment design & execution** — writes and runs Python code for spatial analysis, remote sensing workflows, and GIS operations
 4. **Paper writing** — drafts full academic papers using journal-specific templates (IJGIS, IEEE TGRS, GRL, RSE, and more)
 5. **Self-review** — simulates peer review feedback and iteratively revises the paper
-6. **Spatial benchmarking** — provides a ready-to-run benchmark suite (GeoBenchmark) with OLS, GWR, and MGWR baselines
+6. **Spatial benchmarking** — provides a ready-to-run benchmark suite (geo_benchmark) with OLS, GWR, and MGWR baselines
 7. **Memory management** — three-layer memory (working / session / long-term) persists research knowledge across agents and sessions, with token-aware retrieval and automatic pruning
 8. **Token optimization** — eight complementary techniques (prompt compression, response caching, tiered model routing, context windowing, dynamic max_tokens, abstract truncation, context budgeting, session ledger) reduce API costs by 40–70%
 
@@ -52,8 +52,8 @@ python core/orchestrator.py --config configs/codex_hybrid.yaml --topic "Deep lea
 # Literature review only
 python agents/literature_agent.py --topic "Geographically Weighted Regression" --output lit_review.md
 
-# Run GeoBenchmark only
-python GeoBenchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
+# Run geo_benchmark only
+python geo_benchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
 
 # Generate paper from existing results
 python agents/writing_agent.py --results results/experiment.json --template templates/giscience/ijgis.md
@@ -64,15 +64,23 @@ python agents/review_agent.py --paper draft.md --journal IJGIS
 
 ### Use Claude Code Skills (Slash Commands)
 
-Inside any Claude Code session in this directory:
+Open this folder in Claude Code and use the interactive launcher:
 
 ```
-/geo-search "spatial heterogeneity urban temperature"
-/run-experiment configs/benchmark_only.yaml
-/write-section methods
-/review-paper draft.md
-/geo-plot results/coefficients.gpkg
-/submit-check IJGIS
+/launcher
+```
+
+The launcher walks you through two choices — **backend** (API or Claude Code subscription) and **task** — then routes to the correct skill automatically.
+
+Or invoke skills directly:
+
+```
+/full-pipeline                              — end-to-end: literature → experiments → paper → review
+/find-gaps "soundscape urban imagery"       — discover and score research ideas
+/review-draft outputs/papers/methodology.md — adversarial peer-review loop
+/geo-search "spatial heterogeneity"         — targeted literature search
+/write-section results                      — write one paper section
+/lit-review "GWR urban heat island"         — full literature review pipeline
 ```
 
 ---
@@ -94,7 +102,7 @@ This will:
 1. Search literature (ArXiv + Semantic Scholar, top 30 papers)
 2. Identify 3 novel hypotheses
 3. Design experiments for each
-4. Download relevant open datasets via GeoBenchmark
+4. Download relevant open datasets via geo_benchmark
 5. Execute Python code (sandboxed)
 6. Write the paper using the RSE template
 7. Run simulated peer review
@@ -182,16 +190,19 @@ Edit `settings.json` to customize hook behavior:
 
 ### Custom Skills
 
-Skills are slash commands you invoke inside a Claude Code session. Located in `harness/skills/`:
+Skills are slash commands invoked inside a Claude Code session. Defined in `.claude/commands/` and implemented by `skills/<name>/SKILL.md`.
 
-```
-/geo-search       → domain-aware literature search with geo-specific query expansion
-/run-experiment   → execute configured benchmark or custom experiment
-/write-section    → draft a specific section using journal template
-/review-paper     → simulated multi-reviewer peer review
-/geo-plot         → spatial visualization with auto-chosen map projection
-/submit-check     → validate manuscript against journal requirements
-```
+| Command | What it does |
+|---|---|
+| `/launcher` | Interactive entry point — choose backend and task |
+| `/full-pipeline` | 4-stage autonomous research pipeline (evening → overnight → morning) |
+| `/find-gaps <topic>` | Search literature, identify gaps, generate and score ideas |
+| `/lit-review <topic>` | Search + synthesize + gap analysis + write literature review section |
+| `/geo-search <topic>` | Targeted ArXiv + Semantic Scholar search |
+| `/write-section <name>` | Write one paper section with autoresearch scoring loop |
+| `/review-draft <file>` | Adversarial review loop (up to 4 rounds, generator-evaluator separation) |
+
+**Review loop outputs** are written to `outputs/AUTO_REVIEW.md` and `outputs/REVIEW_STATE.json`.
 
 ---
 
@@ -383,7 +394,7 @@ When all techniques are enabled on a full-auto run (literature + experiments + w
 
 ---
 
-## GeoBenchmark
+## geo_benchmark
 
 A reproducible spatial regression benchmark for comparing models across multiple datasets.
 
@@ -411,19 +422,19 @@ A reproducible spatial regression benchmark for comparing models across multiple
 
 ```bash
 # Download all datasets (first run)
-python GeoBenchmark/download_data.py
+python geo_benchmark/download_data.py
 
 # Run all models on all datasets
-python GeoBenchmark/run_benchmark.py --all
+python geo_benchmark/run_benchmark.py --all
 
 # Run specific dataset + models
-python GeoBenchmark/run_benchmark.py \
+python geo_benchmark/run_benchmark.py \
   --dataset california_housing \
   --models ols,gwr,mgwr \
-  --output-dir GeoBenchmark/results/
+  --output-dir geo_benchmark/results/
 
 # Open interactive notebook
-jupyter notebook GeoBenchmark/notebooks/benchmark_demo.ipynb
+jupyter notebook geo_benchmark/notebooks/benchmark_demo.ipynb
 ```
 
 ---
@@ -539,9 +550,9 @@ output/
 
 ---
 
-## ResearchArchitect
+## research_architect
 
-The `ResearchArchitect/` folder is a shared space for collaborators to contribute:
+The `research_architect/` folder is a shared space for collaborators to contribute:
 - Custom experiment scripts
 - Additional journal templates
 - Domain-specific prompts
@@ -552,10 +563,81 @@ No files are committed here by default. Add your own content and document it wit
 
 ---
 
+## Key Output Files
+
+| File | Location | Written by |
+|---|---|---|
+| Review loop history | `outputs/AUTO_REVIEW.md` | `auto-review-loop` skill |
+| Review loop state | `outputs/REVIEW_STATE.json` | `auto-review-loop` skill |
+| Paper sections | `outputs/papers/<slug>/` | `paper-write` skill |
+| Figures | `outputs/figures/` | `paper-figure` skill |
+| Session handoff | `handoff.json` | Stop hook (on session end) |
+| Experiment record | `EXPERIMENT_LOG.md` | `geo-experiment` skill |
+| Discovery log | `findings.md` | All skills (append-only) |
+| Approved claims | `memory/approved_claims.md` | `result-to-claim` skill |
+
+---
+
+## Project Structure
+
+```
+geo_research_agent_247/
+├── launch.py                    ← Python launcher (API or Claude Code mode)
+├── program.md                   ← Research brief (edit before starting)
+├── research_contract.md         ← Active idea context (condensed)
+├── findings.md                  ← Compact discovery log
+├── EXPERIMENT_LOG.md            ← Full experiment record
+├── handoff.json                 ← Context-reset handoff (written on stop)
+│
+├── .claude/commands/            ← Slash commands
+│   ├── launcher.md              ← /launcher (interactive entry point)
+│   ├── full-pipeline.md         ← /full-pipeline
+│   ├── find-gaps.md             ← /find-gaps
+│   ├── lit-review.md            ← /lit-review
+│   ├── geo-search.md            ← /geo-search
+│   ├── write-section.md         ← /write-section
+│   └── review-draft.md          ← /review-draft
+│
+├── skills/                      ← Skill logic (Markdown workflow files)
+│   ├── research-pipeline/
+│   ├── geo-lit-review/
+│   ├── idea-discovery/
+│   ├── novelty-check/
+│   ├── geo-experiment/
+│   ├── auto-review-loop/
+│   ├── paper-write/
+│   ├── paper-figure/
+│   └── knowledge/               ← Domain reference files
+│
+├── geo_benchmark/               ← Spatial regression benchmark suite
+│   ├── run_benchmark.py
+│   ├── baselines/               ← OLS, GWR, MGWR
+│   ├── datasets/
+│   └── evaluation/
+│
+├── outputs/                     ← All generated outputs
+│   ├── AUTO_REVIEW.md           ← Review loop history
+│   ├── REVIEW_STATE.json        ← Review loop state
+│   ├── papers/                  ← Written sections
+│   ├── figures/                 ← Spatial maps and plots
+│   └── reports/                 ← Literature review reports
+│
+├── memory/                      ← Persistent session memory
+├── templates/                   ← File format templates
+├── configs/                     ← Run mode YAML configs
+├── core/                        ← Orchestrator, memory manager, token optimizer
+├── tools/                       ← arxiv_fetch.py, semantic_scholar_fetch.py
+├── harness/hooks/               ← Claude Code lifecycle hooks
+├── research_architect/          ← Collaborator workspace
+└── settings.json                ← Permissions + hooks configuration
+```
+
+---
+
 ## Contributing
 
 1. Fork this repository
-2. Add your content to `ResearchArchitect/` or submit PRs for `templates/`, `agents/`, or `GeoBenchmark/`
+2. Add your content to `research_architect/` or submit PRs for `templates/`, `agents/`, or `geo_benchmark/`
 3. Follow the coding standards in `pyproject.toml`
 4. Write tests in `tests/`
 

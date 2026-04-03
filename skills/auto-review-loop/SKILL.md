@@ -1,6 +1,6 @@
 ---
 name: auto-review-loop
-description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to REVIEW_STATE.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to AUTO_REVIEW.md.
+description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to outputs/REVIEW_STATE.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to outputs/AUTO_REVIEW.md.
 tools: all
 flags:
   HUMAN_CHECKPOINT: true    # If true, pause after each round for user approval of fixes
@@ -29,10 +29,10 @@ If you are currently acting as a writer and are asked to evaluate, refuse and re
 ## Startup: Initialize or Resume
 
 1. Check if `handoff.json` exists — read it first for pipeline state (fast context recovery)
-2. Check if `REVIEW_STATE.json` exists:
+2. Check if `outputs/REVIEW_STATE.json` exists:
    - If yes: read current round number, score, per-criterion scores, and pending_fixes. Resume from next phase.
-   - If no: initialize `REVIEW_STATE.json` with round=0, per_criterion={}, status="in_progress"
-3. Check if `AUTO_REVIEW.md` exists; if not, create it with header
+   - If no: initialize `outputs/REVIEW_STATE.json` with round=0, per_criterion={}, status="in_progress"
+3. Check if `outputs/AUTO_REVIEW.md` exists; if not, create it with header
 4. Identify what to review: read `outputs/papers/` for sections, or `EXPERIMENT_LOG.md` for experiment results
 
 ---
@@ -85,7 +85,7 @@ For each round (while round < 4 AND NOT all_floors_met AND weighted_avg < 7.5):
 
 Build the review context (**evaluator does NOT read generator's working notes**):
 - Current work: the specific section file(s) being reviewed
-- Previous round scores: last entry from `AUTO_REVIEW.md` (scores only, not writer's reasoning)
+- Previous round scores: last entry from `outputs/AUTO_REVIEW.md` (scores only, not writer's reasoning)
 - Research contract: `research_contract.md` (ground truth for what was promised)
 - Approved claims: `memory/approved_claims.md` (to check if claims are grounded)
 
@@ -138,11 +138,11 @@ Parse the reviewer response to extract per-criterion scores and floors.
 **FORCE STOP if:**
 - round == 4 (max rounds reached, even if not accepted)
 
-On ACCEPT: write to `AUTO_REVIEW.md`: `STOP — accepted at round N, score X.X/10, all floors met`
-Update `REVIEW_STATE.json`: `{"status": "complete", "final_score": X.X, "all_floors_met": true}`
+On ACCEPT: write to `outputs/AUTO_REVIEW.md`: `STOP — accepted at round N, score X.X/10, all floors met`
+Update `outputs/REVIEW_STATE.json`: `{"status": "complete", "final_score": X.X, "all_floors_met": true}`
 
-On FORCE STOP: write to `AUTO_REVIEW.md`: `STOP — max rounds reached, score X.X/10 — human review required`
-Update `REVIEW_STATE.json`: `{"status": "max_rounds", "final_score": X.X}`
+On FORCE STOP: write to `outputs/AUTO_REVIEW.md`: `STOP — max rounds reached, score X.X/10 — human review required`
+Update `outputs/REVIEW_STATE.json`: `{"status": "max_rounds", "final_score": X.X}`
 
 ### Round Step 4: Implement Fixes (Generator)
 
@@ -161,7 +161,7 @@ After implementing fixes, re-evaluate only the fixed dimensions (not all five) t
 
 ### Round Step 5: Persist State
 
-Write to `REVIEW_STATE.json`:
+Write to `outputs/REVIEW_STATE.json`:
 ```json
 {
   "round": <N>,
@@ -182,7 +182,7 @@ Write to `REVIEW_STATE.json`:
 }
 ```
 
-Append to `AUTO_REVIEW.md`:
+Append to `outputs/AUTO_REVIEW.md`:
 ```markdown
 ## Round N — Weighted avg: X.X/10 — <timestamp>
 
@@ -226,8 +226,8 @@ Key improvements made:
 - [improvement 1]
 - [improvement 2]
 
-Full history: AUTO_REVIEW.md
-State file: REVIEW_STATE.json
+Full history: outputs/AUTO_REVIEW.md
+State file: outputs/REVIEW_STATE.json
 
 [If not accepted]: The following dimensions are below floor — do not proceed to final submission:
   - [Dimension]: X.X (floor Y.Y) — [specific remaining issue]

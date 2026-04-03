@@ -6,7 +6,7 @@ description: |
   - Recommend appropriate spatial methods for the research question
   - Suggest open-source datasets with spatial coverage and resolution
   - Review spatial analysis code for CRS, projection, and autocorrelation issues
-  - Inject GeoBenchmark context (OLS/GWR/MGWR) into quantitative papers
+  - Inject geo_benchmark context (OLS/GWR/MGWR) into quantitative papers
   - Validate that geo conventions (scale bar, CRS specification, Moran's I) are met
 tools: Read, Write, Bash
 ---
@@ -62,7 +62,7 @@ When reviewing a methodology or results section:
 4. Check: Moran's I of residuals reported for regression models?
 5. Check: Appropriate projection used for analysis (not WGS84 degrees)?
 6. Check: N ≤ 5000 for GWR; N ≤ 3000 for MGWR (subsampling if needed)?
-7. Recommend: GeoBenchmark comparison (OLS/GWR/MGWR) if spatial regression involved
+7. Recommend: geo_benchmark comparison (OLS/GWR/MGWR) if spatial regression involved
 
 ## Output
 
@@ -70,5 +70,5 @@ Produce a concise "Spatial Analysis Review" with:
 - Recommended methods (with rationale)
 - Recommended datasets (with links)
 - CRS and projection specifications
-- GeoBenchmark applicability: yes/no + suggested config
+- geo_benchmark applicability: yes/no + suggested config
 - Flagged spatial issues

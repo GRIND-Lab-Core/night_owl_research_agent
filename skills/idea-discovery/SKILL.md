@@ -22,7 +22,7 @@ You generate and evaluate novel geo research ideas from the literature synthesis
 Read `memory/gap-analysis.md` and `memory/synthesis-YYYY-MM-DD.md`, then generate 6-10 candidate ideas. Each idea must:
 - Address a specific identified gap
 - Be testable with available data (open datasets only unless specified)
-- Be feasible with tools available in this project (GeoBenchmark, mgwr, geopandas, rasterio)
+- Be feasible with tools available in this project (geo_benchmark, mgwr, geopandas, rasterio)
 - Connect to the domain focus in `research_contract.md` or `program.md`
 
 **Geo-specific idea templates** (use as inspiration, not templates to fill):

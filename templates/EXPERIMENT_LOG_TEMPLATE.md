@@ -12,11 +12,11 @@
 **Status**: ⏳ PENDING
 **Command**:
 ```bash
-python GeoBenchmark/baselines/ols_baseline.py ...
+python geo_benchmark/baselines/ols_baseline.py ...
 ```
 **Run at**: —
 **Duration**: —
-**Output**: `GeoBenchmark/results/exp1_ols.json`
+**Output**: `geo_benchmark/results/exp1_ols.json`
 
 **Results**:
 | Metric | Value |
@@ -37,11 +37,11 @@ python GeoBenchmark/baselines/ols_baseline.py ...
 **Status**: ⏳ PENDING
 **Command**:
 ```bash
-python GeoBenchmark/baselines/gwr_baseline.py ...
+python geo_benchmark/baselines/gwr_baseline.py ...
 ```
 **Run at**: —
 **Duration**: —
-**Output**: `GeoBenchmark/results/exp2_gwr.json`
+**Output**: `geo_benchmark/results/exp2_gwr.json`
 
 **Results**:
 | Metric | Value |
@@ -58,7 +58,7 @@ python GeoBenchmark/baselines/gwr_baseline.py ...
 ## Experiment 3 — MGWR Baseline
 
 **Status**: ⏳ PENDING
-**Output**: `GeoBenchmark/results/exp3_mgwr.json`
+**Output**: `geo_benchmark/results/exp3_mgwr.json`
 
 **Results**:
 | Metric | Value |

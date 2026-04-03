@@ -1,0 +1,456 @@
+{
+  "source": "arxiv",
+  "query": "GWR MGWR geographically weighted regression urban spatial analysis",
+  "fetched_at": "2026-04-02T01:49:32.108296+00:00",
+  "count": 25,
+  "papers": [
+    {
+      "id": "arxiv:2404.16209v4",
+      "title": "Exploring Spatial Context: A Comprehensive Bibliography of GWR and MGWR",
+      "authors": [
+        "A. Stewart Fotheringham",
+        "Chen-Lun Kao",
+        "Hanchen Yu",
+        "Sarah Bardin",
+        "Taylor Oshan",
+        "Ziqi Li",
+        "Mehak Sachdeva",
+        "Wei Luo"
+      ],
+      "year": 2024,
+      "abstract": "Local spatial models such as Geographically Weighted Regression (GWR) and Multiscale Geographically Weighted Regression (MGWR) serve as instrumental tools to capture intrinsic contextual effects through the estimates of the local intercepts and behavioral contextual effects through estimates of the local slope paramete",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2404.16209v4",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2004.06070v2",
+      "title": "The GWR route map: a guide to the informed application of Geographically Weighted Regression",
+      "authors": [
+        "Alexis Comber",
+        "Chris Brunsdon",
+        "Martin Charlton",
+        "Guanpeng Dong",
+        "Rich Harris",
+        "Binbin Lu",
+        "Yihe L\u00fc",
+        "Daisuke Murakami",
+        "Tomoki Nakaya",
+        "Yunqiang Wang",
+        "Paul Harris"
+      ],
+      "year": 2020,
+      "abstract": "Geographically Weighted Regression (GWR) is increasingly used in spatial analyses of social and environmental data. It allows spatial heterogeneities in processes and relationships to be investigated through a series of local regression models rather than a global one. Standard GWR assumes that the relationships betwee",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2004.06070v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2601.19888v2",
+      "title": "M-SGWR: Multiscale Similarity and Geographically Weighted Regression",
+      "authors": [
+        "M. Naser Lessani",
+        "Zhenlong Li",
+        "Manzhu Yu",
+        "Helen Greatrex",
+        "Chan Shen"
+      ],
+      "year": 2026,
+      "abstract": "The first law of geography is a cornerstone of spatial analysis, emphasizing that nearby and related locations tend to be more similar, however, defining what constitutes \"near\" and \"related\" remains challenging, as different phenomena exhibit distinct spatial patterns. Traditional local regression models, such as Geog",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2601.19888v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1905.00266v3",
+      "title": "Scalable GWR: A linear-time algorithm for large-scale geographically weighted regression with polynomial kernels",
+      "authors": [
+        "Daisuke Murakami",
+        "Narumasa Tsutsumida",
+        "Takahiro Yoshida",
+        "Tomoki Nakaya",
+        "Binbin Lu"
+      ],
+      "year": 2019,
+      "abstract": "Although a number of studies have developed fast geographically weighted regression (GWR) algorithms for large samples, none of them has achieved linear-time estimation, which is considered a requisite for big data analysis in machine learning, geostatistics, and related domains. Against this backdrop, this study propo",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/1905.00266v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2007.02222v1",
+      "title": "Geographically Weighted Regression Analysis for Spatial Economics Data: a Bayesian Recourse",
+      "authors": [
+        "Zhihua Ma",
+        "Yishu Xue",
+        "Guanyu Hu"
+      ],
+      "year": 2020,
+      "abstract": "The geographically weighted regression (GWR) is a well-known statistical approach to explore spatial non-stationarity of the regression relationship in spatial data analysis. In this paper, we discuss a Bayesian recourse of GWR. Bayesian variable selection based on spike-and-slab prior, bandwidth selection based on ran",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2007.02222v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2211.00355v1",
+      "title": "Urban Mobility",
+      "authors": [
+        "Laura Alessandretti",
+        "Michael Szell"
+      ],
+      "year": 2022,
+      "abstract": "In this chapter, we discuss urban mobility from a complexity science perspective. First, we give an overview of the datasets that enable this approach, such as mobile phone records, location-based social network traces, or GPS trajectories from sensors installed on vehicles. We then review the empirical and theoretical",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-031-82666-5_4",
+      "url": "https://arxiv.org/abs/2211.00355v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2504.03734v1",
+      "title": "Artificial Geographically Weighted Neural Network: A Novel Framework for Spatial Analysis with Geographically Weighted Layers",
+      "authors": [
+        "Jianfei Cao",
+        "Dongchao Wang"
+      ],
+      "year": 2025,
+      "abstract": "Geographically Weighted Regression (GWR) is a widely recognized technique for modeling spatial heterogeneity. However, it is commonly assumed that the relationships between dependent and independent variables are linear. To overcome this limitation, we propose an Artificial Geographically Weighted Neural Network (AGWNN",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2504.03734v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2503.14195v1",
+      "title": "Mapping Urban Villages in China: Progress and Challenges",
+      "authors": [
+        "Rui Cao",
+        "Wei Tu",
+        "Dongsheng Chen",
+        "Wenyu Zhang"
+      ],
+      "year": 2025,
+      "abstract": "The shift toward high-quality urbanization has brought increased attention to the issue of \"urban villages\", which has become a prominent social problem in China. However, there is a lack of available geospatial data on urban villages, making it crucial to prioritize urban village mapping. In order to assess the curren",
+      "venue": "arXiv",
+      "doi": "10.1016/j.compenvurbsys.2025.102282",
+      "url": "https://arxiv.org/abs/2503.14195v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2304.12840v2",
+      "title": "Spatiotemporal gender differences in urban vibrancy",
+      "authors": [
+        "Thomas Collins",
+        "Riccardo Di Clemente",
+        "Mario Guti\u00e9rrez-Roig",
+        "Federico Botta"
+      ],
+      "year": 2023,
+      "abstract": "Urban vibrancy is the dynamic activity of humans in urban locations. It can vary with urban features and the opportunities for human interactions, but it might also differ according to the underlying social conditions of city inhabitants across and within social surroundings. Such heterogeneity in how different demogra",
+      "venue": "arXiv",
+      "doi": "10.1177/23998083231209073",
+      "url": "https://arxiv.org/abs/2304.12840v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2112.10671v2",
+      "title": "Deciphering Spatial and Multi-scale Variations in the Effects of Key Factors of Maritime Safety: A Multi-scale Geographically Weighted Approach",
+      "authors": [
+        "Guorong Li",
+        "Kun Gao",
+        "Jinxian Weng",
+        "Xiaobo Qu"
+      ],
+      "year": 2021,
+      "abstract": "Maritime accidents and corresponding consequences vary substantially across spatial dimensions as affected by various factors. Understanding the effects of key factors on maritime accident consequence would be of great benefit to prevent the occurrence or reduce the consequences of maritime accidents. Based on unique m",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2112.10671v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2305.08443v1",
+      "title": "A linearization for stable and fast geographically weighted Poisson regression",
+      "authors": [
+        "Daisuke Murakami",
+        "Narumasa Tsutsumida",
+        "Takahiro Yoshida",
+        "Tomoki Nakaya",
+        "Binbin Lu",
+        "Paul Harris"
+      ],
+      "year": 2023,
+      "abstract": "Although geographically weighted Poisson regression (GWPR) is a popular regression for spatially indexed count data, its development is relatively limited compared to that found for linear geographically weighted regression (GWR), where many extensions (e.g., multiscale GWR, scalable GWR) have been proposed. The weak d",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2305.08443v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2106.00996v2",
+      "title": "Generalized Geographically Weighted Regression Model within a Modularized Bayesian Framework",
+      "authors": [
+        "Yang Liu",
+        "Robert J. B. Goudie"
+      ],
+      "year": 2021,
+      "abstract": "Geographically weighted regression (GWR) models handle geographical dependence through a spatially varying coefficient model and have been widely used in applied science, but its general Bayesian extension is unclear because it involves a weighted log-likelihood which does not imply a probability distribution on data. ",
+      "venue": "arXiv",
+      "doi": "10.1214/22-BA1357",
+      "url": "https://arxiv.org/abs/2106.00996v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2106.15811v3",
+      "title": "Adaptively Robust Geographically Weighted Regression",
+      "authors": [
+        "Shonosuke Sugasawa",
+        "Daisuke Murakami"
+      ],
+      "year": 2021,
+      "abstract": "We develop a new robust geographically weighted regression method in the presence of outliers. We embed the standard geographically weighted regression in robust objective function based on $\u03b3$-divergence. A novel feature of the proposed approach is that two tuning parameters that control robustness and spatial smoothn",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2106.15811v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2510.05646v2",
+      "title": "Geographically Weighted Regression for Air Quality Low-Cost Sensor Calibration",
+      "authors": [
+        "Jean-Michel Poggi",
+        "Bruno Portier",
+        "Emma Thulliez"
+      ],
+      "year": 2025,
+      "abstract": "This article focuses on the use of Geographically Weighted Regression (GWR) method to correct air quality low-cost sensors measurements. Those sensors are of major interest in the current era of high-resolution air quality monitoring at urban scale, but require calibration using reference analyzers. The results for NO2",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2510.05646v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2008.11720v1",
+      "title": "A Spatial Analysis of Disposable Income in Ireland: A GWR Approach",
+      "authors": [
+        "Paul Kilgarriff",
+        "Martin Charlton"
+      ],
+      "year": 2020,
+      "abstract": "This paper examines the spatial distribution of income in Ireland. Median gross household disposable income data from the CSO, available at the Electoral Division (ED) level, is used to explore the spatial variability in income. Geary's C highlights the spatial dependence of income, highlighting that the distribution o",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2008.11720v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2212.05814v2",
+      "title": "GWRBoost:A geographically weighted gradient boosting method for explainable quantification of spatially-varying relationships",
+      "authors": [
+        "Han Wang",
+        "Zhou Huang",
+        "Ganmin Yin",
+        "Yi Bao",
+        "Xiao Zhou",
+        "Yong Gao"
+      ],
+      "year": 2022,
+      "abstract": "The geographically weighted regression (GWR) is an essential tool for estimating the spatial variation of relationships between dependent and independent variables in geographical contexts. However, GWR suffers from the problem that classical linear regressions, which compose the GWR model, are more prone to be underfi",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2212.05814v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2402.18186v1",
+      "title": "Bayesian Geographically Weighted Regression using Fused Lasso Prior",
+      "authors": [
+        "Toshiki Sakai",
+        "Jun Tsuchida",
+        "Hiroshi Yadohisa"
+      ],
+      "year": 2024,
+      "abstract": "A main purpose of spatial data analysis is to predict the objective variable for the unobserved locations. Although Geographically Weighted Regression (GWR) is often used for this purpose, estimation instability proves to be an issue. To address this issue, Bayesian Geographically Weighted Regression (BGWR) has been pr",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2402.18186v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2603.22990v1",
+      "title": "A Top-Down Scale Approach for Multiscale Geographically and Temporally Weighted Regression",
+      "authors": [
+        "Ghislain Geniaux",
+        "C\u00e9sar Martinez",
+        "Samuel Soubeyrand"
+      ],
+      "year": 2026,
+      "abstract": "This paper proposes tds mgtwr, a multiscale geographically and temporally weighted regression (MGTWR) model with covariate-specific spatial and temporal scales. The approach combines a separable spatio-temporal kernel with a Top-Down Scale (TDS) calibration scheme, where spatial and temporal bandwidths are selected for",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2603.22990v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1905.12543v2",
+      "title": "Airbnb, hotels, and saturation of the food industry: A multi-scale GWR approach",
+      "authors": [
+        "Zahratu Shabrina",
+        "Boyana Buyuklieva",
+        "Matthew Ng Kok Ming"
+      ],
+      "year": 2019,
+      "abstract": "This paper evaluates the relationship between the food industry and the local variations of temporary accommodation (TAs, including hotels and short-term rentals). The aim is to capture the variance of the local statistic and pinpoint areas where food and beverages (F&B) presence is highly related to TAs in London. We ",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/1905.12543v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2603.08338v1",
+      "title": "Mathematical modeling of urban sprawl",
+      "authors": [
+        "Marc Barthelemy",
+        "Ulysse Marquis"
+      ],
+      "year": 2026,
+      "abstract": "Urban land cover doubled between 1985 and 2015, yet the spatial dynamics of urban form remain under-quantified, despite its importance for sustainability, infrastructure planning, and climate risk. Urban expansion is a non-equilibrium process shaped by interactions between population growth, infrastructure, institution",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2603.08338v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:physics/0506009v1",
+      "title": "The Network Analysis of Urban Streets: A Primal Approach",
+      "authors": [
+        "Sergio Porta",
+        "Paolo Crucitti",
+        "Vito Latora"
+      ],
+      "year": 2005,
+      "abstract": "The network metaphor in the analysis of urban and territorial cases has a long tradition especially in transportation/land-use planning and economic geography. More recently, urban design has brought its contribution by means of the \"space syntax\" methodology. All these approaches, though under different terms like acc",
+      "venue": "arXiv",
+      "doi": "10.1016/j.physa.2005.12.063",
+      "url": "https://arxiv.org/abs/physics/0506009v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2503.17371v2",
+      "title": "A Review of Urban Resilience Frameworks: Transferring Knowledge to Enhance Pandemic Resilience",
+      "authors": [
+        "Yue Sun",
+        "Ryan Weightman",
+        "Anye Shi",
+        "Timur Dogan",
+        "Samitha Samaranayake"
+      ],
+      "year": 2025,
+      "abstract": "Urbanization is rapidly increasing, with urban populations expected to grow significantly by 2050, particularly in developing regions. This expansion brings challenges related to chronic stresses and acute shocks, such as the COVID-19 pandemic, which has underscored the critical role of urban form in a city's capacity ",
+      "venue": "arXiv",
+      "doi": "10.3934/urs.2025014",
+      "url": "https://arxiv.org/abs/2503.17371v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2311.12347v1",
+      "title": "Bayesian Cluster Geographically Weighted Regression for Spatial Heterogeneous Data",
+      "authors": [
+        "Wala Draidi Areed",
+        "Aiden Price",
+        "Helen Thompson",
+        "Conor Hassan",
+        "Reid Malseed",
+        "Kerrie Mengersen"
+      ],
+      "year": 2023,
+      "abstract": "Spatial statistical models are commonly used in geographical scenarios to ensure spatial variation is captured effectively. However, spatial models and cluster algorithms can be complicated and expensive. This paper pursues three main objectives. First, it introduces covariate effect clustering by integrating a Bayesia",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2311.12347v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2202.04358v1",
+      "title": "House Price Valuation Model Based on Geographically Neural Network Weighted Regression: The Case Study of Shenzhen, China",
+      "authors": [
+        "Zimo Wang",
+        "Yicheng Wang",
+        "Sensen Wu"
+      ],
+      "year": 2022,
+      "abstract": "Confronted with the spatial heterogeneity of real estate market, some traditional research utilized Geographically Weighted Regression (GWR) to estimate the house price. However, its kernel function is non-linear, elusive, and complex to opt bandwidth, the predictive power could also be improved. Consequently, a novel ",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2202.04358v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1803.01402v2",
+      "title": "An Note on Why Geographically Weighted Regression Overcomes Multidimensional-Kernel-Based Varying-Coefficient Model",
+      "authors": [
+        "Zihao Yuan"
+      ],
+      "year": 2018,
+      "abstract": "It is widely known that geographically weighted regression(GWR) is essentially same as varying-coefficient model. In the former research about varying-coefficient model, scholars tend to use multidimensional-kernel-based locally weighted estimation(MLWE) so that information of both distance and direction is considered.",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/1803.01402v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    }
+  ]
+}

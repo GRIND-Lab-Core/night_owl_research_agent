@@ -25,7 +25,7 @@
 **Expected improvement**: [metric: X% over baseline]
 **Novelty justification**: Unlike [closest paper], this work [differentiator].
 **Novelty check result**: NOVEL — closest paper: [citation]
-**Pilot result**: [brief: ran GeoBenchmark sample, signal found/not found]
+**Pilot result**: [brief: ran geo_benchmark sample, signal found/not found]
 
 ---
 

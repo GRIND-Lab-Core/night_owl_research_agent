@@ -17,7 +17,7 @@ Read:
 - `memory/approved_claims.md` — verified results to highlight
 - `memory/gap-analysis.md` — gaps addressed by this paper
 - `memory/synthesis-YYYY-MM-DD.md` — related work context
-- `AUTO_REVIEW.md` — if review has run, incorporate reviewer feedback into outline
+- `outputs/AUTO_REVIEW.md` — if review has run, incorporate reviewer feedback into outline
 - Target venue from `program.md` Section 2
 
 ---
@@ -93,7 +93,7 @@ Future work (3-5 specific directions from claim audit)
 
 List all figures/tables with:
 - Figure N: description, data source, which Python script to call
-- `python GeoBenchmark/evaluation/visualize.py --results [path] --type [map|scatter|comparison]`
+- `python geo_benchmark/evaluation/visualize.py --results [path] --type [map|scatter|comparison]`
 - Or use `.claude/agents/geo-specialist.md` to suggest appropriate visualization
 
 Write figure list to `memory/figure_plan.md`.

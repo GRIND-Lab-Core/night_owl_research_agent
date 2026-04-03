@@ -1,11 +1,11 @@
 """
-GeoBenchmark Data Downloader
+geo_benchmark Data Downloader
 Downloads and prepares all open-source benchmark datasets.
 
 Usage:
-    python GeoBenchmark/download_data.py                    # download all
-    python GeoBenchmark/download_data.py --dataset california_housing
-    python GeoBenchmark/download_data.py --list             # list available datasets
+    python geo_benchmark/download_data.py                    # download all
+    python geo_benchmark/download_data.py --dataset california_housing
+    python geo_benchmark/download_data.py --list             # list available datasets
 """
 
 from __future__ import annotations
@@ -261,7 +261,7 @@ def download_all() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Download GeoBenchmark datasets")
+    parser = argparse.ArgumentParser(description="Download geo_benchmark datasets")
     parser.add_argument("--dataset", type=str, help="Dataset name to download")
     parser.add_argument("--list", action="store_true", help="List available datasets")
     args = parser.parse_args()

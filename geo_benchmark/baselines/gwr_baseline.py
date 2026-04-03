@@ -5,7 +5,7 @@ Uses the mgwr library (https://github.com/pysal/mgwr).
 Adaptive bi-square kernel with AICc-based bandwidth selection.
 
 Usage:
-    python GeoBenchmark/baselines/gwr_baseline.py --dataset california_housing
+    python geo_benchmark/baselines/gwr_baseline.py --dataset california_housing
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ def run(
     dependent_var: str = "target",
     lat_col: str = "lat",
     lon_col: str = "lon",
-    output_dir: str | Path = "GeoBenchmark/results/gwr/",
+    output_dir: str | Path = "geo_benchmark/results/gwr/",
     kernel: str = "bisquare",
     fixed: bool = False,
     max_n: int = 5000,
@@ -174,7 +174,7 @@ def _quick_morans_i(residuals: np.ndarray, lat: np.ndarray, lon: np.ndarray, k: 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run GWR baseline")
     parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--output", type=str, default="GeoBenchmark/results/gwr/")
+    parser.add_argument("--output", type=str, default="geo_benchmark/results/gwr/")
     parser.add_argument("--target", type=str, default="target")
     parser.add_argument("--kernel", type=str, default="bisquare")
     parser.add_argument("--fixed", action="store_true")
@@ -183,7 +183,7 @@ def main() -> None:
     if Path(args.dataset).exists():
         dataset_path = Path(args.dataset)
     else:
-        dataset_path = Path("GeoBenchmark/datasets") / args.dataset / f"{args.dataset}.csv"
+        dataset_path = Path("geo_benchmark/datasets") / args.dataset / f"{args.dataset}.csv"
 
     run(
         dataset_path=dataset_path,

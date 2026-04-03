@@ -23,7 +23,7 @@ Extract every testable claim as a list:
 
 ## Phase 2: Match Claims to Results
 
-For each claim, find the supporting result in `EXPERIMENT_LOG.md` or `GeoBenchmark/results/`:
+For each claim, find the supporting result in `EXPERIMENT_LOG.md` or `geo_benchmark/results/`:
 - Exact matching: find the specific model/dataset/metric value
 - Mark as: VERIFIED (number found), QUALIFIED (directionally supported but different magnitude), UNSUPPORTED (no matching result)
 
@@ -52,7 +52,7 @@ Write verified claim list to `memory/approved_claims.md`:
 # Approved Claims — Verified Against Results
 
 ## Strong Claims (exact number in results)
-- MGWR AICc = 1234.5 vs GWR AICc = 1289.3 (verified in GeoBenchmark/results/mgwr_results.json)
+- MGWR AICc = 1234.5 vs GWR AICc = 1289.3 (verified in geo_benchmark/results/mgwr_results.json)
 - ...
 
 ## Qualified Claims (directional support, cite uncertainty)

@@ -103,8 +103,8 @@ Future work: [3-5 specific directions from claim audit].
 
 | Figure | Type | Data source | Command | Status |
 |--------|------|------------|---------|--------|
-| Fig 1 | Study area map | [path] | `python GeoBenchmark/evaluation/visualize.py --type study_area ...` | ⏳ |
-| Fig 2 | Model comparison | GeoBenchmark/results/ | `python GeoBenchmark/evaluation/visualize.py --type comparison_table ...` | ⏳ |
-| Fig 3 | Local R² map | GWR/MGWR results | `python GeoBenchmark/evaluation/visualize.py --type local_r2_map ...` | ⏳ |
-| Fig 4 | Coefficient map | MGWR results | `python GeoBenchmark/evaluation/visualize.py --type coefficient_map ...` | ⏳ |
-| Fig 5 | Residual map | OLS/GWR results | `python GeoBenchmark/evaluation/visualize.py --type residual_map ...` | ⏳ |
+| Fig 1 | Study area map | [path] | `python geo_benchmark/evaluation/visualize.py --type study_area ...` | ⏳ |
+| Fig 2 | Model comparison | geo_benchmark/results/ | `python geo_benchmark/evaluation/visualize.py --type comparison_table ...` | ⏳ |
+| Fig 3 | Local R² map | GWR/MGWR results | `python geo_benchmark/evaluation/visualize.py --type local_r2_map ...` | ⏳ |
+| Fig 4 | Coefficient map | MGWR results | `python geo_benchmark/evaluation/visualize.py --type coefficient_map ...` | ⏳ |
+| Fig 5 | Residual map | OLS/GWR results | `python geo_benchmark/evaluation/visualize.py --type residual_map ...` | ⏳ |

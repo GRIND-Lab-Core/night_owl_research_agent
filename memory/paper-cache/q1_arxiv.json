@@ -1,0 +1,552 @@
+{
+  "source": "arxiv",
+  "query": "soundscape conditioned image generation urban",
+  "fetched_at": "2026-04-02T01:48:54.412530+00:00",
+  "count": 20,
+  "papers": [
+    {
+      "id": "arxiv:2211.00355v1",
+      "arxiv_id": "2211.00355v1",
+      "title": "Urban Mobility",
+      "authors": [
+        "Laura Alessandretti",
+        "Michael Szell"
+      ],
+      "year": 2022,
+      "abstract": "In this chapter, we discuss urban mobility from a complexity science perspective. First, we give an overview of the datasets that enable this approach, such as mobile phone records, location-based social network traces, or GPS trajectories from sensors installed on vehicles. We then review the empirical and theoretical",
+      "abstract_full": "In this chapter, we discuss urban mobility from a complexity science perspective. First, we give an overview of the datasets that enable this approach, such as mobile phone records, location-based social network traces, or GPS trajectories from sensors installed on vehicles. We then review the empirical and theoretical understanding of the properties of human movements, including the distribution of travel distances and times, the entropy of trajectories, and the interplay between exploration and exploitation of locations. Next, we explain generative and predictive models of individual mobility, and their limitations due to intrinsic limits of predictability. Finally, we discuss urban transport from a systemic perspective, including system-wide challenges like ridesharing, multimodality, and sustainable transport.",
+      "venue": "arXiv",
+      "categories": [
+        "physics.soc-ph",
+        "cs.CY"
+      ],
+      "doi": "10.1007/978-3-031-82666-5_4",
+      "url": "https://arxiv.org/abs/2211.00355v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2205.13064v1",
+      "arxiv_id": "2205.13064v1",
+      "title": "Urban Rhapsody: Large-scale exploration of urban soundscapes",
+      "authors": [
+        "Joao Rulff",
+        "Fabio Miranda",
+        "Maryam Hosseini",
+        "Marcos Lage",
+        "Mark Cartwright",
+        "Graham Dove",
+        "Juan Bello",
+        "Claudio T. Silva"
+      ],
+      "year": 2022,
+      "abstract": "Noise is one of the primary quality-of-life issues in urban environments. In addition to annoyance, noise negatively impacts public health and educational performance. While low-cost sensors can be deployed to monitor ambient noise levels at high temporal resolutions, the amount of data they produce and the complexity ",
+      "abstract_full": "Noise is one of the primary quality-of-life issues in urban environments. In addition to annoyance, noise negatively impacts public health and educational performance. While low-cost sensors can be deployed to monitor ambient noise levels at high temporal resolutions, the amount of data they produce and the complexity of these data pose significant analytical challenges. One way to address these challenges is through machine listening techniques, which are used to extract features in attempts to classify the source of noise and understand temporal patterns of a city's noise situation. However, the overwhelming number of noise sources in the urban environment and the scarcity of labeled data makes it nearly impossible to create classification models with large enough vocabularies that capture the true dynamism of urban soundscapes In this paper, we first identify a set of requirements in the yet unexplored domain of urban soundscape exploration. To satisfy the requirements and tackle the identified challenges, we propose Urban Rhapsody, a framework that combines state-of-the-art audio representation, machine learning, and visual analytics to allow users to interactively create classification models, understand noise patterns of a city, and quickly retrieve and label audio excerpts in order to create a large high-precision annotated database of urban sound recordings. We demonstrate the tool's utility through case studies performed by domain experts using data generated over the five-year deployment of a one-of-a-kind sensor network in New York City.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.CY",
+        "cs.HC",
+        "cs.LG",
+        "cs.SD",
+        "eess.AS"
+      ],
+      "doi": "10.1111/cgf.14534",
+      "url": "https://arxiv.org/abs/2205.13064v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2503.14195v1",
+      "arxiv_id": "2503.14195v1",
+      "title": "Mapping Urban Villages in China: Progress and Challenges",
+      "authors": [
+        "Rui Cao",
+        "Wei Tu",
+        "Dongsheng Chen",
+        "Wenyu Zhang"
+      ],
+      "year": 2025,
+      "abstract": "The shift toward high-quality urbanization has brought increased attention to the issue of \"urban villages\", which has become a prominent social problem in China. However, there is a lack of available geospatial data on urban villages, making it crucial to prioritize urban village mapping. In order to assess the curren",
+      "abstract_full": "The shift toward high-quality urbanization has brought increased attention to the issue of \"urban villages\", which has become a prominent social problem in China. However, there is a lack of available geospatial data on urban villages, making it crucial to prioritize urban village mapping. In order to assess the current progress in urban village mapping and identify challenges and future directions, we have conducted a comprehensive review, which to the best of our knowledge is the first of its kind in this field. Our review begins by providing a clear context for urban villages and elaborating the method for literature review, then summarizes the study areas, data sources, and approaches used for urban village mapping in China. We also address the challenges and future directions for further research. Through thorough investigation, we find that current studies only cover very limited study areas and periods and lack sufficient investigation into the scalability, transferability, and interpretability of identification approaches due to the challenges in concept fuzziness and variances, spatial heterogeneity and variances of urban villages, and data availability. Future research can complement and further the current research in the following potential directions in order to achieve large-area mapping across the whole nation...",
+      "venue": "arXiv",
+      "categories": [
+        "cs.DB",
+        "cs.CV"
+      ],
+      "doi": "10.1016/j.compenvurbsys.2025.102282",
+      "url": "https://arxiv.org/abs/2503.14195v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2203.12245v3",
+      "arxiv_id": "2203.12245v3",
+      "title": "Quantitative Evaluation Approach for Translation of Perceptual Soundscape Attributes: Initial Application to the Thai Language",
+      "authors": [
+        "Karn N. Watcharasupat",
+        "Sureenate Jaratjarungkiat",
+        "Bhan Lam",
+        "Sujinat Jitwiriyanont",
+        "Kanyanut Akaratham",
+        "Kenneth Ooi",
+        "Zhen-Ting Ong",
+        "Titima Suthiwan",
+        "Nitipong Pichetpan",
+        "Monthita Rojtinnakorn",
+        "Woon-Seng Gan"
+      ],
+      "year": 2022,
+      "abstract": "Translation of perceptual soundscape attributes from one language to another remains a challenging task that requires a high degree of fidelity in both psychoacoustic and psycholinguistic senses across the target population. Due to the inherently subjective nature of human perception, translating soundscape attributes ",
+      "abstract_full": "Translation of perceptual soundscape attributes from one language to another remains a challenging task that requires a high degree of fidelity in both psychoacoustic and psycholinguistic senses across the target population. Due to the inherently subjective nature of human perception, translating soundscape attributes using only small focus group discussion or expert panels could lead to translations with psycholinguistic meanings that, in a non-expert setting, deviate or distort from that of the source language. In this work, we present a quantitative evaluation method based on the circumplex model of soundscape perception to assess the overall translation quality across a set of criteria. As an initial application domain, we demonstrated the use of the quantitative evaluation framework in the context of an English-to-Thai translation of soundscape attributes.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.SD",
+        "eess.AS",
+        "stat.AP",
+        "stat.ME"
+      ],
+      "doi": "10.1016/j.apacoust.2022.108962",
+      "url": "https://arxiv.org/abs/2203.12245v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2304.12840v2",
+      "arxiv_id": "2304.12840v2",
+      "title": "Spatiotemporal gender differences in urban vibrancy",
+      "authors": [
+        "Thomas Collins",
+        "Riccardo Di Clemente",
+        "Mario Gutiérrez-Roig",
+        "Federico Botta"
+      ],
+      "year": 2023,
+      "abstract": "Urban vibrancy is the dynamic activity of humans in urban locations. It can vary with urban features and the opportunities for human interactions, but it might also differ according to the underlying social conditions of city inhabitants across and within social surroundings. Such heterogeneity in how different demogra",
+      "abstract_full": "Urban vibrancy is the dynamic activity of humans in urban locations. It can vary with urban features and the opportunities for human interactions, but it might also differ according to the underlying social conditions of city inhabitants across and within social surroundings. Such heterogeneity in how different demographic groups may experience cities has the potential to cause gender segregation because of differences in the preferences of inhabitants, their accessibility and opportunities, and large-scale mobility behaviours. However, traditional studies have failed to capture fully a high-frequency understanding of how urban vibrancy is linked to urban features, how this might differ for different genders, and how this might affect segregation in cities. Our results show that (1) there are differences between males and females in terms of urban vibrancy, (2) the differences relate to `Points of Interest` as well as transportation networks, and (3) that there are both positive and negative `spatial spillovers` existing across each city. To do this, we use a quantitative approach using Call Detail Record data--taking advantage of the near-ubiquitous use of mobile phones--to gain high-frequency observations of spatial behaviours across the seven most prominent cities of Italy. We use a spatial model comparison approach of the direct and `spillover` effects from urban features on male-female differences. Our results increase our understanding of inequality in cities and how we can make future cities fairer.",
+      "venue": "arXiv",
+      "categories": [
+        "physics.soc-ph",
+        "cs.CY"
+      ],
+      "doi": "10.1177/23998083231209073",
+      "url": "https://arxiv.org/abs/2304.12840v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1606.08488v1",
+      "arxiv_id": "1606.08488v1",
+      "title": "Curating Transient Population in Urban Dynamics System",
+      "authors": [
+        "Gautam S. Thakur",
+        "Kevin A. Sparks",
+        "Robert N. Stewart",
+        "Marie L. Urban",
+        "Budhendra L. Bhaduri"
+      ],
+      "year": 2016,
+      "abstract": "For past several decades, research efforts in population modelling has proven its efficacy in understanding the basic information about residential and commercial areas, as well as for the purposes of planning, development and improvement of the community as an eco-system. More or less, such efforts assume static natur",
+      "abstract_full": "For past several decades, research efforts in population modelling has proven its efficacy in understanding the basic information about residential and commercial areas, as well as for the purposes of planning, development and improvement of the community as an eco-system. More or less, such efforts assume static nature of population distribution, in turn limited by the current ability to capture the dynamics of population change at a finer resolution of space and time. Fast forward today, more and more people are becoming mobile, traveling across borders impacting the nuts and bolts of our urban fabric. Unfortunately, our current efforts are being surpassed by the need to capture such transient population. It is becoming imperative to identify and define them, as well as measure their dynamics and interconnectedness. In this work, we intend to research urban population mobility patterns, gauge their transient nature, and extend our knowledge of their visited locations. We plan to achieve this by designing and developing novel methods and using VGI data that models and characterizes transient population dynamics.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.SI",
+        "physics.soc-ph"
+      ],
+      "doi": null,
+      "url": "https://arxiv.org/abs/1606.08488v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2207.01078v4",
+      "arxiv_id": "2207.01078v4",
+      "title": "ARAUS: A Large-Scale Dataset and Baseline Models of Affective Responses to Augmented Urban Soundscapes",
+      "authors": [
+        "Kenneth Ooi",
+        "Zhen-Ting Ong",
+        "Karn N. Watcharasupat",
+        "Bhan Lam",
+        "Joo Young Hong",
+        "Woon-Seng Gan"
+      ],
+      "year": 2022,
+      "abstract": "Choosing optimal maskers for existing soundscapes to effect a desired perceptual change via soundscape augmentation is non-trivial due to extensive varieties of maskers and a dearth of benchmark datasets with which to compare and develop soundscape augmentation models. To address this problem, we make publicly availabl",
+      "abstract_full": "Choosing optimal maskers for existing soundscapes to effect a desired perceptual change via soundscape augmentation is non-trivial due to extensive varieties of maskers and a dearth of benchmark datasets with which to compare and develop soundscape augmentation models. To address this problem, we make publicly available the ARAUS (Affective Responses to Augmented Urban Soundscapes) dataset, which comprises a five-fold cross-validation set and independent test set totaling 25,440 unique subjective perceptual responses to augmented soundscapes presented as audio-visual stimuli. Each augmented soundscape is made by digitally adding \"maskers\" (bird, water, wind, traffic, construction, or silence) to urban soundscape recordings at fixed soundscape-to-masker ratios. Responses were then collected by asking participants to rate how pleasant, annoying, eventful, uneventful, vibrant, monotonous, chaotic, calm, and appropriate each augmented soundscape was, in accordance with ISO 12913-2:2018. Participants also provided relevant demographic information and completed standard psychological questionnaires. We perform exploratory and statistical analysis of the responses obtained to verify internal consistency and agreement with known results in the literature. Finally, we demonstrate the benchmarking capability of the dataset by training and comparing four baseline models for urban soundscape pleasantness: a low-parameter regression model, a high-parameter convolutional neural network, and two attention-based networks in the literature.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.SD",
+        "eess.AS"
+      ],
+      "doi": "10.1109/TAFFC.2023.3247914",
+      "url": "https://arxiv.org/abs/2207.01078v4",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2504.04624v4",
+      "arxiv_id": "2504.04624v4",
+      "title": "Notes on Quantum Soundscapes and Music",
+      "authors": [
+        "Miles Blencowe",
+        "Michael Casey",
+        "Kimberly Tan"
+      ],
+      "year": 2025,
+      "abstract": "We describe our investigations concerning the sonification of measured data from experiments involving various mesoscopic mechanical oscillator systems cooled down close to their quantum ground states, and music generation from a programmed quantum computer that subjects a single quantum bit (\"qubit\") to various unitar",
+      "abstract_full": "We describe our investigations concerning the sonification of measured data from experiments involving various mesoscopic mechanical oscillator systems cooled down close to their quantum ground states, and music generation from a programmed quantum computer that subjects a single quantum bit (\"qubit\") to various unitary rotations, composed in order to test for the breakdown of macroscopic realism as expressed by the violation of the Leggett-Garg inequality. \"Listening'' to data via their resulting sonifications facilitates the discovery of signals that might otherwise be hard to detect in common graphic (i.e., visual) representations, and for the quantum computer music experiment provides a complementary way to discern when the measured qubit data violates macroscopic realism with some prior listening training. The resulting soundscapes and music also provide a complementary window into the quantum realm that is accessible to non-experts with open ears.",
+      "venue": "arXiv",
+      "categories": [
+        "quant-ph"
+      ],
+      "doi": null,
+      "url": "https://arxiv.org/abs/2504.04624v4",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2309.00885v1",
+      "arxiv_id": "2309.00885v1",
+      "title": "A Generic Fundus Image Enhancement Network Boosted by Frequency Self-supervised Representation Learning",
+      "authors": [
+        "Heng Li",
+        "Haofeng Liu",
+        "Huazhu Fu",
+        "Yanwu Xu",
+        "Hui Shu",
+        "Ke Niu",
+        "Yan Hu",
+        "Jiang Liu"
+      ],
+      "year": 2023,
+      "abstract": "Fundus photography is prone to suffer from image quality degradation that impacts clinical examination performed by ophthalmologists or intelligent systems. Though enhancement algorithms have been developed to promote fundus observation on degraded images, high data demands and limited applicability hinder their clinic",
+      "abstract_full": "Fundus photography is prone to suffer from image quality degradation that impacts clinical examination performed by ophthalmologists or intelligent systems. Though enhancement algorithms have been developed to promote fundus observation on degraded images, high data demands and limited applicability hinder their clinical deployment. To circumvent this bottleneck, a generic fundus image enhancement network (GFE-Net) is developed in this study to robustly correct unknown fundus images without supervised or extra data. Levering image frequency information, self-supervised representation learning is conducted to learn robust structure-aware representations from degraded images. Then with a seamless architecture that couples representation learning and image enhancement, GFE-Net can accurately correct fundus images and meanwhile preserve retinal structures. Comprehensive experiments are implemented to demonstrate the effectiveness and advantages of GFE-Net. Compared with state-of-the-art algorithms, GFE-Net achieves superior performance in data dependency, enhancement performance, deployment efficiency, and scale generalizability. Follow-up fundus image analysis is also facilitated by GFE-Net, whose modules are respectively verified to be effective for image enhancement.",
+      "venue": "arXiv",
+      "categories": [
+        "eess.IV",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "doi": "10.1016/j.media.2023.102945",
+      "url": "https://arxiv.org/abs/2309.00885v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2506.06962v3",
+      "arxiv_id": "2506.06962v3",
+      "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
+      "authors": [
+        "Jingyuan Qi",
+        "Zhiyang Xu",
+        "Qifan Wang",
+        "Lifu Huang"
+      ],
+      "year": 2025,
+      "abstract": "We introduce Autoregressive Retrieval Augmentation (AR-RAG), a novel paradigm that enhances image generation by autoregressively incorporating knearest neighbor retrievals at the patch level. Unlike prior methods that perform a single, static retrieval before generation and condition the entire generation on fixed refe",
+      "abstract_full": "We introduce Autoregressive Retrieval Augmentation (AR-RAG), a novel paradigm that enhances image generation by autoregressively incorporating knearest neighbor retrievals at the patch level. Unlike prior methods that perform a single, static retrieval before generation and condition the entire generation on fixed reference images, AR-RAG performs context-aware retrievals at each generation step, using prior-generated patches as queries to retrieve and incorporate the most relevant patch-level visual references, enabling the model to respond to evolving generation needs while avoiding limitations (e.g., over-copying, stylistic bias, etc.) prevalent in existing methods. To realize AR-RAG, we propose two parallel frameworks: (1) Distribution-Augmentation in Decoding (DAiD), a training-free plug-and-use decoding strategy that directly merges the distribution of model-predicted patches with the distribution of retrieved patches, and (2) Feature-Augmentation in Decoding (FAiD), a parameter-efficient fine-tuning method that progressively smooths the features of retrieved patches via multi-scale convolution operations and leverages them to augment the image generation process. We validate the effectiveness of AR-RAG on widely adopted benchmarks, including Midjourney-30K, GenEval and DPG-Bench, demonstrating significant performance gains over state-of-the-art image generation models.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.CV"
+      ],
+      "doi": null,
+      "url": "https://arxiv.org/abs/2506.06962v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1912.05189v2",
+      "arxiv_id": "1912.05189v2",
+      "title": "BINet: a binary inpainting network for deep patch-based image compression",
+      "authors": [
+        "André Nortje",
+        "Willie Brink",
+        "Herman A. Engelbrecht",
+        "Herman Kamper"
+      ],
+      "year": 2019,
+      "abstract": "Recent deep learning models outperform standard lossy image compression codecs. However, applying these models on a patch-by-patch basis requires that each image patch be encoded and decoded independently. The influence from adjacent patches is therefore lost, leading to block artefacts at low bitrates. We propose the ",
+      "abstract_full": "Recent deep learning models outperform standard lossy image compression codecs. However, applying these models on a patch-by-patch basis requires that each image patch be encoded and decoded independently. The influence from adjacent patches is therefore lost, leading to block artefacts at low bitrates. We propose the Binary Inpainting Network (BINet), an autoencoder framework which incorporates binary inpainting to reinstate interdependencies between adjacent patches, for improved patch-based compression of still images. When decoding a patch, BINet additionally uses the binarised encodings from surrounding patches to guide its reconstruction. In contrast to sequential inpainting methods where patches are decoded based on previons reconstructions, BINet operates directly on the binary codes of surrounding patches without access to the original or reconstructed image data. Encoding and decoding can therefore be performed in parallel. We demonstrate that BINet improves the compression quality of a competitive deep image codec across a range of compression levels.",
+      "venue": "arXiv",
+      "categories": [
+        "eess.IV",
+        "cs.CV"
+      ],
+      "doi": "10.1016/j.image.2020.116119",
+      "url": "https://arxiv.org/abs/1912.05189v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2205.10120v7",
+      "arxiv_id": "2205.10120v7",
+      "title": "Privacy Preserving Image Registration",
+      "authors": [
+        "Riccardo Taiello",
+        "Melek Önen",
+        "Francesco Capano",
+        "Olivier Humbert",
+        "Marco Lorenzi"
+      ],
+      "year": 2022,
+      "abstract": "Image registration is a key task in medical imaging applications, allowing to represent medical images in a common spatial reference frame. Current approaches to image registration are generally based on the assumption that the content of the images is usually accessible in clear form, from which the spatial transforma",
+      "abstract_full": "Image registration is a key task in medical imaging applications, allowing to represent medical images in a common spatial reference frame. Current approaches to image registration are generally based on the assumption that the content of the images is usually accessible in clear form, from which the spatial transformation is subsequently estimated. This common assumption may not be met in practical applications, since the sensitive nature of medical images may ultimately require their analysis under privacy constraints, preventing to openly share the image content.In this work, we formulate the problem of image registration under a privacy preserving regime, where images are assumed to be confidential and cannot be disclosed in clear. We derive our privacy preserving image registration framework by extending classical registration paradigms to account for advanced cryptographic tools, such as secure multi-party computation and homomorphic encryption, that enable the execution of operations without leaking the underlying data. To overcome the problem of performance and scalability of cryptographic tools in high dimensions, we propose several techniques to optimize the image registration operations by using gradient approximations, and by revisiting the use of homomorphic encryption trough packing, to allow the efficient encryption and multiplication of large matrices. We demonstrate our privacy preserving framework in linear and non-linear registration problems, evaluating its accuracy and scalability with respect to standard, non-private counterparts. Our results show that privacy preserving image registration is feasible and can be adopted in sensitive medical imaging applications.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.CR",
+        "eess.IV"
+      ],
+      "doi": "10.1007/978-3-031-16446-0_13",
+      "url": "https://arxiv.org/abs/2205.10120v7",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2503.17371v2",
+      "arxiv_id": "2503.17371v2",
+      "title": "A Review of Urban Resilience Frameworks: Transferring Knowledge to Enhance Pandemic Resilience",
+      "authors": [
+        "Yue Sun",
+        "Ryan Weightman",
+        "Anye Shi",
+        "Timur Dogan",
+        "Samitha Samaranayake"
+      ],
+      "year": 2025,
+      "abstract": "Urbanization is rapidly increasing, with urban populations expected to grow significantly by 2050, particularly in developing regions. This expansion brings challenges related to chronic stresses and acute shocks, such as the COVID-19 pandemic, which has underscored the critical role of urban form in a city's capacity ",
+      "abstract_full": "Urbanization is rapidly increasing, with urban populations expected to grow significantly by 2050, particularly in developing regions. This expansion brings challenges related to chronic stresses and acute shocks, such as the COVID-19 pandemic, which has underscored the critical role of urban form in a city's capacity to manage public health crises. Despite the heightened interest in urban resilience, research examining the relationship between urban morphology and pandemic resilience remains limited, often focusing solely on density and its effect on disease transmission. This work aims to address this gap by evaluating existing frameworks that analyze the relationship between urban resilience and urban form. By critically reviewing these frameworks, with a particular emphasis on theoretical and quantitative approaches, this study seeks to transfer the knowledge gained to better understand the relationship between pandemic resilience and urban morphology. The work also links theoretical ideas with quantitative frameworks, offering a cohesive analysis. The anticipated novelty of this study lies in its comprehensive assessment of urban resilience frameworks and the identification of the current gaps in integrating resilience to pandemic thinking into urban planning and design. The goal is not only to enhance the understanding of urban resilience but also to offer practical guidance for developing more adaptive and effective frameworks for assessing resilience to pandemics in urban environments, thereby preparing cities to better withstand and recover from future crises.",
+      "venue": "arXiv",
+      "categories": [
+        "physics.soc-ph"
+      ],
+      "doi": "10.3934/urs.2025014",
+      "url": "https://arxiv.org/abs/2503.17371v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2410.19288v1",
+      "arxiv_id": "2410.19288v1",
+      "title": "A Flow-based Truncated Denoising Diffusion Model for Super-resolution Magnetic Resonance Spectroscopic Imaging",
+      "authors": [
+        "Siyuan Dong",
+        "Zhuotong Cai",
+        "Gilbert Hangel",
+        "Wolfgang Bogner",
+        "Georg Widhalm",
+        "Yaqing Huang",
+        "Qinghao Liang",
+        "Chenyu You",
+        "Chathura Kumaragamage",
+        "Robert K. Fulbright",
+        "Amit Mahajan",
+        "Amin Karbasi",
+        "John A. Onofrey",
+        "Robin A. de Graaf",
+        "James S. Duncan"
+      ],
+      "year": 2024,
+      "abstract": "Magnetic Resonance Spectroscopic Imaging (MRSI) is a non-invasive imaging technique for studying metabolism and has become a crucial tool for understanding neurological diseases, cancers and diabetes. High spatial resolution MRSI is needed to characterize lesions, but in practice MRSI is acquired at low resolution due ",
+      "abstract_full": "Magnetic Resonance Spectroscopic Imaging (MRSI) is a non-invasive imaging technique for studying metabolism and has become a crucial tool for understanding neurological diseases, cancers and diabetes. High spatial resolution MRSI is needed to characterize lesions, but in practice MRSI is acquired at low resolution due to time and sensitivity restrictions caused by the low metabolite concentrations. Therefore, there is an imperative need for a post-processing approach to generate high-resolution MRSI from low-resolution data that can be acquired fast and with high sensitivity. Deep learning-based super-resolution methods provided promising results for improving the spatial resolution of MRSI, but they still have limited capability to generate accurate and high-quality images. Recently, diffusion models have demonstrated superior learning capability than other generative models in various tasks, but sampling from diffusion models requires iterating through a large number of diffusion steps, which is time-consuming. This work introduces a Flow-based Truncated Denoising Diffusion Model (FTDDM) for super-resolution MRSI, which shortens the diffusion process by truncating the diffusion chain, and the truncated steps are estimated using a normalizing flow-based network. The network is conditioned on upscaling factors to enable multi-scale super-resolution. To train and evaluate the deep learning models, we developed a 1H-MRSI dataset acquired from 25 high-grade glioma patients. We demonstrate that FTDDM outperforms existing generative models while speeding up the sampling process by over 9-fold compared to the baseline diffusion model. Neuroradiologists' evaluations confirmed the clinical advantages of our method, which also supports uncertainty estimation and sharpness adjustment, extending its potential clinical applications.",
+      "venue": "arXiv",
+      "categories": [
+        "eess.IV",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "doi": "10.1016/j.media.2024.103358",
+      "url": "https://arxiv.org/abs/2410.19288v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2012.04764v3",
+      "arxiv_id": "2012.04764v3",
+      "title": "Conditional Generation of Medical Images via Disentangled Adversarial Inference",
+      "authors": [
+        "Mohammad Havaei",
+        "Ximeng Mao",
+        "Yiping Wang",
+        "Qicheng Lao"
+      ],
+      "year": 2020,
+      "abstract": "Synthetic medical image generation has a huge potential for improving healthcare through many applications, from data augmentation for training machine learning systems to preserving patient privacy. Conditional Adversarial Generative Networks (cGANs) use a conditioning factor to generate images and have shown great su",
+      "abstract_full": "Synthetic medical image generation has a huge potential for improving healthcare through many applications, from data augmentation for training machine learning systems to preserving patient privacy. Conditional Adversarial Generative Networks (cGANs) use a conditioning factor to generate images and have shown great success in recent years. Intuitively, the information in an image can be divided into two parts: 1) content which is presented through the conditioning vector and 2) style which is the undiscovered information missing from the conditioning vector. Current practices in using cGANs for medical image generation, only use a single variable for image generation (i.e., content) and therefore, do not provide much flexibility nor control over the generated image. In this work we propose a methodology to learn from the image itself, disentangled representations of style and content, and use this information to impose control over the generation process. In this framework, style is learned in a fully unsupervised manner, while content is learned through both supervised learning (using the conditioning vector) and unsupervised learning (with the inference mechanism). We undergo two novel regularization steps to ensure content-style disentanglement. First, we minimize the shared information between content and style by introducing a novel application of the gradient reverse layer (GRL); second, we introduce a self-supervised regularization method to further separate information in the content and style variables. We show that in general, two latent variable models achieve better performance and give more control over the generated image. We also show that our proposed model (DRAI) achieves the best disentanglement score and has the best overall performance.",
+      "venue": "arXiv",
+      "categories": [
+        "eess.IV",
+        "cs.CV"
+      ],
+      "doi": "10.1016/j.media.2021.102106",
+      "url": "https://arxiv.org/abs/2012.04764v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2412.01496v2",
+      "arxiv_id": "2412.01496v2",
+      "title": "Fréchet Radiomic Distance (FRD): A Versatile Metric for Comparing Medical Imaging Datasets",
+      "authors": [
+        "Nicholas Konz",
+        "Richard Osuala",
+        "Preeti Verma",
+        "Yuwen Chen",
+        "Hanxue Gu",
+        "Haoyu Dong",
+        "Yaqian Chen",
+        "Andrew Marshall",
+        "Lidia Garrucho",
+        "Kaisar Kushibar",
+        "Daniel M. Lang",
+        "Gene S. Kim",
+        "Lars J. Grimm",
+        "John M. Lewin",
+        "James S. Duncan",
+        "Julia A. Schnabel",
+        "Oliver Diaz",
+        "Karim Lekadir",
+        "Maciej A. Mazurowski"
+      ],
+      "year": 2024,
+      "abstract": "Determining whether two sets of images belong to the same or different distributions or domains is a crucial task in modern medical image analysis and deep learning; for example, to evaluate the output quality of image generative models. Currently, metrics used for this task either rely on the (potentially biased) choi",
+      "abstract_full": "Determining whether two sets of images belong to the same or different distributions or domains is a crucial task in modern medical image analysis and deep learning; for example, to evaluate the output quality of image generative models. Currently, metrics used for this task either rely on the (potentially biased) choice of some downstream task, such as segmentation, or adopt task-independent perceptual metrics (e.g., Fréchet Inception Distance/FID) from natural imaging, which we show insufficiently capture anatomical features. To this end, we introduce a new perceptual metric tailored for medical images, FRD (Fréchet Radiomic Distance), which utilizes standardized, clinically meaningful, and interpretable image features. We show that FRD is superior to other image distribution metrics for a range of medical imaging applications, including out-of-domain (OOD) detection, the evaluation of image-to-image translation (by correlating more with downstream task performance as well as anatomical consistency and realism), and the evaluation of unconditional image generation. Moreover, FRD offers additional benefits such as stability and computational efficiency at low sample sizes, sensitivity to image corruptions and adversarial attacks, feature interpretability, and correlation with radiologist-perceived image quality. Additionally, we address key gaps in the literature by presenting an extensive framework for the multifaceted evaluation of image similarity metrics in medical imaging -- including the first large-scale comparative study of generative models for medical image translation -- and release an accessible codebase to facilitate future research. Our results are supported by thorough experiments spanning a variety of datasets, modalities, and downstream tasks, highlighting the broad potential of FRD for medical image analysis.",
+      "venue": "arXiv",
+      "categories": [
+        "cs.CV",
+        "cs.LG",
+        "eess.IV",
+        "stat.ML"
+      ],
+      "doi": "10.1016/j.media.2026.103943",
+      "url": "https://arxiv.org/abs/2412.01496v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1908.09288v1",
+      "arxiv_id": "1908.09288v1",
+      "title": "Locally Linear Image Structural Embedding for Image Structure Manifold Learning",
+      "authors": [
+        "Benyamin Ghojogh",
+        "Fakhri Karray",
+        "Mark Crowley"
+      ],
+      "year": 2019,
+      "abstract": "Most of existing manifold learning methods rely on Mean Squared Error (MSE) or $\\ell_2$ norm. However, for the problem of image quality assessment, these are not promising measure. In this paper, we introduce the concept of an image structure manifold which captures image structure features and discriminates image dist",
+      "abstract_full": "Most of existing manifold learning methods rely on Mean Squared Error (MSE) or $\\ell_2$ norm. However, for the problem of image quality assessment, these are not promising measure. In this paper, we introduce the concept of an image structure manifold which captures image structure features and discriminates image distortions. We propose a new manifold learning method, Locally Linear Image Structural Embedding (LLISE), and kernel LLISE for learning this manifold. The LLISE is inspired by Locally Linear Embedding (LLE) but uses SSIM rather than MSE. This paper builds a bridge between manifold learning and image fidelity assessment and it can open a new area for future investigations.",
+      "venue": "arXiv",
+      "categories": [
+        "stat.ML",
+        "cs.CV",
+        "cs.LG",
+        "eess.IV"
+      ],
+      "doi": "10.1007/978-3-030-27202-9_11",
+      "url": "https://arxiv.org/abs/1908.09288v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2107.09543v2",
+      "arxiv_id": "2107.09543v2",
+      "title": "Data synthesis and adversarial networks: A review and meta-analysis in cancer imaging",
+      "authors": [
+        "Richard Osuala",
+        "Kaisar Kushibar",
+        "Lidia Garrucho",
+        "Akis Linardos",
+        "Zuzanna Szafranowska",
+        "Stefan Klein",
+        "Ben Glocker",
+        "Oliver Diaz",
+        "Karim Lekadir"
+      ],
+      "year": 2021,
+      "abstract": "Despite technological and medical advances, the detection, interpretation, and treatment of cancer based on imaging data continue to pose significant challenges. These include inter-observer variability, class imbalance, dataset shifts, inter- and intra-tumour heterogeneity, malignancy determination, and treatment effe",
+      "abstract_full": "Despite technological and medical advances, the detection, interpretation, and treatment of cancer based on imaging data continue to pose significant challenges. These include inter-observer variability, class imbalance, dataset shifts, inter- and intra-tumour heterogeneity, malignancy determination, and treatment effect uncertainty. Given the recent advancements in Generative Adversarial Networks (GANs), data synthesis, and adversarial training, we assess the potential of these technologies to address a number of key challenges of cancer imaging. We categorise these challenges into (a) data scarcity and imbalance, (b) data access and privacy, (c) data annotation and segmentation, (d) cancer detection and diagnosis, and (e) tumour profiling, treatment planning and monitoring. Based on our analysis of 164 publications that apply adversarial training techniques in the context of cancer imaging, we highlight multiple underexplored solutions with research potential. We further contribute the Synthesis Study Trustworthiness Test (SynTRUST), a meta-analysis framework for assessing the validation rigour of medical image synthesis studies. SynTRUST is based on 26 concrete measures of thoroughness, reproducibility, usefulness, scalability, and tenability. Based on SynTRUST, we analyse 16 of the most promising cancer imaging challenge solutions and observe a high validation rigour in general, but also several desirable improvements. With this work, we strive to bridge the gap between the needs of the clinical cancer imaging community and the current and prospective research on data synthesis and adversarial networks in the artificial intelligence community.",
+      "venue": "arXiv",
+      "categories": [
+        "eess.IV",
+        "cs.AI",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "doi": "10.1016/j.media.2022.102704",
+      "url": "https://arxiv.org/abs/2107.09543v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2206.03104v2",
+      "arxiv_id": "2206.03104v2",
+      "title": "Crossing the Linguistic Causeway: A Binational Approach for Translating Soundscape Attributes to Bahasa Melayu",
+      "authors": [
+        "Bhan Lam",
+        "Julia Chieng",
+        "Karn N. Watcharasupat",
+        "Kenneth Ooi",
+        "Zhen-Ting Ong",
+        "Joo Young Hong",
+        "Woon-Seng Gan"
+      ],
+      "year": 2022,
+      "abstract": "Translation of perceptual descriptors such as the perceived affective quality attributes in the soundscape standard (ISO/TS 12913-2:2018) is an inherently intricate task, especially if the target language is used in multiple countries. Despite geographical proximity and a shared language of Bahasa Melayu (Standard Mala",
+      "abstract_full": "Translation of perceptual descriptors such as the perceived affective quality attributes in the soundscape standard (ISO/TS 12913-2:2018) is an inherently intricate task, especially if the target language is used in multiple countries. Despite geographical proximity and a shared language of Bahasa Melayu (Standard Malay), differences in culture and language education policies between Singapore and Malaysia could invoke peculiarities in the affective appraisal of sounds. To generate provisional translations of the eight perceived affective attributes -- eventful, vibrant, pleasant, calm, uneventful, monotonous, annoying, and chaotic -- into Bahasa Melayu that is applicable in both Singapore and Malaysia, a binational expert-led approach supplemented by a quantitative evaluation framework was adopted. A set of preliminary translation candidates were developed via a four-stage process, firstly by a qualified translator, which was then vetted by linguistics experts, followed by examination via an experiential evaluation, and finally reviewed by the core research team. A total of 66 participants were then recruited cross-nationally to quantitatively evaluate the preliminary translation candidates. Of the eight attributes, cross-national differences were observed only in the translation of annoying. For instance, \"menjengkelkan\" was found to be significantly less understood in Singapore than in Malaysia, as well as less understandable than \"membingitkan\" within Singapore. Results of the quantitative evaluation also revealed the imperfect nature of foreign language translations for perceptual descriptors, which suggests a possibility for exploring corrective measures.",
+      "venue": "arXiv",
+      "categories": [
+        "stat.AP",
+        "cs.SD"
+      ],
+      "doi": "10.1016/j.apacoust.2022.108976",
+      "url": "https://arxiv.org/abs/2206.03104v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2201.02625v3",
+      "arxiv_id": "2201.02625v3",
+      "title": "FlexHDR: Modelling Alignment and Exposure Uncertainties for Flexible HDR Imaging",
+      "authors": [
+        "Sibi Catley-Chandar",
+        "Thomas Tanay",
+        "Lucas Vandroux",
+        "Aleš Leonardis",
+        "Gregory Slabaugh",
+        "Eduardo Pérez-Pellitero"
+      ],
+      "year": 2022,
+      "abstract": "High dynamic range (HDR) imaging is of fundamental importance in modern digital photography pipelines and used to produce a high-quality photograph with well exposed regions despite varying illumination across the image. This is typically achieved by merging multiple low dynamic range (LDR) images taken at different ex",
+      "abstract_full": "High dynamic range (HDR) imaging is of fundamental importance in modern digital photography pipelines and used to produce a high-quality photograph with well exposed regions despite varying illumination across the image. This is typically achieved by merging multiple low dynamic range (LDR) images taken at different exposures. However, over-exposed regions and misalignment errors due to poorly compensated motion result in artefacts such as ghosting. In this paper, we present a new HDR imaging technique that specifically models alignment and exposure uncertainties to produce high quality HDR results. We introduce a strategy that learns to jointly align and assess the alignment and exposure reliability using an HDR-aware, uncertainty-driven attention map that robustly merges the frames into a single high quality HDR image. Further, we introduce a progressive, multi-stage image fusion approach that can flexibly merge any number of LDR images in a permutation-invariant manner. Experimental results show our method can produce better quality HDR images with up to 1.1dB PSNR improvement to the state-of-the-art, and subjective improvements in terms of better detail, colours, and fewer artefacts.",
+      "venue": "arXiv",
+      "categories": [
+        "eess.IV",
+        "cs.CV"
+      ],
+      "doi": "10.1109/TIP.2022.3203562",
+      "url": "https://arxiv.org/abs/2201.02625v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    }
+  ]
+}

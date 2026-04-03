@@ -2,8 +2,8 @@
 OLS Baseline — Ordinary Least Squares spatial regression baseline.
 
 Usage:
-    python GeoBenchmark/baselines/ols_baseline.py --dataset california_housing
-    python GeoBenchmark/baselines/ols_baseline.py --dataset california_housing --output results/
+    python geo_benchmark/baselines/ols_baseline.py --dataset california_housing
+    python geo_benchmark/baselines/ols_baseline.py --dataset california_housing --output results/
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ def run(
     dependent_var: str = "target",
     lat_col: str = "lat",
     lon_col: str = "lon",
-    output_dir: str | Path = "GeoBenchmark/results/",
+    output_dir: str | Path = "geo_benchmark/results/",
     add_spatial_coords: bool = True,
 ) -> dict:
     """
@@ -164,7 +164,7 @@ def compute_morans_i(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run OLS baseline")
     parser.add_argument("--dataset", type=str, required=True, help="Dataset name or path to CSV")
-    parser.add_argument("--output", type=str, default="GeoBenchmark/results/ols/", help="Output directory")
+    parser.add_argument("--output", type=str, default="geo_benchmark/results/ols/", help="Output directory")
     parser.add_argument("--target", type=str, default="target", help="Target column name")
     args = parser.parse_args()
 
@@ -172,10 +172,10 @@ def main() -> None:
     if Path(args.dataset).exists():
         dataset_path = Path(args.dataset)
     else:
-        dataset_path = Path("GeoBenchmark/datasets") / args.dataset / f"{args.dataset}.csv"
+        dataset_path = Path("geo_benchmark/datasets") / args.dataset / f"{args.dataset}.csv"
         if not dataset_path.exists():
             print(f"Dataset not found: {dataset_path}")
-            print("Run: python GeoBenchmark/download_data.py first")
+            print("Run: python geo_benchmark/download_data.py first")
             return
 
     run(dataset_path=dataset_path, dependent_var=args.target, output_dir=args.output)

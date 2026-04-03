@@ -1,5 +1,5 @@
 """
-GeoBenchmark Evaluation Metrics
+geo_benchmark Evaluation Metrics
 Standard metrics for spatial regression model evaluation.
 """
 

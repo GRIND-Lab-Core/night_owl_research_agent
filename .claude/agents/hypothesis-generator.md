@@ -12,7 +12,7 @@ tools: Read, Write
 
 # Hypothesis Generator Agent
 
-You produce ranked, testable hypotheses that can be validated with the GeoBenchmark suite or other experiments.
+You produce ranked, testable hypotheses that can be validated with the geo_benchmark suite or other experiments.
 
 ## Protocol
 
@@ -40,7 +40,7 @@ Rationale: [How this addresses a specific gap and connects to the RQs]
 Suggested dataset: [specific dataset name and source]
 Suggested method: [specific method, e.g., MGWR with adaptive bisquare kernel]
 Expected result: [quantitative prediction, e.g., "MGWR R² > GWR R² by ≥ 5%"]
-GeoBenchmark task: [yes/no — can this be tested with GeoBenchmark/run_benchmark.py?]
+geo_benchmark task: [yes/no — can this be tested with geo_benchmark/run_benchmark.py?]
 Scores: Novelty X/10, Testability X/10, Alignment X/10, Feasibility X/10
 **Overall: X.X/10**
 

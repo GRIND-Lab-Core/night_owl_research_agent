@@ -1,9 +1,6 @@
 # Research Program Brief — GeoResearchAgent-247
 
-> **Instructions**: Fill in this file to direct the research agent. It mirrors
-> the role of `program.md` in Karpathy's autoresearch — the agent reads this
-> at the start of every session to understand what to work on and how to
-> evaluate success.
+> **Instructions**: Fill in this file to direct the research agent.
 >
 > For API mode: run `python launch.py --backend api`
 > For Claude Code mode: open this folder in Claude Code and run `/full-pipeline`
@@ -13,207 +10,200 @@
 ## 1. Research Topic
 
 ```
-[FILL IN: Describe the research topic in 1-3 sentences]
-
-Examples:
-  Investigating multi-scale geographically weighted regression (MGWR) for
-  identifying spatial drivers of urban heat island intensity across 50 US
-  cities, using Landsat LST, impervious surface fraction, and NDVI (2015-2024).
-
-  A GeoAI framework for real-time wildfire damage assessment integrating
-  Sentinel-1 SAR change detection with foundation model embeddings, evaluated
-  across the 2020-2023 California fire seasons.
-
-  Spatial econometric analysis of environmental health disparities in PM2.5
-  exposure across census tracts in the US Southeast, incorporating
-  socioeconomic vulnerability indices and green space accessibility.
+A GeoAI framework for generating realistic street-level imagery conditioned on
+urban soundscapes and auxiliary spatial data. Using acoustic features (soundscape
+descriptors, audio embeddings from geotagged audio) together with auxiliary
+inputs (OpenStreetMap land use, building density, road type, time-of-day) as
+conditioning signals for a latent diffusion model to synthesize plausible
+street-level views. The study evaluates generation fidelity across diverse
+urban environments and uses GWR/MGWR to characterize spatially varying
+relationships between acoustic-spatial inputs and visual scene realism.
 ```
 
 **Current Topic:**
-> _Not yet specified. Edit this field._
+> Soundscape-conditioned street-level image generation: a GeoAI framework using
+> urban acoustic features and auxiliary spatial data to synthesize realistic
+> street-level imagery via latent diffusion models.
 
 ---
 
 ## 2. Target Venue
 
 ```
-[FILL IN: Journal or conference name, impact factor if known]
-
-Geoscience:
-  - Geophysical Research Letters (GRL) — IF 4.0
-  - Journal of Geophysical Research: Atmospheres — IF 3.8
-  - Earth and Planetary Science Letters — IF 4.4
-  - Nature Geoscience — IF 18.3
-
-Remote Sensing:
-  - Remote Sensing of Environment (RSE) — IF 13.5
-  - ISPRS Journal of Photogrammetry and Remote Sensing — IF 12.7
-  - IEEE Transactions on Geoscience and Remote Sensing — IF 8.2
-  - International Journal of Applied Earth Observation and Geoinformation — IF 7.5
-
-GIScience:
-  - International Journal of Geographical Information Science (IJGIS) — IF 4.3
-  - Annals of the American Association of Geographers — IF 4.0
-  - Transactions in GIS — IF 2.8
-  - Computers, Environment and Urban Systems — IF 6.0
-
-Interdisciplinary:
-  - Nature Communications — IF 16.6
-  - Environmental Health Perspectives (EHP) — IF 10.1
-  - Science of the Total Environment — IF 8.2
-  - ACM SIGSPATIAL (conference)
+Primary: ISPRS Journal of Photogrammetry and Remote Sensing — IF 12.7
+Backup:  Computers, Environment and Urban Systems (CEUS) — IF 6.0
+Alt:     IEEE Transactions on Geoscience and Remote Sensing — IF 8.2
 ```
 
-**Current Target:** _Not yet specified._
+**Current Target:** ISPRS Journal of Photogrammetry and Remote Sensing — IF 12.7
 
 ---
 
 ## 3. Research Objectives
 
-List 3-5 specific, measurable objectives:
-
-1. _[Objective 1]_
-2. _[Objective 2]_
-3. _[Objective 3]_
+1. Design a cross-modal conditional generation framework that synthesizes street-level imagery from urban soundscape embeddings + auxiliary spatial inputs.
+2. Identify which combinations of acoustic features and spatial covariates (land use, morphology, time-of-day) maximize generation fidelity (FID, SSIM, LPIPS).
+3. Quantify spatially varying generation quality using GWR/MGWR, revealing geographic factors that strengthen or weaken sound-vision correspondence.
+4. Evaluate framework across ≥ 3 cities with contrasting urban morphologies (dense grid, organic medieval, tropical high-density) to test generalizability.
+5. Demonstrate downstream application: filling gaps in street-level image coverage using acoustic + OSM data as surrogates.
 
 ---
 
 ## 4. Key Research Questions
 
-1. _[RQ1]_
-2. _[RQ2]_
-3. _[RQ3]_
+1. Can urban soundscape features (audio embeddings, A-weighted SPL, soundscape descriptors) serve as effective conditioning signals for generating realistic street-level imagery via latent diffusion?
+2. Which auxiliary spatial inputs (OSM land use, building footprint density, road hierarchy, sky view factor, green view index) most improve generation fidelity when combined with soundscape conditioning?
+3. How does geographic context (urban morphology, city type, regional acoustic character) spatially modulate generation quality, and can GWR/MGWR capture these spatially varying relationships?
 
 ---
 
 ## 5. Domain Focus
 
-Select all that apply (mark with ✓):
-
-- [ ] **GeoAI** — spatial deep learning, foundation models, place embeddings, geo-CV
-- [ ] **Geophysics / Earth Systems** — geodynamics, seismology, atmospheric, hydrology
-- [ ] **Remote Sensing** — SAR, optical, hyperspectral, LiDAR, change detection
-- [ ] **GIScience / Spatial Statistics** — GWR, MGWR, spatial econometrics, geostatistics
-- [ ] **Disaster Resilience** — early warning, damage assessment, recovery monitoring, equity
-- [ ] **Environmental Health** — air quality, flood risk, heat islands, environmental justice
-- [ ] **Urban Analytics** — city-scale spatial analysis, urban growth, accessibility
-- [ ] **Social Sensing** — social media, crowdsourced data, VGI
+- [✓] **GeoAI** — spatial deep learning, foundation models, place embeddings, geo-CV
+- [ ] **Geophysics / Earth Systems**
+- [ ] **Remote Sensing** — scene synthesis, image generation
+- [✓] **GIScience / Spatial Statistics** — GWR, MGWR, spatial econometrics
+- [ ] **Disaster Resilience**
+- [✓] **Environmental Health** — urban noise, acoustic environment quality
+- [✓] **Urban Analytics** — city-scale spatial analysis, urban morphology
+- [ ] **Social Sensing**
 
 ---
 
 ## 6. Constraints and Scope
 
 ```
-[FILL IN: Any constraints the paper must satisfy]
-
-Examples:
-  - Maximum 8,000 words for the target journal
-  - Must use only open-access datasets (no proprietary data)
-  - Must include a case study in [specific region or bounding box]
-  - Methodology must be reproducible without GPU cluster
-  - Literature review: 2019-2026 papers only
-  - All spatial analysis must use EPSG:4326 / local UTM
-  - GeoBenchmark baseline comparison required (OLS / GWR / MGWR)
+- Maximum 10,000 words (ISPRS)
+- Open-access data only (no proprietary datasets)
+- Street-level imagery ground truth: Mapillary open dataset (CC-BY-SA)
+  (avoid Google Street View API for reproducibility; use Mapillary instead)
+- Acoustic data: SoundingEarth (geotagged audio), Noise-Planet (crowdsourced),
+  OpenSoundscape or FreeSound geotagged clips
+- Generative model: Stable Diffusion (Runway/CompVis, open weights) with
+  ControlNet-style conditioning, or similar open diffusion model
+- Audio encoder: ImageBind (Meta, open weights) or CLAP (LAION, open weights)
+- Spatial analysis: OLS + GWR + MGWR comparison required (geo_benchmark baseline)
+- Geographic scope: ≥ 3 cities
+- All spatial analysis projected to local UTM before distance computation
+- Moran's I of residuals required for all regression models
+- Reproducible without proprietary API access
+- Literature: 2019-2026 preferred
 ```
 
 **Constraints:**
-> _Not yet specified._
+> Open data only; Mapillary for imagery ground truth; Stable Diffusion + ControlNet;
+> OLS/GWR/MGWR spatial analysis; ≥ 3 cities; max 10,000 words.
 
 ---
 
 ## 7. Geographic Scope
 
 ```
-[FILL IN: Study area — region, country, bounding box, or "global"]
-
-Examples:
-  - Contiguous United States (CONUS), EPSG:5070
-  - Pearl River Delta, China (bbox: 112°E–115°E, 21°N–24°N)
-  - Sub-Saharan Africa (30 countries)
-  - Global (all continents)
+Multi-city study across ≥ 3 cities with contrasting urban morphologies:
+  - New York City, USA (dense grid, high acoustic diversity, EPSG:32618)
+  - London, UK (irregular organic + modern, EPSG:32630)
+  - Singapore (tropical high-density compact city, EPSG:32648)
+  Optional: Paris, Amsterdam, or Tokyo for extended analysis
 ```
 
-**Study Area:** _Not yet specified._
+**Study Area:** Multi-city (NYC · London · Singapore) — local UTM per city
 
 ---
 
 ## 8. Datasets
 
-List any pre-identified datasets (open-source preferred):
-
 ```
-[FILL IN: dataset name, source, spatial resolution, temporal coverage]
+Street-level imagery (ground truth / training):
+  - Mapillary open dataset (CC-BY-SA), global coverage, 1.5B+ images
+  - Amsterdam OpenStreetView (high-res, Netherlands, open license)
 
-Examples:
-  - Sentinel-2 L2A (ESA Copernicus), 10 m, 2017-present
-  - MODIS Land Surface Temperature (MOD11A1), 1 km, 2000-present
-  - US Census ACS 5-year estimates (2019-2023), county/tract level
-  - GADM administrative boundaries (gadm.org), v4.1
-  - OpenStreetMap (Overpass API), various features
-  - EPA AQS air quality data, monitoring station level
+Acoustic / soundscape data:
+  - SoundingEarth dataset — geotagged field recordings, global
+    (Heittola et al.; ~50K georeferenced audio clips)
+  - Noise-Planet / NoiseCapture — crowdsourced urban noise, global
+  - DCASE 2023/2024 soundscape challenge datasets (annotated urban audio)
+  - FreeSound geotagged clips (via FreeSound API, open license)
+
+Audio encoders (open weights):
+  - CLAP (LAION-AI, open weights, HuggingFace) — audio-text embeddings
+  - ImageBind (Meta, open weights) — audio-visual-text joint embedding
+
+Generative model backbone:
+  - Stable Diffusion v2.1 or SDXL (CompVis/Runway, open weights)
+  - ControlNet (lllyasviel, open weights) — spatial conditioning adapter
+
+Urban morphology / spatial covariates:
+  - OpenStreetMap (Overpass API) — land use, buildings, roads, POIs
+  - GADM administrative boundaries v4.1
+  - GHS-BUILT-S (100 m building density, ESA/JRC, open)
+  - Global Surface Water / NDVI (Landsat/Sentinel via GEE or open portals)
+
+Evaluation metrics:
+  - FID (Frechet Inception Distance) — generation fidelity
+  - SSIM / LPIPS — structural + perceptual similarity
+  - Semantic segmentation overlap (DeepLab v3+) — scene class accuracy
 ```
 
-- _[Dataset 1]_
-- _[Dataset 2]_
-- _[Dataset 3]_
+- Mapillary open dataset (CC-BY-SA street-level imagery ground truth)
+- SoundingEarth + Noise-Planet (geotagged acoustic data)
+- CLAP / ImageBind audio encoders (open weights)
+- Stable Diffusion + ControlNet (open weights generative backbone)
+- OpenStreetMap + GADM + GHS-BUILT-S (auxiliary spatial covariates)
 
 ---
 
 ## 9. Preliminary References (Seed Papers)
 
-List key papers the agent should start with:
-
 ```
-[FILL IN: arXiv IDs, DOIs, or titles of seed papers]
+Key seed topics:
+  - Conditional image generation / ControlNet (Zhang & Agrawala, 2023)
+  - Cross-modal audio-visual learning (Owens et al.; Girdhar et al. ImageBind)
+  - Urban soundscape mapping and perception (ISO 12913; Kang et al.)
+  - Street-level imagery for urban analytics (Place Pulse; Dubey et al.)
+  - GeoAI for scene synthesis / image generation
+  - GWR/MGWR for urban spatial analysis (Fotheringham et al.)
+  - Audio-conditioned image generation (sound2sight, audio-driven diffusion)
 ```
 
-- _[Seed paper 1]_
-- _[Seed paper 2]_
-- _[Seed paper 3]_
+- ControlNet: Adding Conditional Control to Text-to-Image Diffusion Models (Zhang & Agrawala, ICCV 2023)
+- ImageBind: One Embedding Space to Bind Them All (Girdhar et al., CVPR 2023)
+- CLAP: Learning Audio Concepts From Natural Language Supervision (LAION, 2022)
+- Soundscape ecology and urban sound mapping (Kang et al., 2018 + recent)
+- StreetScore / Place Pulse: large-scale street-level urban perception
 
 ---
 
 ## 10. Success Metric (Autoresearch-Style)
 
-The agent scores each paper section 0–10 on five dimensions:
-
 | Dimension | Weight | Description |
 |---|---|---|
-| Novelty | 30% | How original is the contribution? Is the problem formulation, method, or finding genuinely new? |
-| Rigor | 25% | Is the methodology sound, reproducible, and spatially valid? Are baselines included? |
-| Literature coverage | 20% | Are key papers in the domain cited? Is the synthesis accurate and current (≥2020)? |
-| Clarity | 15% | Is the writing clear, well-structured, and free of vague claims? |
-| Impact | 10% | Does this matter to the field? Does it have practical or policy implications? |
+| Novelty | 30% | Cross-modal soundscape→image generation is a genuinely new direction |
+| Rigor | 25% | Quantitative FID/SSIM + spatial GWR/MGWR analysis, open reproducible pipeline |
+| Literature coverage | 20% | Key generative AI, soundscape, and GeoAI papers cited (≥15, majority ≥2020) |
+| Clarity | 15% | Active voice, specific numbers, clear problem formulation |
+| Impact | 10% | Urban planning visualization, acoustic gap-filling, privacy-preserving mapping |
 
 **Acceptance threshold:** ≥ 7.5 / 10 overall before finalizing
 
-**GeoBenchmark threshold (for quantitative papers):** MGWR must be compared against OLS and GWR baselines; Moran's I of residuals must be reported.
+**geo_benchmark threshold:** MGWR vs OLS vs GWR; Moran's I of residuals reported.
 
 ---
 
 ## 11. Paper Type
 
-Select one:
-
-- [ ] Full research article (empirical, original data + methods + results)
-- [ ] Review / survey paper (systematic literature synthesis)
-- [ ] Methods paper (proposing a new algorithm or framework)
-- [ ] Data paper (describing a new dataset)
-- [ ] Commentary / perspective (short opinion or synthesis)
-- [ ] Short communication / letter
+- [✓] Full research article (empirical, original data + methods + results)
 
 ---
 
 ## 12. Current Status
 
 ```
-Stage:                   [not started | lit-review | gap-analysis | outlining |
-                          writing | reviewing | final]
-Last updated:            [YYYY-MM-DD]
-Current section:         [section name or "—"]
-Overall score so far:    [X/10 or "—"]
-Sections accepted:       [0 / 7]
+Stage:                   not started
+Last updated:            2026-04-01
+Current section:         —
+Overall score so far:    —
+Sections accepted:       0 / 7
 ```
 
 **Stage:** _Not started_
-**Last updated:** _—_
+**Last updated:** _2026-04-01_

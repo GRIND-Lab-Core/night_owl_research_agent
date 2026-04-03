@@ -1,6 +1,6 @@
 ---
 name: paper-figure
-description: Generates spatial figures and tables for paper sections. Calls GeoBenchmark/evaluation/visualize.py for standard geo plots (choropleth maps, coefficient maps, model comparison tables). Enforces geo cartographic conventions (scale bar, north arrow, legend, inset map).
+description: Generates spatial figures and tables for paper sections. Calls geo_benchmark/evaluation/visualize.py for standard geo plots (choropleth maps, coefficient maps, model comparison tables). Enforces geo cartographic conventions (scale bar, north arrow, legend, inset map).
 tools: Bash, Read, Write
 ---
 
@@ -18,7 +18,7 @@ Standard figures for a spatial regression paper:
 | Figure | Type | Source |
 |---|---|---|
 | Study area map | Choropleth/point map | Study area shapefile + data |
-| Model comparison | Bar chart or table | GeoBenchmark/results/ |
+| Model comparison | Bar chart or table | geo_benchmark/results/ |
 | Local R² map | Choropleth | GWR/MGWR results JSON |
 | Coefficient map | Choropleth | MGWR per-variable coefficients |
 | Residual map + LISA | Bivariate map | OLS/GWR residuals + spatial weights |
@@ -31,7 +31,7 @@ Call the visualization tool for each figure. Decide which arguments to pass base
 
 **Study area map:**
 ```bash
-python GeoBenchmark/evaluation/visualize.py \
+python geo_benchmark/evaluation/visualize.py \
   --type study_area \
   --shapefile [path/to/boundary.geojson] \
   --data [path/to/data.csv] \
@@ -41,27 +41,27 @@ python GeoBenchmark/evaluation/visualize.py \
 
 **Model comparison (bar chart + table):**
 ```bash
-python GeoBenchmark/evaluation/visualize.py \
+python geo_benchmark/evaluation/visualize.py \
   --type comparison_table \
-  --results GeoBenchmark/results/ \
+  --results geo_benchmark/results/ \
   --metrics r2 aicc rmse morans_i \
   --output outputs/figures/fig2_model_comparison.png
 ```
 
 **Local R² choropleth (GWR or MGWR):**
 ```bash
-python GeoBenchmark/evaluation/visualize.py \
+python geo_benchmark/evaluation/visualize.py \
   --type local_r2_map \
-  --results GeoBenchmark/results/gwr_results.json \
+  --results geo_benchmark/results/gwr_results.json \
   --shapefile [path] \
   --output outputs/figures/fig3_local_r2.png
 ```
 
 **Coefficient map (specify variable name):**
 ```bash
-python GeoBenchmark/evaluation/visualize.py \
+python geo_benchmark/evaluation/visualize.py \
   --type coefficient_map \
-  --results GeoBenchmark/results/mgwr_results.json \
+  --results geo_benchmark/results/mgwr_results.json \
   --variable [predictor_col] \
   --shapefile [path] \
   --output outputs/figures/fig4_coef_[var].png
@@ -69,9 +69,9 @@ python GeoBenchmark/evaluation/visualize.py \
 
 **Residual map:**
 ```bash
-python GeoBenchmark/evaluation/visualize.py \
+python geo_benchmark/evaluation/visualize.py \
   --type residual_map \
-  --results GeoBenchmark/results/ols_results.json \
+  --results geo_benchmark/results/ols_results.json \
   --shapefile [path] \
   --output outputs/figures/fig5_residuals.png
 ```

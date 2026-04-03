@@ -1,9 +1,9 @@
 """
-GeoBenchmark Visualization
+geo_benchmark Visualization
 Generates maps, scatter plots, and residual diagnostics for model outputs.
 
 Usage:
-    python GeoBenchmark/evaluation/visualize.py --results GeoBenchmark/results/california_housing/
+    python geo_benchmark/evaluation/visualize.py --results geo_benchmark/results/california_housing/
 """
 
 from __future__ import annotations
@@ -111,7 +111,7 @@ def plot_comparison_bar(results: list[dict], output_path: Path) -> None:
     for bar, val in zip(bars2, rmses):
         ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.001, f"{val:.3f}", ha="center", fontsize=10)
 
-    plt.suptitle("GeoBenchmark Model Comparison", fontsize=14, fontweight="bold")
+    plt.suptitle("geo_benchmark Model Comparison", fontsize=14, fontweight="bold")
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -119,8 +119,8 @@ def plot_comparison_bar(results: list[dict], output_path: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate GeoBenchmark visualizations")
-    parser.add_argument("--results", type=str, default="GeoBenchmark/results/", help="Results directory")
+    parser = argparse.ArgumentParser(description="Generate geo_benchmark visualizations")
+    parser.add_argument("--results", type=str, default="geo_benchmark/results/", help="Results directory")
     parser.add_argument("--dataset", type=str, default="", help="Dataset name")
     args = parser.parse_args()
 

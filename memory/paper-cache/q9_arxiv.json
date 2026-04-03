@@ -1,0 +1,506 @@
+{
+  "source": "arxiv",
+  "query": "sound to image generation audio-conditioned image synthesis",
+  "fetched_at": "2026-04-02T01:49:36.126657+00:00",
+  "count": 25,
+  "papers": [
+    {
+      "id": "arxiv:2107.09543v2",
+      "title": "Data synthesis and adversarial networks: A review and meta-analysis in cancer imaging",
+      "authors": [
+        "Richard Osuala",
+        "Kaisar Kushibar",
+        "Lidia Garrucho",
+        "Akis Linardos",
+        "Zuzanna Szafranowska",
+        "Stefan Klein",
+        "Ben Glocker",
+        "Oliver Diaz",
+        "Karim Lekadir"
+      ],
+      "year": 2021,
+      "abstract": "Despite technological and medical advances, the detection, interpretation, and treatment of cancer based on imaging data continue to pose significant challenges. These include inter-observer variability, class imbalance, dataset shifts, inter- and intra-tumour heterogeneity, malignancy determination, and treatment effe",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2022.102704",
+      "url": "https://arxiv.org/abs/2107.09543v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1912.05189v2",
+      "title": "BINet: a binary inpainting network for deep patch-based image compression",
+      "authors": [
+        "Andr\u00e9 Nortje",
+        "Willie Brink",
+        "Herman A. Engelbrecht",
+        "Herman Kamper"
+      ],
+      "year": 2019,
+      "abstract": "Recent deep learning models outperform standard lossy image compression codecs. However, applying these models on a patch-by-patch basis requires that each image patch be encoded and decoded independently. The influence from adjacent patches is therefore lost, leading to block artefacts at low bitrates. We propose the ",
+      "venue": "arXiv",
+      "doi": "10.1016/j.image.2020.116119",
+      "url": "https://arxiv.org/abs/1912.05189v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2205.10120v7",
+      "title": "Privacy Preserving Image Registration",
+      "authors": [
+        "Riccardo Taiello",
+        "Melek \u00d6nen",
+        "Francesco Capano",
+        "Olivier Humbert",
+        "Marco Lorenzi"
+      ],
+      "year": 2022,
+      "abstract": "Image registration is a key task in medical imaging applications, allowing to represent medical images in a common spatial reference frame. Current approaches to image registration are generally based on the assumption that the content of the images is usually accessible in clear form, from which the spatial transforma",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-031-16446-0_13",
+      "url": "https://arxiv.org/abs/2205.10120v7",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2309.00885v1",
+      "title": "A Generic Fundus Image Enhancement Network Boosted by Frequency Self-supervised Representation Learning",
+      "authors": [
+        "Heng Li",
+        "Haofeng Liu",
+        "Huazhu Fu",
+        "Yanwu Xu",
+        "Hui Shu",
+        "Ke Niu",
+        "Yan Hu",
+        "Jiang Liu"
+      ],
+      "year": 2023,
+      "abstract": "Fundus photography is prone to suffer from image quality degradation that impacts clinical examination performed by ophthalmologists or intelligent systems. Though enhancement algorithms have been developed to promote fundus observation on degraded images, high data demands and limited applicability hinder their clinic",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2023.102945",
+      "url": "https://arxiv.org/abs/2309.00885v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1908.09288v1",
+      "title": "Locally Linear Image Structural Embedding for Image Structure Manifold Learning",
+      "authors": [
+        "Benyamin Ghojogh",
+        "Fakhri Karray",
+        "Mark Crowley"
+      ],
+      "year": 2019,
+      "abstract": "Most of existing manifold learning methods rely on Mean Squared Error (MSE) or $\\ell_2$ norm. However, for the problem of image quality assessment, these are not promising measure. In this paper, we introduce the concept of an image structure manifold which captures image structure features and discriminates image dist",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-030-27202-9_11",
+      "url": "https://arxiv.org/abs/1908.09288v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2412.01496v2",
+      "title": "Fr\u00e9chet Radiomic Distance (FRD): A Versatile Metric for Comparing Medical Imaging Datasets",
+      "authors": [
+        "Nicholas Konz",
+        "Richard Osuala",
+        "Preeti Verma",
+        "Yuwen Chen",
+        "Hanxue Gu",
+        "Haoyu Dong",
+        "Yaqian Chen",
+        "Andrew Marshall",
+        "Lidia Garrucho",
+        "Kaisar Kushibar",
+        "Daniel M. Lang",
+        "Gene S. Kim",
+        "Lars J. Grimm",
+        "John M. Lewin",
+        "James S. Duncan",
+        "Julia A. Schnabel",
+        "Oliver Diaz",
+        "Karim Lekadir",
+        "Maciej A. Mazurowski"
+      ],
+      "year": 2024,
+      "abstract": "Determining whether two sets of images belong to the same or different distributions or domains is a crucial task in modern medical image analysis and deep learning; for example, to evaluate the output quality of image generative models. Currently, metrics used for this task either rely on the (potentially biased) choi",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2026.103943",
+      "url": "https://arxiv.org/abs/2412.01496v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2201.02625v3",
+      "title": "FlexHDR: Modelling Alignment and Exposure Uncertainties for Flexible HDR Imaging",
+      "authors": [
+        "Sibi Catley-Chandar",
+        "Thomas Tanay",
+        "Lucas Vandroux",
+        "Ale\u0161 Leonardis",
+        "Gregory Slabaugh",
+        "Eduardo P\u00e9rez-Pellitero"
+      ],
+      "year": 2022,
+      "abstract": "High dynamic range (HDR) imaging is of fundamental importance in modern digital photography pipelines and used to produce a high-quality photograph with well exposed regions despite varying illumination across the image. This is typically achieved by merging multiple low dynamic range (LDR) images taken at different ex",
+      "venue": "arXiv",
+      "doi": "10.1109/TIP.2022.3203562",
+      "url": "https://arxiv.org/abs/2201.02625v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2410.19288v1",
+      "title": "A Flow-based Truncated Denoising Diffusion Model for Super-resolution Magnetic Resonance Spectroscopic Imaging",
+      "authors": [
+        "Siyuan Dong",
+        "Zhuotong Cai",
+        "Gilbert Hangel",
+        "Wolfgang Bogner",
+        "Georg Widhalm",
+        "Yaqing Huang",
+        "Qinghao Liang",
+        "Chenyu You",
+        "Chathura Kumaragamage",
+        "Robert K. Fulbright",
+        "Amit Mahajan",
+        "Amin Karbasi",
+        "John A. Onofrey",
+        "Robin A. de Graaf",
+        "James S. Duncan"
+      ],
+      "year": 2024,
+      "abstract": "Magnetic Resonance Spectroscopic Imaging (MRSI) is a non-invasive imaging technique for studying metabolism and has become a crucial tool for understanding neurological diseases, cancers and diabetes. High spatial resolution MRSI is needed to characterize lesions, but in practice MRSI is acquired at low resolution due ",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2024.103358",
+      "url": "https://arxiv.org/abs/2410.19288v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2309.16106v2",
+      "title": "Neuromorphic Imaging with Joint Image Deblurring and Event Denoising",
+      "authors": [
+        "Pei Zhang",
+        "Haosen Liu",
+        "Zhou Ge",
+        "Chutian Wang",
+        "Edmund Y. Lam"
+      ],
+      "year": 2023,
+      "abstract": "Neuromorphic imaging reacts to per-pixel brightness changes of a dynamic scene with high temporal precision and responds with asynchronous streaming events as a result. It also often supports a simultaneous output of an intensity image. Nevertheless, the raw events typically involve a large amount of noise due to the h",
+      "venue": "arXiv",
+      "doi": "10.1109/TIP.2024.3374074",
+      "url": "https://arxiv.org/abs/2309.16106v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2603.25384v1",
+      "title": "Underdetermined Blind Source Separation via Weighted Simplex Shrinkage Regularization and Quantum Deep Image Prior",
+      "authors": [
+        "Chia-Hsiang Lin",
+        "Si-Sheng Young"
+      ],
+      "year": 2026,
+      "abstract": "As most optical satellites remotely acquire multispectral images (MSIs) with limited spatial resolution, multispectral unmixing (MU) becomes a critical signal processing technology for analyzing the pure material spectra for high-precision classification and identification. Unlike the widely investigated hyperspectral ",
+      "venue": "arXiv",
+      "doi": "10.1109/TIP.2026.3673957",
+      "url": "https://arxiv.org/abs/2603.25384v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2111.10480v6",
+      "title": "TransMorph: Transformer for unsupervised medical image registration",
+      "authors": [
+        "Junyu Chen",
+        "Eric C. Frey",
+        "Yufan He",
+        "William P. Segars",
+        "Ye Li",
+        "Yong Du"
+      ],
+      "year": 2021,
+      "abstract": "In the last decade, convolutional neural networks (ConvNets) have been a major focus of research in medical image analysis. However, the performances of ConvNets may be limited by a lack of explicit consideration of the long-range spatial relationships in an image. Recently Vision Transformer architectures have been pr",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2022.102615",
+      "url": "https://arxiv.org/abs/2111.10480v6",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2009.06912v1",
+      "title": "Learning a Single Model with a Wide Range of Quality Factors for JPEG Image Artifacts Removal",
+      "authors": [
+        "Jianwei Li",
+        "Yongtao Wang",
+        "Haihua Xie",
+        "Kai-Kuang Ma"
+      ],
+      "year": 2020,
+      "abstract": "Lossy compression brings artifacts into the compressed image and degrades the visual quality. In recent years, many compression artifacts removal methods based on convolutional neural network (CNN) have been developed with great success. However, these methods usually train a model based on one specific value or a smal",
+      "venue": "arXiv",
+      "doi": "10.1109/TIP.2020.3020389",
+      "url": "https://arxiv.org/abs/2009.06912v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1908.09287v1",
+      "title": "Principal Component Analysis Using Structural Similarity Index for Images",
+      "authors": [
+        "Benyamin Ghojogh",
+        "Fakhri Karray",
+        "Mark Crowley"
+      ],
+      "year": 2019,
+      "abstract": "Despite the advances of deep learning in specific tasks using images, the principled assessment of image fidelity and similarity is still a critical ability to develop. As it has been shown that Mean Squared Error (MSE) is insufficient for this task, other measures have been developed with one of the most effective bei",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-030-27202-9_7",
+      "url": "https://arxiv.org/abs/1908.09287v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2207.01883v1",
+      "title": "MMGL: Multi-Scale Multi-View Global-Local Contrastive learning for Semi-supervised Cardiac Image Segmentation",
+      "authors": [
+        "Ziyuan Zhao",
+        "Jinxuan Hu",
+        "Zeng Zeng",
+        "Xulei Yang",
+        "Peisheng Qian",
+        "Bharadwaj Veeravalli",
+        "Cuntai Guan"
+      ],
+      "year": 2022,
+      "abstract": "With large-scale well-labeled datasets, deep learning has shown significant success in medical image segmentation. However, it is challenging to acquire abundant annotations in clinical practice due to extensive expertise requirements and costly labeling efforts. Recently, contrastive learning has shown a strong capaci",
+      "venue": "arXiv",
+      "doi": "10.1109/ICIP46576.2022.9897591",
+      "url": "https://arxiv.org/abs/2207.01883v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2502.10682v3",
+      "title": "CAE-Net: Generalized Deepfake Image Detection using Convolution and Attention Mechanisms with Spatial and Frequency Domain Features",
+      "authors": [
+        "Anindya Bhattacharjee",
+        "Kaidul Islam",
+        "Kafi Anan",
+        "Ashir Intesher",
+        "Abrar Assaeem Fuad",
+        "Utsab Saha",
+        "Hafiz Imtiaz"
+      ],
+      "year": 2025,
+      "abstract": "The spread of deepfakes poses significant security concerns, demanding reliable detection methods. However, diverse generation techniques and class imbalance in datasets create challenges. We propose CAE-Net, a Convolution- and Attention-based weighted Ensemble network combining spatial and frequency-domain features fo",
+      "venue": "arXiv",
+      "doi": "10.1016/j.jvcir.2025.104679",
+      "url": "https://arxiv.org/abs/2502.10682v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:1808.09106v1",
+      "title": "Snapshot multispectral imaging using a filter array",
+      "authors": [
+        "Kazuma Shinoda"
+      ],
+      "year": 2018,
+      "abstract": "A multispectral filter array (MSFA) is one solution for capturing a multispectral image (MSI) in a single shot at low cost. We introduce our optimization method of the spectral sensitivity of the MSFAs and demosaicking, and show a new prototype filter array for snapshot imaging based on a photonic crystal.",
+      "venue": "arXiv",
+      "doi": null,
+      "url": "https://arxiv.org/abs/1808.09106v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2111.06399v1",
+      "title": "Selective Synthetic Augmentation with HistoGAN for Improved Histopathology Image Classification",
+      "authors": [
+        "Yuan Xue",
+        "Jiarong Ye",
+        "Qianying Zhou",
+        "Rodney Long",
+        "Sameer Antani",
+        "Zhiyun Xue",
+        "Carl Cornwell",
+        "Richard Zaino",
+        "Keith Cheng",
+        "Xiaolei Huang"
+      ],
+      "year": 2021,
+      "abstract": "Histopathological analysis is the present gold standard for precancerous lesion diagnosis. The goal of automated histopathological classification from digital images requires supervised training, which requires a large number of expert annotations that can be expensive and time-consuming to collect. Meanwhile, accurate",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2020.101816",
+      "url": "https://arxiv.org/abs/2111.06399v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2305.03098v2",
+      "title": "Unsupervised anomaly localization in high-resolution breast scans using deep pluralistic image completion",
+      "authors": [
+        "Nicholas Konz",
+        "Haoyu Dong",
+        "Maciej A. Mazurowski"
+      ],
+      "year": 2023,
+      "abstract": "Automated tumor detection in Digital Breast Tomosynthesis (DBT) is a difficult task due to natural tumor rarity, breast tissue variability, and high resolution. Given the scarcity of abnormal images and the abundance of normal images for this problem, an anomaly detection/localization approach could be well-suited. How",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2023.102836",
+      "url": "https://arxiv.org/abs/2305.03098v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2205.04204v2",
+      "title": "TransEM:Residual Swin-Transformer based regularized PET image reconstruction",
+      "authors": [
+        "Rui Hu",
+        "Huafeng Liu"
+      ],
+      "year": 2022,
+      "abstract": "Positron emission tomography(PET) image reconstruction is an ill-posed inverse problem and suffers from high level of noise due to limited counts received. Recently deep neural networks especially convolutional neural networks(CNN) have been successfully applied to PET image reconstruction. However, the local character",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-031-16440-8_18",
+      "url": "https://arxiv.org/abs/2205.04204v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2310.10414v3",
+      "title": "Style transfer between Microscopy and Magnetic Resonance Imaging via Generative Adversarial Network in small sample size settings",
+      "authors": [
+        "Monika Pytlarz",
+        "Adrian Onicas",
+        "Alessandro Crimi"
+      ],
+      "year": 2023,
+      "abstract": "Cross-modal augmentation of Magnetic Resonance Imaging (MRI) and microscopic imaging based on the same tissue samples is promising because it can allow histopathological analysis in the absence of an underlying invasive biopsy procedure. Here, we tested a method for generating microscopic histological images from MRI s",
+      "venue": "arXiv",
+      "doi": "10.1109/ICIP49359.2023.10222546",
+      "url": "https://arxiv.org/abs/2310.10414v3",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2009.11169v1",
+      "title": "Whole Slide Images based Cancer Survival Prediction using Attention Guided Deep Multiple Instance Learning Networks",
+      "authors": [
+        "Jiawen Yao",
+        "Xinliang Zhu",
+        "Jitendra Jonnagaddala",
+        "Nicholas Hawkins",
+        "Junzhou Huang"
+      ],
+      "year": 2020,
+      "abstract": "Traditional image-based survival prediction models rely on discriminative patch labeling which make those methods not scalable to extend to large datasets. Recent studies have shown Multiple Instance Learning (MIL) framework is useful for histopathological images when no annotations are available in classification task",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2020.101789",
+      "url": "https://arxiv.org/abs/2009.11169v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2004.04668v4",
+      "title": "Test-Time Adaptable Neural Networks for Robust Medical Image Segmentation",
+      "authors": [
+        "Neerav Karani",
+        "Ertunc Erdil",
+        "Krishna Chaitanya",
+        "Ender Konukoglu"
+      ],
+      "year": 2020,
+      "abstract": "Convolutional Neural Networks (CNNs) work very well for supervised learning problems when the training dataset is representative of the variations expected to be encountered at test time. In medical image segmentation, this premise is violated when there is a mismatch between training and test images in terms of their ",
+      "venue": "arXiv",
+      "doi": "10.1016/j.media.2020.101907",
+      "url": "https://arxiv.org/abs/2004.04668v4",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2105.10087v2",
+      "title": "DSR: Direct Simultaneous Registration for Multiple 3D Images",
+      "authors": [
+        "Zhehua Mao",
+        "Liang Zhao",
+        "Shoudong Huang",
+        "Yiting Fan",
+        "Alex Pui-Wai Lee"
+      ],
+      "year": 2021,
+      "abstract": "This paper presents a novel algorithm named Direct Simultaneous Registration (DSR) that registers a collection of 3D images in a simultaneous fashion without specifying any reference image, feature extraction and matching, or information loss or reuse. The algorithm optimizes the global poses of local image frames by m",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-031-16446-0_10",
+      "url": "https://arxiv.org/abs/2105.10087v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2208.07735v2",
+      "title": "Rain Removal from Light Field Images with 4D Convolution and Multi-scale Gaussian Process",
+      "authors": [
+        "Tao Yan",
+        "Mingyue Li",
+        "Bin Li",
+        "Yang Yang",
+        "Rynson W. H. Lau"
+      ],
+      "year": 2022,
+      "abstract": "Existing deraining methods focus mainly on a single input image. However, with just a single input image, it is extremely difficult to accurately detect and remove rain streaks, in order to restore a rain-free image. In contrast, a light field image (LFI) embeds abundant 3D structure and texture information of the targ",
+      "venue": "arXiv",
+      "doi": "10.1109/TAP.2022.3218759",
+      "url": "https://arxiv.org/abs/2208.07735v2",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    },
+    {
+      "id": "arxiv:2004.13470v1",
+      "title": "FU-net: Multi-class Image Segmentation Using Feedback Weighted U-net",
+      "authors": [
+        "Mina Jafari",
+        "Ruizhe Li",
+        "Yue Xing",
+        "Dorothee Auer",
+        "Susan Francis",
+        "Jonathan Garibaldi",
+        "Xin Chen"
+      ],
+      "year": 2020,
+      "abstract": "In this paper, we present a generic deep convolutional neural network (DCNN) for multi-class image segmentation. It is based on a well-established supervised end-to-end DCNN model, known as U-net. U-net is firstly modified by adding widely used batch normalization and residual block (named as BRU-net) to improve the ef",
+      "venue": "arXiv",
+      "doi": "10.1007/978-3-030-34110-7_44",
+      "url": "https://arxiv.org/abs/2004.13470v1",
+      "citation_count": null,
+      "priority_venue": false,
+      "source": "arxiv"
+    }
+  ]
+}

@@ -117,7 +117,7 @@ On completion:
 - Paper-writer fails 3 attempts: flag NEEDS_HUMAN_REVIEW, continue
 - Git not initialized: run `git init` first
 - program.md missing fields: halt, list missing fields
-- GeoBenchmark for quantitative papers: if methods involve spatial regression, require OLS/GWR/MGWR comparison
+- geo_benchmark for quantitative papers: if methods involve spatial regression, require OLS/GWR/MGWR comparison
 
 ---
 

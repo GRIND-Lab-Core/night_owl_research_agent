@@ -1,6 +1,6 @@
 ---
 name: geo-experiment
-description: Designs and executes spatial analysis experiments with explicit sprint contracts. DESIGN mode writes EXPERIMENT_PLAN.md with hard pass/fail criteria before any code runs. EXECUTE mode runs the plan and a separate evaluator checks each result against the contract. Calls GeoBenchmark/run_benchmark.py for OLS/GWR/MGWR comparisons.
+description: Designs and executes spatial analysis experiments with explicit sprint contracts. DESIGN mode writes EXPERIMENT_PLAN.md with hard pass/fail criteria before any code runs. EXECUTE mode runs the plan and a separate evaluator checks each result against the contract. Calls geo_benchmark/run_benchmark.py for OLS/GWR/MGWR comparisons.
 tools: Bash, Read, Write
 ---
 
@@ -27,11 +27,11 @@ Produce `EXPERIMENT_PLAN.md` from `research_contract.md`. This file IS the sprin
 
 | Field | Value |
 |---|---|
-| Command | `python GeoBenchmark/...` |
+| Command | `python geo_benchmark/...` |
 | Dataset | path/to/dataset.csv |
 | Target variable | [col name] |
 | Features | [col1, col2, ...] |
-| Expected output path | GeoBenchmark/results/[name].json |
+| Expected output path | geo_benchmark/results/[name].json |
 | Estimated runtime | [N] minutes |
 
 #### Pass/Fail Criteria (hard — evaluator checks these, not you)
@@ -60,8 +60,8 @@ Produce `EXPERIMENT_PLAN.md` from `research_contract.md`. This file IS the sprin
 
 Run the smallest experiment first. If it fails, do not write the plan — debug first (up to 3 attempts):
 ```bash
-python GeoBenchmark/run_benchmark.py \
-  --dataset GeoBenchmark/datasets/sample.csv \
+python geo_benchmark/run_benchmark.py \
+  --dataset geo_benchmark/datasets/sample.csv \
   --models ols \
   --sample 200
 ```
@@ -123,11 +123,11 @@ The **evaluator** is `spatial-analysis` skill: it reads results and determines P
 
 | Task | Command |
 |---|---|
-| Full OLS/GWR/MGWR benchmark | `python GeoBenchmark/run_benchmark.py --dataset [path] --models ols gwr mgwr --target [col]` |
-| OLS only | `python GeoBenchmark/baselines/ols_baseline.py --dataset [path] --target [col] --features [cols]` |
-| GWR only | `python GeoBenchmark/baselines/gwr_baseline.py --dataset [path] --target [col] --features [cols] --max-n 5000` |
-| MGWR only | `python GeoBenchmark/baselines/mgwr_baseline.py --dataset [path] --target [col] --features [cols] --max-n 3000` |
-| Download benchmark datasets | `python GeoBenchmark/download_data.py` |
+| Full OLS/GWR/MGWR benchmark | `python geo_benchmark/run_benchmark.py --dataset [path] --models ols gwr mgwr --target [col]` |
+| OLS only | `python geo_benchmark/baselines/ols_baseline.py --dataset [path] --target [col] --features [cols]` |
+| GWR only | `python geo_benchmark/baselines/gwr_baseline.py --dataset [path] --target [col] --features [cols] --max-n 5000` |
+| MGWR only | `python geo_benchmark/baselines/mgwr_baseline.py --dataset [path] --target [col] --features [cols] --max-n 3000` |
+| Download benchmark datasets | `python geo_benchmark/download_data.py` |
 | Custom analysis | `python core/code_executor.py --script [path]` |
 
 ---
@@ -138,7 +138,7 @@ The **evaluator** is `spatial-analysis` skill: it reads results and determines P
 - `EXPERIMENT_LOG.md` — execution record with PASS/FAIL status per criterion (EXECUTE mode)
 - `findings.md` — one-line discoveries appended per run (both modes)
 - `memory/approved_claims.md` — verified claims from PASS experiments only (EXECUTE mode)
-- `GeoBenchmark/results/` — model comparison JSON files (EXECUTE mode)
+- `geo_benchmark/results/` — model comparison JSON files (EXECUTE mode)
 
 ---
 
@@ -148,4 +148,4 @@ If you discover mid-execution that the contract criteria are impossible to meet 
 1. Stop execution (do not run remaining experiments)
 2. Write a `CONTRACT_VIOLATION.md` explaining: which criterion is impossible, why, what evidence you have
 3. Propose revised criteria (do not silently lower the bar)
-4. Set HUMAN_CHECKPOINT in `REVIEW_STATE.json` to require user review before continuing
+4. Set HUMAN_CHECKPOINT in `outputs/REVIEW_STATE.json` to require user review before continuing

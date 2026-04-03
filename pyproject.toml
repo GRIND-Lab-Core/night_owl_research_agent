@@ -64,8 +64,8 @@ dev = [
 
 [project.scripts]
 geo-research = "core.orchestrator:main"
-geo-benchmark = "GeoBenchmark.run_benchmark:main"
-geo-download-data = "GeoBenchmark.download_data:main"
+geo-benchmark = "geo_benchmark.run_benchmark:main"
+geo-download-data = "geo_benchmark.download_data:main"
 
 [tool.ruff]
 line-length = 100

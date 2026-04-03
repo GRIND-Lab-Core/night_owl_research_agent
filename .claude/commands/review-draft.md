@@ -1,6 +1,6 @@
 ---
 name: review-draft
-description: "Invoke skill auto-review-loop on a draft file. Runs up to 4 adversarial review rounds (self-review or external via MCP). Persists state to REVIEW_STATE.json and AUTO_REVIEW.md. Respects HUMAN_CHECKPOINT and EXTERNAL_REVIEW flags from CLAUDE.md. Usage: /review-draft <file-path>"
+description: "Invoke skill auto-review-loop on a draft file. Runs up to 4 adversarial review rounds (self-review or external via MCP). Persists state to outputs/REVIEW_STATE.json and outputs/AUTO_REVIEW.md. Respects HUMAN_CHECKPOINT and EXTERNAL_REVIEW flags from CLAUDE.md. Usage: /review-draft <file-path>"
 ---
 
 # Command: /review-draft

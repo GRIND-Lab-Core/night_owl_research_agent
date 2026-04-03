@@ -55,8 +55,8 @@
     "read_first": [
       "memory/MEMORY.md",
       "research_contract.md",
-      "REVIEW_STATE.json",
-      "AUTO_REVIEW.md"
+      "outputs/REVIEW_STATE.json",
+      "outputs/AUTO_REVIEW.md"
     ],
     "resume_skill": "auto-review-loop",
     "human_checkpoint_needed": false,

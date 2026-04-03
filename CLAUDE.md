@@ -44,7 +44,7 @@ EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for ad
 2. Read `memory/MEMORY.md` for pipeline stage and token usage
 3. Read `research_contract.md` for active idea (or `program.md` if not yet committed)
 4. If COMPACT_MODE: read `findings.md` instead of full experiment logs
-5. If resuming review loop: read `REVIEW_STATE.json` for current round and per-criterion scores
+5. If resuming review loop: read `outputs/REVIEW_STATE.json` for current round and per-criterion scores
 6. Confirm stage with user before taking any action
 
 **`handoff.json` fields to act on immediately:**
@@ -63,8 +63,8 @@ EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for ad
 | `program.md` | Full research brief (12 sections) | Researcher |
 | `findings.md` | Compact one-line discoveries log | All skills (append) |
 | `EXPERIMENT_LOG.md` | Complete experiment record | skill `geo-experiment` |
-| `AUTO_REVIEW.md` | All review rounds with scores | skill `auto-review-loop` |
-| `REVIEW_STATE.json` | Review loop state (per-criterion scores) | skill `auto-review-loop` |
+| `outputs/AUTO_REVIEW.md` | All review rounds with scores | skill `auto-review-loop` |
+| `outputs/REVIEW_STATE.json` | Review loop state (per-criterion scores) | skill `auto-review-loop` |
 | `handoff.json` | Structured context-reset handoff (written on Stop) | stop hook |
 | `memory/MEMORY.md` | Session state, scores, token usage | Stop hook |
 | `memory/paper-cache/` | Retrieved paper JSON files | skill `geo-lit-review` |
@@ -75,7 +75,7 @@ EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for ad
 | `EXPERIMENT_PLAN.md` | Experiment design with commands | skill `geo-experiment` |
 | `outputs/papers/` | Written section files | skill `paper-write` |
 | `outputs/figures/` | All generated figures | skill `paper-figure` |
-| `GeoBenchmark/results/` | OLS/GWR/MGWR result JSONs | geo-experiment / python tools |
+| `geo_benchmark/results/` | OLS/GWR/MGWR result JSONs | geo-experiment / python tools |
 
 ---
 
@@ -86,14 +86,14 @@ EXTERNAL_REVIEW: false    # true = use MCP claude-review or gemini-review for ad
 - Claude reads a skill (`skills/<name>/SKILL.md`) to understand the workflow
 - The skill tells Claude *when* and *which* Python tools to run
 - Claude decides the exact sequence based on context
-- Python files in `GeoBenchmark/`, `tools/`, and `core/` are callable tools — they do not call Claude
+- Python files in `geo_benchmark/`, `tools/`, and `core/` are callable tools — they do not call Claude
 
 ```
 You (or /slash command)
     ↓ invokes
 Skill SKILL.md  ←─── reads domain knowledge from skills/knowledge/
     ↓ decides to call
-Python tools (GeoBenchmark/run_benchmark.py, tools/arxiv_fetch.py, etc.)
+Python tools (geo_benchmark/run_benchmark.py, tools/arxiv_fetch.py, etc.)
     ↓ produce
 Output files (results JSON, paper-cache, figures)
     ↓ read by
@@ -129,13 +129,13 @@ Skills live in `skills/<name>/SKILL.md`. Domain knowledge lives in `skills/knowl
 |---|---|---|
 | ArXiv search | `tools/arxiv_fetch.py` | geo-lit-review, novelty-check |
 | Semantic Scholar search | `tools/semantic_scholar_fetch.py` | geo-lit-review, novelty-check |
-| Full benchmark | `GeoBenchmark/run_benchmark.py` | geo-experiment |
-| OLS baseline | `GeoBenchmark/baselines/ols_baseline.py` | geo-experiment |
-| GWR baseline | `GeoBenchmark/baselines/gwr_baseline.py` | geo-experiment |
-| MGWR baseline | `GeoBenchmark/baselines/mgwr_baseline.py` | geo-experiment |
-| Download datasets | `GeoBenchmark/download_data.py` | geo-experiment (if data missing) |
-| Visualize results | `GeoBenchmark/evaluation/visualize.py` | paper-figure |
-| Evaluate metrics | `GeoBenchmark/evaluation/metrics.py` | spatial-analysis |
+| Full benchmark | `geo_benchmark/run_benchmark.py` | geo-experiment |
+| OLS baseline | `geo_benchmark/baselines/ols_baseline.py` | geo-experiment |
+| GWR baseline | `geo_benchmark/baselines/gwr_baseline.py` | geo-experiment |
+| MGWR baseline | `geo_benchmark/baselines/mgwr_baseline.py` | geo-experiment |
+| Download datasets | `geo_benchmark/download_data.py` | geo-experiment (if data missing) |
+| Visualize results | `geo_benchmark/evaluation/visualize.py` | paper-figure |
+| Evaluate metrics | `geo_benchmark/evaluation/metrics.py` | spatial-analysis |
 | Orchestrator (API mode) | `core/orchestrator.py` | launch.py (API backend only) |
 | Memory manager | `core/memory_manager.py` | core/research_loop.py |
 | Token optimizer | `core/token_optimizer.py` | core/research_loop.py |
@@ -187,17 +187,17 @@ Accept requires: weighted avg ≥ 7.5 AND all five floors met (failing one floor
 
 ## Allowed Behaviors
 
-- Read/write in `output/`, `outputs/`, `GeoBenchmark/`, `memory/`, `tools/`, `skills/`
+- Read/write in `output/`, `outputs/`, `geo_benchmark/`, `memory/`, `tools/`, `skills/`
 - Call Python tools listed above when skills require them
 - Git commit accepted sections: `feat: accept <section> — score <X.X>`
-- Download open-source datasets via `GeoBenchmark/download_data.py`
-- Append to `findings.md`, `EXPERIMENT_LOG.md`, `AUTO_REVIEW.md`
+- Download open-source datasets via `geo_benchmark/download_data.py`
+- Append to `findings.md`, `EXPERIMENT_LOG.md`, `outputs/AUTO_REVIEW.md`
 
 ## Prohibited Behaviors
 
 - Do NOT fabricate results, citations, or claims not in `memory/approved_claims.md`
 - Do NOT execute Python files directly without a skill invoking them
-- Do NOT delete `findings.md`, `EXPERIMENT_LOG.md`, or `AUTO_REVIEW.md` entries
+- Do NOT delete `findings.md`, `EXPERIMENT_LOG.md`, or `outputs/AUTO_REVIEW.md` entries
 - Do NOT push to remote without explicit user instruction
 - Do NOT run `rm -rf` or destructive shell commands
 - Do NOT skip `result-to-claim` before `paper-write`
@@ -228,13 +228,13 @@ The Stop hook writes `handoff.json` with:
 If you notice context is getting large and you still have work to do:
 1. Write current state to `findings.md` (one-line summary of what was just learned)
 2. Append current experiment results to `EXPERIMENT_LOG.md`
-3. Update `REVIEW_STATE.json` with current scores and pending fixes
+3. Update `outputs/REVIEW_STATE.json` with current scores and pending fixes
 4. Tell the user: "Context is getting large — I recommend starting a new session. `handoff.json` will be updated on stop."
 5. Do NOT continue trying to squeeze more work into an overfull context
 
 ### What to Resume vs Re-run
 - **Never re-run** experiments marked SUCCESS in `EXPERIMENT_LOG.md`
-- **Never re-run** sections marked ACCEPTED in `REVIEW_STATE.json` or `memory/MEMORY.md`
+- **Never re-run** sections marked ACCEPTED in `outputs/REVIEW_STATE.json` or `memory/MEMORY.md`
 - **Always resume** from the stage listed in `handoff.pipeline.stage`
 - If in doubt, check `findings.md` — it is the authoritative compact log of all discoveries
 
@@ -275,7 +275,7 @@ Re-examine these assumptions periodically — as models improve, some harness sc
 
 If context overflows mid-session:
 1. Read `handoff.json` for current stage and next step (fastest recovery)
-2. Read `REVIEW_STATE.json` for review loop per-criterion state
+2. Read `outputs/REVIEW_STATE.json` for review loop per-criterion state
 3. Read `memory/MEMORY.md` for pipeline overview
 4. Read `findings.md` (COMPACT_MODE) or `EXPERIMENT_LOG.md` (full)
 5. Resume from last incomplete stage — never re-run completed stages
@@ -302,8 +302,8 @@ geo_research_agent_247/
 ├── research_contract.md         ← Active idea context (condensed)
 ├── findings.md                  ← Compact one-line discovery log
 ├── EXPERIMENT_LOG.md            ← Complete experiment record
-├── AUTO_REVIEW.md               ← Review loop history (created on first review)
-├── REVIEW_STATE.json            ← Review loop state, per-criterion scores (created on first review)
+├── outputs/AUTO_REVIEW.md               ← Review loop history (created on first review)
+├── outputs/REVIEW_STATE.json            ← Review loop state, per-criterion scores (created on first review)
 ├── handoff.json                 ← Structured context-reset handoff (written by stop hook)
 ├── CLAUDE.md                    ← this file (dashboard)
 │
@@ -347,7 +347,7 @@ geo_research_agent_247/
 │   ├── PAPER_PLAN_TEMPLATE.md
 │   └── REVIEW_STATE_TEMPLATE.json
 │
-├── GeoBenchmark/                ← spatial regression benchmark suite
+├── geo_benchmark/                ← spatial regression benchmark suite
 │   ├── run_benchmark.py         ← full OLS/GWR/MGWR comparison
 │   ├── baselines/               ← individual baseline implementations
 │   ├── datasets/                ← open-source datasets
@@ -367,5 +367,5 @@ geo_research_agent_247/
 ├── mcp/                         ← custom MCP server implementations
 ├── memory/                      ← MEMORY.md + paper-cache
 ├── outputs/                     ← generated papers, figures, reports
-└── ResearchArchitect/           ← collaborative workspace
+└── research_architect/           ← collaborative workspace
 ```

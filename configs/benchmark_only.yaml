@@ -36,7 +36,7 @@ benchmark:
     - mgwr
 
 output:
-  base_dir: GeoBenchmark/results
+  base_dir: geo_benchmark/results
   checkpoint_dir: .checkpoints
   log_dir: harness/logs
   save_intermediate: true

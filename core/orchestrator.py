@@ -46,7 +46,7 @@ Examples:
   # Run only literature + writing, skip experiment and review
   python core/orchestrator.py --topic "MGWR applications" --agents literature,writing
 
-  # GeoBenchmark only
+  # geo_benchmark only
   python core/orchestrator.py --config configs/benchmark_only.yaml
         """,
     )

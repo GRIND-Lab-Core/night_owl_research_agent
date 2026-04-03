@@ -1,4 +1,4 @@
-# GeoBenchmark — Geospatial Regression Benchmark Suite
+# geo_benchmark — Geospatial Regression Benchmark Suite
 
 A reproducible benchmark for comparing spatial regression models on open-source datasets.
 Includes OLS, GWR, MGWR, Kriging, and spatial machine learning baselines.
@@ -9,16 +9,16 @@ Includes OLS, GWR, MGWR, Kriging, and spatial machine learning baselines.
 
 ```bash
 # 1. Download all datasets (first run only, ~200MB total)
-python GeoBenchmark/download_data.py
+python geo_benchmark/download_data.py
 
 # 2. Run all baselines on all datasets
-python GeoBenchmark/run_benchmark.py --all
+python geo_benchmark/run_benchmark.py --all
 
 # 3. Run specific combination
-python GeoBenchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
+python geo_benchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
 
 # 4. Open interactive notebook
-jupyter notebook GeoBenchmark/notebooks/benchmark_demo.ipynb
+jupyter notebook geo_benchmark/notebooks/benchmark_demo.ipynb
 ```
 
 ---
@@ -100,7 +100,7 @@ jupyter notebook GeoBenchmark/notebooks/benchmark_demo.ipynb
 
 ## Results Format
 
-All results are saved to `GeoBenchmark/results/` in JSON format:
+All results are saved to `geo_benchmark/results/` in JSON format:
 
 ```json
 {
