@@ -8,13 +8,13 @@
 ## Current Research State
 
 ```
-Topic:           Soundscape-conditioned street-level image generation (GeoAI + latent diffusion)
-Mode:            claude-code
-Stage:           Stage 1 — Literature Search (in progress)
-Target journal:  ISPRS Journal of Photogrammetry and Remote Sensing (IF 12.7)
-Run ID:          run-2026-04-01
-Last updated:    2026-04-01
-Overall status:  running — AUTO_PROCEED: true
+Topic:           [not set — fill in program.md]
+Mode:            —
+Stage:           not started
+Target journal:  [not set]
+Run ID:          —
+Last updated:    —
+Overall status:  —
 ```
 
 ---
@@ -23,20 +23,20 @@ Overall status:  running — AUTO_PROCEED: true
 
 *(Updated by orchestrator and stop hook after each completed stage)*
 
-- [x] Stage 1: Literature Search — 63 papers cached — 2026-04-01
-- [x] Stage 2: Synthesis — file: memory/synthesis-2026-04-01.md — 52 papers — 2026-04-01
-- [x] Stage 3: Gap Analysis — 11 gaps — top: M1 composite 4.80 — 2026-04-01
-- [x] Stage 4: Hypothesis Generation — 6 hypotheses — top: H1 4.80 — 2026-04-02
-- [x] Stage 5: Outline — 7 sections — score 8.75 — memory/outline.md — 2026-04-02
+- [ ] Stage 1: Literature Search
+- [ ] Stage 2: Synthesis
+- [ ] Stage 3: Gap Analysis
+- [ ] Stage 4: Hypothesis Generation
+- [ ] Stage 5: Outline
 - [ ] Stage 6: Section Writing
-  - [x] Abstract — score: 8.65 — attempt 2 — ACCEPTED
-  - [x] Introduction — score: 8.4 — attempt 1 — ACCEPTED
-  - [x] Literature Review — score: 8.4 — attempt 1 — ACCEPTED
-  - [x] Methodology — score: 8.2 — attempt 1 — ACCEPTED
-  - [x] Results — score: 8.1 — attempt 1 — ACCEPTED
-  - [x] Discussion — score: 7.9 — attempt 1 — ACCEPTED
-  - [x] Conclusion — score: 8.1 — attempt 1 — ACCEPTED
-- [ ] Stage 7: References — status: pending
+  - [ ] Abstract
+  - [ ] Introduction
+  - [ ] Literature Review
+  - [ ] Methodology
+  - [ ] Results
+  - [ ] Discussion
+  - [ ] Conclusion
+- [ ] Stage 7: References
 
 ---
 
@@ -45,7 +45,7 @@ Overall status:  running — AUTO_PROCEED: true
 ```
 File:                    —
 Sections completed:      0 / 7
-Sections accepted:       0
+Sections accepted:       —
 Review round:            —
 Review decision:         —
 Final paper path:        —
@@ -88,7 +88,7 @@ Cache hit rate:     —
 *(Populated by literature-scout — add entries after each lit-review stage)*
 
 | # | Authors | Year | Title (short) | Venue | Method | Gap addressed |
-|---|---------|------|--------------|-------|--------|--------------|\
+|---|---------|------|--------------|-------|--------|--------------|
 | — | — | — | — | — | — | — |
 
 ---
@@ -106,7 +106,7 @@ Cache hit rate:     —
 ## Hypotheses Evaluated
 
 | # | Hypothesis (short) | Dataset | Model | Score | Decision |
-|---|-------------------|---------|-------|-------|---------|\
+|---|-------------------|---------|-------|-------|---------|
 | — | — | — | — | — | — |
 
 ---
@@ -116,7 +116,7 @@ Cache hit rate:     —
 *(Populated by benchmark runs — `python geo_benchmark/run_benchmark.py`)*
 
 | Dataset | OLS R² | GWR R² | MGWR R² | Best model | Moran's I (best) |
-|---------|--------|--------|---------|-----------|-----------------|\
+|---------|--------|--------|---------|-----------|-----------------|
 | — | — | — | — | — | — |
 
 ---
