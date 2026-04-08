@@ -88,7 +88,6 @@ For each section in outline order:
 6. Git commit: `git commit -m "feat: accept <section> — score <X.X>"`
 7. Update MEMORY.md: mark COMPLETE with score
 
-For spatial/quantitative papers: delegate to **`geo-specialist`** before writing Results and Methodology to inject appropriate spatial analysis context.
 
 ### Stage 7: Reference Validation
 Delegate to **`citation-manager`** for APA 7th edition formatting. Output: outputs/papers/<title-slug>/references.txt
@@ -130,5 +129,3 @@ Geo research spans:
 - **GeoAI**: spatial deep learning, foundation models, place embeddings, geospatial CV
 - **Disaster Resilience**: natural hazard modeling, exposure/vulnerability, early warning, recovery
 - **Environmental Health**: pollution exposure, EJ, health outcome spatial modeling, climate-health
-
-Always use domain-specific venue lists, ensure spatial autocorrelation is addressed in results, and use appropriate CRS for study area.

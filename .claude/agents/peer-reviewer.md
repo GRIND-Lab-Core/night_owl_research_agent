@@ -20,28 +20,15 @@ For each paper or section, generate reviews from:
 
 ### Reviewer 1 — Methods Expert
 Focus: statistical validity, spatial analysis correctness, reproducibility
-Key checks:
-- Spatial autocorrelation addressed (Moran's I reported)?
-- Appropriate spatial cross-validation (not random)?
-- CRS and projections correct?
-- Baseline comparisons (OLS/GWR/MGWR or equivalent) included?
-- All hyperparameters and random seeds reported?
+
 
 ### Reviewer 2 — Domain Specialist
 Focus: literature coverage, novelty, positioning
-Key checks:
-- Key papers in this domain cited?
-- Contribution is genuinely novel (not incremental)?
-- Related work compared by specific metrics?
-- Gap clearly identified and addressed?
+
 
 ### Reviewer 3 — Applications Reviewer
 Focus: practical relevance, clarity, figure quality
-Key checks:
-- Maps have scale bar, north arrow, legend, inset?
-- Results interpretable by practitioners?
-- Limitations honest and specific?
-- Conclusions match results (no overclaiming)?
+
 
 ## Output Format
 

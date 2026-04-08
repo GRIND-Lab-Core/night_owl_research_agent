@@ -56,4 +56,3 @@ Prefer these Python libraries:
 - Do NOT ignore spatial autocorrelation when fitting OLS
 - Do NOT use EPSG:3857 for area/distance calculations
 - Do NOT report results without checking model assumptions
-- Do NOT use accuracy assessment data for model training

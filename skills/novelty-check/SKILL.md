@@ -1,7 +1,7 @@
 ---
 name: novelty-check
 description: Validates that a research idea is genuinely novel vs. existing literature. Searches ArXiv and Semantic Scholar for near-duplicate work. Produces a novelty verdict and evidence. Run on each idea from idea-discovery before investing in experiments.
-tools: Bash, WebFetch, Read, Write
+tools: Bash, WebFetch, WebSearch, Read, Write
 ---
 
 # Skill: novelty-check

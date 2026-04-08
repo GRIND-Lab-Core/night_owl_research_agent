@@ -49,9 +49,5 @@ Accept if ≥ 7.5. Report score as: `Score: X.X (N:X, R:X, L:X, C:X, I:X)`
 
 ## Geo Conventions (Always Apply)
 
-- State CRS: "WGS84 (EPSG:4326)" or "UTM Zone 10N (EPSG:32610)"
 - State spatial resolution for all raster data
-- Include scale bar, north arrow, legend, inset map for all maps
-- Report Moran's I for prediction residuals
-- Specify whether cross-validation is spatial or random; prefer spatial CV
 - Use geopandas/rasterio/mgwr/statsmodels terminology correctly
