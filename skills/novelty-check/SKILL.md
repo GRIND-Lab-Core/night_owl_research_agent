@@ -1,68 +1,109 @@
 ---
 name: novelty-check
-description: Validates that a research idea is genuinely novel vs. existing literature. Searches ArXiv and Semantic Scholar for near-duplicate work. Produces a novelty verdict and evidence. Run on each idea from idea-discovery before investing in experiments.
-tools: Bash, WebFetch, WebSearch, Read, Write
+description: Validates that a research idea is genuinely novel vs. existing literature. Searches ArXiv, Semantic Scholar, and WebSearch for near-duplicate work. Produces a novelty verdict and evidence. Run on each idea from idea-discovery before investing in experiments.
+argument-hint: [method-or-idea-description]
+tools: Bash, WebFetch, WebSearch, Read, Write, Grep, Glob
 ---
 
 # Skill: novelty-check
 
-You verify that a research idea has not already been published in substantially equivalent form.
+You verify that a research idea,**$ARGUMENTS** , has not already been published in substantially equivalent form.
 
 ---
 
-## Phase 1: Formulate Search Queries
+## Constants
 
-Given an idea description, extract:
-- Core method + core application
-- Key dataset name
-- Geographic scope
+- REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`)
 
-Build 3-5 specific queries that would find this exact paper if it existed:
-- `"<method> <application> <geography>"`
-- `"<method> <dataset>"`
-- `"<application> spatial non-stationarity <region>"` (example pattern)
+## Phase 1: Identify Key Claims
+
+1. Read the user's method description
+2. Identify 3-5 core claims that would need to be novel:
+   - What is the method?
+   - What problem does it solve?
+   - What is the mechanism?
+   - What makes it different from obvious baselines?
+   - What dataset does it use?
+   - What is the spatial and temporal granularity of the research?
 
 ---
 
 ## Phase 2: Search
 
-**ArXiv:**
-```bash
-python tools/arxiv_fetch.py --query "<query>" --max-results 20 --output memory/paper-cache/novelty_<slug>.json
-```
+For EACH core claim, search using ALL available sources:
 
-**Semantic Scholar:**
-```bash
-python tools/semantic_scholar_fetch.py --query "<query>" --max-results 30 --output memory/paper-cache/novelty_s2_<slug>.json
-```
+1. **Web Search** (via `WebSearch`):
+   - Search arXiv, Google Scholar, Semantic Scholar
+   - Use specific technical terms from the claim
+   - Try at least 3 different query formulations per claim
+   - Include year filters for 2024-2026
 
-Also directly fetch relevant abstracts from `memory/paper-cache/` if they already exist.
+2. **Known paper databases**: Check against:
+   - ICLR 2025/2026, NeurIPS 2025, ICML 2025/2026
+   - Recent arXiv preprints (2025-2026)
+
+3. **Local Papers**
+   - Also directly fetch relevant abstracts from `memory/paper-cache/` or `paper/` if they already exist.
+
+4. **Read abstracts**: For each potentially overlapping paper, WebFetch its abstract and related work section
+
 
 ---
 
 ## Phase 3: Evaluate
 
-For each retrieved paper, assess: is this paper doing **substantially the same thing** as the idea?
+Call REVIEWER_MODEL via Codex MCP (`mcp__codex__codex`) with xhigh reasoning:
+```
+config: {"model_reasoning_effort": "xhigh"}
+```
+Prompt should include:
+- The proposed method description
+- All papers found in Phase 2
+- Ask: "Is this method novel? What is the closest prior work? What is the delta?"
 
-Criteria for "near-duplicate":
-- Same method + same application domain + overlapping geography
-- Same data sources + same analytical framework
-- Published within last 3 years (older near-duplicates may be OK if a clear advance is made)
+**If the external reviewer model is not configured correctly, use Claude Code subagent instead.**
 
 ---
 
-## Phase 4: Verdict
+## Phase 4: Novelty Report
 
-**NOVEL** — no near-duplicate found. Proceed.
-**INCREMENTAL** — similar work exists but a meaningful advance is still possible. Describe what advance is needed. Mark idea as needing stronger differentiation.
-**ALREADY DONE** — substantially equivalent paper exists. Reject idea, cite the paper.
+Output a structured novelty report:
 
-Write verdict to `memory/novelty_<idea-slug>.md`:
+```markdown
+## Novelty Check Report
+
+### Proposed Method
+[1-2 sentence description]
+
+### Core Claims
+1. [Claim 1] — Novelty: HIGH/MEDIUM/LOW — Closest: [paper]
+2. [Claim 2] — Novelty: HIGH/MEDIUM/LOW — Closest: [paper]
+...
+
+### Closest Prior Work
+| Paper | Year | Venue | Overlap | Key Difference |
+|-------|------|-------|---------|----------------|
+
+### Overall Novelty Assessment
+- Score: X/10
+- Recommendation: PROCEED / PROCEED WITH CAUTION / ABANDON
+- Key differentiator: [what makes this unique, if anything]
+- Risk: [what a reviewer would cite as prior work]
+
+### Suggested Positioning
+[How to frame the contribution to maximize novelty perception]
 ```
-Idea: [title]
-Verdict: NOVEL / INCREMENTAL / ALREADY DONE
-Closest paper: [citation]
-Distinguishing factors: [what makes this idea different, if NOVEL or INCREMENTAL]
-```
 
-Update `IDEA_REPORT.md` with verdict.
+**Write report to `novelty_report.md`**
+
+**Update `idea_report.md` with verdict and score.**
+
+### Important Rules
+- Be BRUTALLY honest — false novelty claims waste months of research time
+- "Applying X to Y" is NOT novel unless the application reveals surprising insights
+- Check both the method AND the experimental setting for novelty
+- If the method is not novel but the FINDING would be, say so explicitly
+- Always check the most recent 6 months of arXiv — the field moves fast
+
+
+

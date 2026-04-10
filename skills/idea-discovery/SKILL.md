@@ -16,7 +16,7 @@ You are the orchestrator for a compete idea discovery workflow for: **$ARGUMENTS
 This skill chains sub-skills into a single automated pipeline:
 
 ```
-/lit-review → /generate-idea → /novelty-check → /research-review → /research-refine-pipeline 
+/lit-review → /generate-idea → /novelty-check → /research-review → /experiment-design-pipeline 
 ```
 
 Each phase builds on the previous one's output. The final deliverables are a validated `idea_report.md` with ranked ideas, plus a refined proposal (`final_proposal.md`) and experiment plan (`experiment_plan.md`) for the top idea.
@@ -29,9 +29,9 @@ Each phase builds on the previous one's output. The final deliverables are a val
 - **MAX_TOTAL_GPU_HOURS = 8** — Total GPU budget across all pilots. If exceeded, skip remaining pilots and note in report.
 - **AUTO_PROCEED = true** — If user doesn't respond at a checkpoint, automatically proceed with the best option after presenting results. Set to `false` to always wait for explicit user confirmation.
 - **REVIEWER_MODEL = `gpt-5.4`** — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`). Passed to sub-skills. If not configured properly, use Claude code subagent.
-- **ARXIV_DOWNLOAD = false** — When `true`, `/research-lit` downloads the top relevant arXiv PDFs during Phase 1. When `false` (default), only fetches metadata. Passed through to `/research-lit`.
-- **COMPACT = false** — When `true`, generate compact summary files for short-context models and session recovery. Writes `IDEA_CANDIDATES.md` (top 3-5 ideas only) at the end of this workflow. Downstream skills read this instead of the full `IDEA_REPORT.md`.
-- **REF_PAPER = false** — Reference paper to base ideas on. Accepts: local PDF path, arXiv URL, or any paper URL. When set, the paper is summarized first (`REF_PAPER_SUMMARY.md`), then idea generation uses it as context. Combine with `base repo` for "improve this paper with this codebase" workflows.
+- **ARXIV_DOWNLOAD = false** — When `true`, `/lit-review` downloads the top relevant arXiv PDFs during Phase 1. When `false` (default), only fetches metadata. Passed through to `/lit-review`.
+- **COMPACT = false** — When `true`, generate compact summary files for short-context models and session recovery. Writes `idea_candidates.md` (top 3-5 ideas only) at the end of this workflow. Downstream skills read this instead of the full `idea_report.md`.
+- **REF_PAPER = false** — Reference paper to base ideas on. Accepts: local PDF path, arXiv URL, or any paper URL. When set, the paper is summarized first (`ref_paper_summary.md`), then idea generation uses it as context. Combine with `base repo` for "improve this paper with this codebase" workflows.
 
 > 💡 These are defaults. Override by telling the skill, e.g., `/idea-discovery "topic" — ref paper: https://arxiv.org/abs/2406.04329` or `/idea-discovery "topic" — compact: true`.
 
@@ -141,7 +141,7 @@ Does this match your understanding? Should I adjust the scope before generating 
 Invoke `/generate-idea` with the landscape context (and `ref_paper_summary.md` if available):
 
 ```
-/idea-creator "$ARGUMENTS"
+/generate-idea "$ARGUMENTS"
 ```
 
 **What this does:**
@@ -207,7 +207,7 @@ For the surviving top idea(s), get brutal feedback:
 After review, refine the top idea into a concrete proposal and plan experiments:
 
 ```
-/research-refine-pipeline "[top idea description + pilot results + reviewer feedback]"
+/experiment-design-pipeline "[top idea description + pilot results + reviewer feedback]"
 ```
 
 **What this does:**
@@ -242,7 +242,7 @@ Finalize `idea_report.md` with all accumulated information:
 
 **Direction**: $ARGUMENTS
 **Date**: [today]
-**Pipeline**: lit-review → generate-idea → novelty-check → research-review → research-refine-pipeline
+**Pipeline**: lit-review → generate-idea → novelty-check → research-review → experiment-design-pipeline
 
 ## Executive Summary
 [2-3 sentences: best idea, key evidence, recommended next step]
@@ -268,12 +268,12 @@ Finalize `idea_report.md` with all accumulated information:
 ## Refined Proposal
 - Proposal: `refine-logs/final_proposal.md`
 - Experiment plan: `refine-logs/experiment_plan.md`
-- Tracker: `refine-logs/EXPERIMENT_TRACKER.md`
+- Tracker: `refine-logs/experiment_tracker.md`
 
 ## Next Steps
 - [ ] /deploy-experiment to deploy experiments from the plan
 - [ ] /auto-review-loop to iterate until submission-ready
-- [ ] Or invoke /research-pipeline for the complete end-to-end flow
+- [ ] Or invoke /full-pipeline for the complete end-to-end flow
 ```
 
 ### Phase 5.5: Write Compact Files (when COMPACT = true)
