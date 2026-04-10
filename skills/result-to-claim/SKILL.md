@@ -1,6 +1,6 @@
 ---
 name: result-to-claim
-description: Validates that every claim in EXPERIMENT_PLAN.md is supported by actual results in EXPERIMENT_LOG.md. Removes or qualifies unsupported claims. Safety gate before paper writing. Prevents fabrication.
+description: Validates that every claim in experiment_plan.md is supported by actual results in experiment_log.md. Removes or qualifies unsupported claims. Safety gate before paper writing. Prevents fabrication.
 tools: Read, Write
 ---
 
@@ -12,7 +12,7 @@ You act as a claim auditor. No paper section may contain a claim not backed by a
 
 ## Phase 1: Extract Claims
 
-Read `EXPERIMENT_PLAN.md` and any drafted paper sections.
+Read `experiment_plan.md` and any drafted paper sections.
 Extract every testable claim as a list:
 - "MGWR outperforms GWR on dataset X" — testable claim
 - "Spatial non-stationarity is significant across all variables" — testable claim
@@ -23,7 +23,7 @@ Extract every testable claim as a list:
 
 ## Phase 2: Match Claims to Results
 
-For each claim, find the supporting result in `EXPERIMENT_LOG.md` or `geo_benchmark/results/`:
+For each claim, find the supporting result in `experiment_plan.md`:
 - Exact matching: find the specific model/dataset/metric value
 - Mark as: VERIFIED (number found), QUALIFIED (directionally supported but different magnitude), UNSUPPORTED (no matching result)
 
@@ -32,7 +32,7 @@ For each claim, find the supporting result in `EXPERIMENT_LOG.md` or `geo_benchm
 ## Phase 3: Handle Unsupported Claims
 
 For each UNSUPPORTED claim:
-1. Check if the experiment was planned but not yet run → add to `EXPERIMENT_PLAN.md` pending list
+1. Check if the experiment was planned but not yet run → add to `experiment_plan.md` pending list
 2. Check if the experiment was run but failed → mark claim as "planned future work"
 3. If impossible to verify: REMOVE the claim
 

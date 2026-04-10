@@ -12,7 +12,7 @@ You monitor spatial experiment execution and detect problems early to avoid wast
 
 ## Phase 1: Check Active Experiments
 
-Read `EXPERIMENT_LOG.md` for experiments with status RUNNING or PENDING.
+Read `experiment_log.md` for experiments with status RUNNING or PENDING.
 
 For each running experiment:
 1. Check if output file was recently modified:
@@ -46,7 +46,6 @@ tail -20 [log_path]
 **COMPLETE**: Update EXPERIMENT_LOG.md status to SUCCESS. Append finding to `findings.md`.
 **CLEARLY BAD**: Kill job if possible. Mark as FAILED in log. Try to fix the issue and retry once.
 **STALLED**: Check if process is still alive. If dead: re-queue. If alive: wait 15 more min.
-**MEMORY FAIL**: Re-run with `--max-n 2000` (GWR) or `--max-n 1000` (MGWR) subsampling flag.
 
 ---
 
