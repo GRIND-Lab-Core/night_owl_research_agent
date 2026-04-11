@@ -1,84 +1,47 @@
 # Experiment Log
 
-> Append results here as experiments complete. Never delete entries. Mark status with ✓ (SUCCESS), ✗ (FAILED), ⏳ (RUNNING), ⏸ (PENDING).
+> **Complete record of all experiments run in this project.** Every experiment gets an entry — successful or not. This is the authoritative source for "what did we actually run and what happened?"
+>
+> **How it differs from EXPERIMENT_TRACKER.md:** The tracker (in `refine-logs/`) is an execution checklist (TODO → RUNNING → DONE). This log is a permanent record with full results, configs, and reproduction commands. The tracker tells you what's left to do; the log tells you what was done and what it showed.
+>
+> **Update rule:** Write an entry immediately after each experiment completes. Do not batch entries or wait until "later."
 
-**Project**: [topic slug]
-**Started**: [YYYY-MM-DD]
+## Experiment: [Descriptive Name]
 
----
+**Date**: YYYY-MM-DD
+**Idea**: [Which idea from IDEA_CANDIDATES.md]
+**Goal**: [What this experiment tests — link to claim if applicable]
 
-## Experiment 1 — OLS Baseline
+### Setup
+- **Method**: [Brief description of the approach]
+- **Dataset**: [Name, split, size]
+- **Baseline**: [What you compare against]
+- **Hardware**: [Server, GPUs, time taken]
+- **Config**: [Path to config file or key hyperparameters]
 
-**Status**: ⏳ PENDING
-**Command**:
+### Results
+
+| Method | Dataset | Metric-1 | Metric-2 | Notes |
+|--------|---------|----------|----------|-------|
+| Baseline | [dataset] | [number] | [number] | [reproduced / from paper] |
+| Ours | [dataset] | [number] | [number] | [seeds, std if applicable] |
+
+### Verdict
+- **Supports claim?** [Yes / Partially / No]
+- **Key takeaway**: [One sentence — what did we learn?]
+
+### Reproduction
 ```bash
-python geo_benchmark/baselines/ols_baseline.py ...
+# Command to reproduce this experiment
+python train.py --config configs/exp01.yaml --seed 42
 ```
-**Run at**: —
-**Duration**: —
-**Output**: `geo_benchmark/results/exp1_ols.json`
 
-**Results**:
-| Metric | Value |
-|--------|-------|
-| R² | — |
-| Adj R² | — |
-| RMSE | — |
-| AIC | — |
-| Moran's I residuals | — |
-| Moran's I p-value | — |
-
-**Notes**: —
+### WandB
+- Run URL: [link]
+- Run ID: [id]
 
 ---
 
-## Experiment 2 — GWR Baseline
+## Experiment: [Next Experiment Name]
 
-**Status**: ⏳ PENDING
-**Command**:
-```bash
-python geo_benchmark/baselines/gwr_baseline.py ...
-```
-**Run at**: —
-**Duration**: —
-**Output**: `geo_benchmark/results/exp2_gwr.json`
-
-**Results**:
-| Metric | Value |
-|--------|-------|
-| R² | — |
-| AICc | — |
-| Bandwidth (adaptive) | — |
-| Moran's I residuals | — |
-
-**Notes**: —
-
----
-
-## Experiment 3 — MGWR Baseline
-
-**Status**: ⏳ PENDING
-**Output**: `geo_benchmark/results/exp3_mgwr.json`
-
-**Results**:
-| Metric | Value |
-|--------|-------|
-| R² | — |
-| AICc | — |
-| Per-variable bandwidths | — |
-| Moran's I residuals | — |
-
----
-
-## [Add experiments below as they run]
-
-<!-- Template for new entry:
-## Experiment N — [Name]
-**Status**: ⏳ PENDING
-**Command**: `python ...`
-**Run at**: YYYY-MM-DD HH:MM
-**Duration**: X min
-**Output**: path
-**Results**: [table]
-**Notes**: [errors, observations, surprises]
--->
+...

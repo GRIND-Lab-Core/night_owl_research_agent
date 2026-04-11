@@ -73,6 +73,9 @@ EXTERNAL_REVIEW: false    # true = use claude subagent or external reviewer LLM 
 | `memory/approved_claims.md` | Verified claims only (never fabricate) | skill `result-to-claim` |
 | `IDEA_REPORT.md` | Ranked idea candidates with pilot scores | skill `idea-discovery` |
 | `EXPERIMENT_PLAN.md` | Experiment design with commands | skill `geo-experiment` |
+| `data/DATA_MANIFEST.md` | Downloaded dataset provenance log | skill `data-download` |
+| `data/raw/` | Raw downloaded datasets (never modified) | skill `data-download` |
+| `spatial-analysis-outputs/` | Spatial analysis reports, figures, scripts | skill `spatial-analysis` |
 | `outputs/papers/` | Written section files | skill `paper-write` |
 | `outputs/figures/` | All generated figures | skill `paper-figure` |
 | `geo_benchmark/results/` | OLS/GWR/MGWR result JSONs | geo-experiment / python tools |
@@ -106,18 +109,25 @@ Next skill in pipeline
 
 | Skill | Invoke | What it does |
 |---|---|---|
-| `research-pipeline` | `/full-pipeline` | 4-stage master pipeline (evening→overnight→morning) |
-| `geo-lit-review` | `/geo-search <topic>` | Search + synthesize + gap analysis |
-| `idea-discovery` | `/find-gaps <topic>` | Generate + score candidate ideas from gaps |
-| `novelty-check` | (called by idea-discovery) | Verify idea is genuinely new |
-| `geo-experiment` | `/run-experiment` | Design + execute OLS/GWR/MGWR experiments |
-| `spatial-analysis` | (called by geo-experiment) | Interpret spatial results, compute Moran's I |
-| `result-to-claim` | (called before paper-write) | Verify claims against actual results |
-| `auto-review-loop` | `/review-draft <file>` | Up to 4 adversarial review rounds |
+| `full-pipeline` | `/full-pipeline` | 5-stage master pipeline: idea discovery → experiment design → execution → review → report |
+| `lit-review` | `/lit-review <topic>` | Search + synthesize + gap analysis (ArXiv, Semantic Scholar, local papers, Zotero, Obsidian) |
+| `idea-discovery` | `/find-gaps <topic>` | Full idea pipeline: lit-review → generate-idea → novelty-check → research-review → experiment-design-pipeline |
+| `generate-idea` | (called by idea-discovery) | Brainstorm 8-12 ideas, filter, pilot-test top 3, rank |
+| `novelty-check` | (called by idea-discovery) | Verify idea is genuinely new via multi-source search + GPT-5.4 |
+| `idea-review` | (called by idea-discovery) | External critical review of research ideas via Codex MCP |
+| `refine-research` | `/refine-research` | Iterative method refinement via GPT-5.4 review (up to 5 rounds, score ≥ 9 target) |
+| `experiment-design` | `/experiment-design` | Claim-driven experiment roadmap with run order, budget, decision gates |
+| `experiment-design-pipeline` | (called by idea-discovery) | One-shot wrapper: refine-research → experiment-design |
+| `deploy-experiment` | `/deploy-experiment` | Deploy experiments to local/remote/Modal GPU |
+| `data-download` | `/data-download` | Discover, evaluate, download datasets from the internet with provenance tracking |
+| `spatial-analysis` | `/spatial-analysis` | Research-question-driven spatial analysis: question classification → ESDA → method selection → diagnostics → interpretation |
+| `result-to-claim` | (called before paper-write) | Verify claims against actual results (safety gate) |
+| `auto-review-loop` | `/review-draft <file>` | Up to 4 adversarial review rounds with per-criterion floors |
 | `paper-plan` | (called before paper-write) | Build section outline + figure plan |
-| `paper-write` | `/write-section <name>` | Write section with iterative scoring |
-| `paper-figure` | `/geo-plot` | Generate spatial figures and captions |
-| `training-check` | (called by research-pipeline Stage 3) | Monitor running experiments |
+| `paper-write` | `/write-section <name>` | Write section with iterative scoring loop |
+| `paper-figure` | `/geo-plot` | Generate spatial figures and captions with cartographic conventions |
+| `submit-check` | `/submit-check` | Validate manuscript against journal requirements |
+| `training-check` | (called by full-pipeline Stage 3) | Monitor running experiments for stalls/failures |
 
 Skills live in `skills/<name>/SKILL.md`. Domain knowledge lives in `skills/knowledge/`.
 
@@ -236,7 +246,7 @@ The entity that writes content does NOT score it. This is enforced everywhere:
 | Stage | Generator | Evaluator |
 |---|---|---|
 | Paper sections | `paper-writer` agent | `peer-reviewer` agent (separate context) |
-| Experiment results | `geo-experiment` skill | `spatial-analysis` skill |
+| Experiment results | `geo-experiment` / `deploy-experiment` skill | `spatial-analysis` skill |
 | Claims validation | `geo-experiment` + `paper-writer` | `result-to-claim` skill |
 | Review rounds | previous writer context | `auto-review-loop` → `peer-reviewer` (no writer context) |
 
@@ -319,20 +329,26 @@ geo_research_agent_247/
 │       ├── peer-reviewer.md         ← Scores sections independently (evaluator)
 │       └── citation-manager.md      ← APA 7th edition citation formatting
 │
-├── skills/                          ← Skill logic: Markdown workflow files (13 skills)
-│   ├── research-pipeline/SKILL.md   ← 4-stage master pipeline
-│   ├── geo-lit-review/SKILL.md      ← Literature search + synthesis
-│   ├── idea-discovery/SKILL.md      ← Ideation from gaps
-│   ├── novelty-check/SKILL.md       ← Verify idea novelty
-│   ├── geo-experiment/SKILL.md      ← Design + execute experiments (sprint contracts)
-│   ├── spatial-analysis/SKILL.md    ← Interpret spatial results, Moran's I
+├── skills/                          ← Skill logic: Markdown workflow files (19 skills)
+│   ├── full-pipeline/SKILL.md       ← 5-stage master pipeline (idea → experiment → review → report)
+│   ├── lit-review/SKILL.md          ← Literature search + synthesis (ArXiv, S2, Zotero, Obsidian)
+│   ├── idea-discovery/SKILL.md      ← Full idea pipeline (lit-review → generate → novelty → review)
+│   ├── generate-idea/SKILL.md       ← Brainstorm + filter + pilot-test research ideas
+│   ├── novelty-check/SKILL.md       ← Verify idea novelty via multi-source search
+│   ├── idea-review/SKILL.md         ← External critical review via Codex MCP
+│   ├── refine-research/SKILL.md     ← Iterative method refinement (GPT-5.4, up to 5 rounds)
+│   ├── experiment-design/SKILL.md   ← Claim-driven experiment roadmap
+│   ├── experiment-design-pipeline/SKILL.md ← One-shot: refine-research → experiment-design
+│   ├── deploy-experiment/SKILL.md   ← Deploy to local/remote/Modal GPU
+│   ├── data-download/SKILL.md       ← Discover, evaluate, download datasets with provenance
+│   ├── spatial-analysis/SKILL.md    ← Research-question-driven spatial analysis workflows
 │   ├── result-to-claim/SKILL.md     ← Validate claims vs results (safety gate)
 │   ├── auto-review-loop/SKILL.md    ← Adversarial review (4 rounds, per-criterion floors)
 │   ├── paper-plan/SKILL.md          ← Section outline + figure plan
 │   ├── paper-write/SKILL.md         ← Section writing with iterative scoring
 │   ├── paper-figure/SKILL.md        ← Spatial figures + captions
-│   ├── training-check/SKILL.md      ← Monitor running experiments
 │   ├── submit-check/SKILL.md        ← Validate manuscript vs journal requirements
+│   ├── training-check/SKILL.md      ← Monitor running experiments
 │   └── knowledge/                   ← Domain reference files (read by skills)
 │       ├── academic-writing.md
 │       ├── apa-citations.md

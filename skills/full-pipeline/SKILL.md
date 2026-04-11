@@ -16,7 +16,7 @@ End-to-end research pipeline for $ARGUMENTS. You are the pipeline conductor — 
 ## Constants
 
 - **AUTO_PROCEED = true** — When `true`, Gate 1 auto-selects the top-ranked idea (highest pilot signal + novelty confirmed) and continues to implementation. When `false`, always waits for explicit user confirmation before proceeding.
-- **ARXIV_DOWNLOAD = false** — When `true`, `/research-lit` downloads the top relevant arXiv PDFs during literature survey. When `false` (default), only fetches metadata via arXiv API. Passed through to `/idea-discovery` → `/research-lit`.
+- **ARXIV_DOWNLOAD = false** — When `true`, `/research-lit` downloads the top relevant arXiv PDFs during literature survey. When `false` (default), only fetches metadata via arXiv API. Passed through to `/idea-discovery` → `/lit-review`.
 - **HUMAN_CHECKPOINT = false** — When `true`, the auto-review loops (Stage 4) pause after each round's review to let you see the score and provide custom modification instructions before fixes are implemented. When `false` (default), loops run fully autonomously. Passed through to `/auto-review-loop`.
 - **REVIEWER_DIFFICULTY = medium** — How adversarial the reviewer is. `medium` (default): standard MCP review. `hard`: adds reviewer memory + debate protocol. `nightmare`: GPT reads repo directly via `codex exec` + memory + debate. Passed through to `/auto-review-loop`.
 
@@ -26,7 +26,7 @@ End-to-end research pipeline for $ARGUMENTS. You are the pipeline conductor — 
 ## Startup: Check & Resume
 
 1. Read `memory/MEMORY.md` for current pipeline stage.
-2. Read `outputs/REVIEW_STATE.json` if it exists — resume from saved round.
+2. Read `outputs/review_state.json` if it exists — resume from saved round.
 3. Read `research_plan.md` if it exists; otherwise read `program.md`.
 4. Read `findings.md` (compact) if COMPACT_MODE is true; read full `EXPERIMENT_LOG.md` otherwise.
 5. Display current pipeline position and confirm with user before proceeding.

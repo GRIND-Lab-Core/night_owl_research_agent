@@ -1,79 +1,60 @@
-# Research Contract
+# Research Contract: [Idea Name]
 
-> **Purpose**: Focused active-idea context. Copied from program.md and refined as the idea is selected. Agents read this instead of the full program.md once a direction is committed.
+> **A focused working document for the currently selected idea.** Created when an idea is chosen from `idea_report.md`, updated throughout implementation and training. This is what the LLM reads on session recovery — not the full IDEA_REPORT with all 8-12 candidates.
+>
+> **Why this file exists:** After brainstorming, `idea_report.md` contains many candidate ideas. Keeping all of them in context pollutes the LLM's working memory and degrades output quality. This contract extracts *only the active idea* into a standalone document, so new sessions and post-compaction recovery load focused context instead of the entire idea pool.
 
----
+## Selected Idea
 
-## Problem Statement
+- **Description**: [One-paragraph summary of the idea]
+- **Source**: idea_report.md, Idea #N
+- **Selection rationale**: [Why this idea over others — pilot results, novelty score, feasibility]
 
-[1-2 sentences: what spatial/geo problem are you solving, and why does it matter?]
+## Core Claims
 
----
+1. [Main claim — what your method achieves]
+2. [Supporting claim — why it works / when it works best]
+3. [Optional: scope/limitation claim]
 
-## Method
+## Method Summary
 
-[Describe the proposed approach specifically:
-- What spatial model or algorithm?
-- What data?
-- What is novel about the combination?]
+[2-3 paragraphs: How the method works. Enough detail that a new session can understand the approach without reading the full codebase.]
 
----
+## Experiment Design
 
-## Research Questions
+- **Datasets**: [Which datasets, which splits]
+- **Baselines**: [What you compare against]
+- **Metrics**: [Primary and secondary metrics]
+- **Key hyperparameters**: [The ones that matter most]
+- **Compute budget**: [GPU hours, hardware]
 
-1. [RQ1]
-2. [RQ2]
-3. [RQ3 — optional]
+## Baselines
 
----
+| Method | Dataset | Metric | Score | Source |
+|--------|---------|--------|-------|--------|
+| [Baseline A] | [Dataset] | [Metric] | [Number] | [Paper / reproduced] |
+| [Baseline B] | [Dataset] | [Metric] | [Number] | [Paper / reproduced] |
 
-## Success Criteria
+## Current Results
 
-Define what "working" looks like with specific, measurable thresholds:
+> Updated as experiments complete. Start empty, fill in as you go.
 
-| Criterion | Threshold | Measurement |
-|---|---|---|
-| [e.g., MGWR R² improvement over OLS] | ≥ 0.05 | geo_benchmark results JSON |
-| [e.g., Moran's I residuals after MGWR] | < 0.10 (p ≥ 0.05) | esda.Moran output |
-| [e.g., Section quality score] | ≥ 7.5/10 | Auto-review loop |
+| Method | Dataset | Metric | Score | Notes |
+|--------|---------|--------|-------|-------|
+| [Your method] | [Dataset] | [Metric] | [Number] | [e.g., "3 seeds, mean±std"] |
 
----
+## Key Decisions
 
-## Dataset
-
-| Dataset | Source | Resolution | CRS | Path |
-|---|---|---|---|---|
-| [name] | [URL or DOI] | [spatial res] | [EPSG:XXXX] | [local path or download command] |
-
----
-
-## Constraints
-
-- [ ] Open-access data only
-- [ ] Reproducible without GPU (CPU-only geo_benchmark)
-- [ ] Word limit: [N words] for [venue]
-- [ ] [Other constraint]
-
----
-
-## Target Venue
-
-[Journal or conference name — e.g., IJGIS, RSE, IEEE TGRS]
-
----
-
-## Idea Source
-
-Gap addressed: [paste the gap description from memory/gap-analysis.md]
-Novelty verdict: [NOVEL / INCREMENTAL — paste from novelty check]
-
----
+- [Decision 1: Why approach X over Y — with reasoning]
+- [Decision 2: Why this hyperparameter / architecture choice]
+- [Known limitations / risks and how you plan to handle them]
 
 ## Status
 
-```
-Stage:          [not started | experimenting | analyzing | writing | reviewing | done]
-Last updated:   [YYYY-MM-DD]
-Lead finding:   [1-line summary of most important result so far, or "—"]
-Review score:   [X/10 or "—"]
-```
+- [ ] Idea selected
+- [ ] Baseline reproduced
+- [ ] Main method implemented
+- [ ] Representative dataset results
+- [ ] Full dataset results
+- [ ] Ablation studies
+- [ ] Paper draft

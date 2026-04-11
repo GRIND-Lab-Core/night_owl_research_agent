@@ -49,8 +49,25 @@
 
 ---
 
+## Killed Ideas
+
+> Ideas that were evaluated and explicitly rejected. Kept here to avoid re-exploring dead ends.
+
+### [Killed Idea Name]
+- **Kill reason**: [Why — e.g., not novel (found prior work X), infeasible (needs Y data), pilot negative]
+- **Kill date**: YYYY-MM-DD
+- **Source**: IDEA_REPORT.md, Idea #N
+
+## Idea Switch Log
+
+> Track idea transitions to maintain context across switches.
+
+| Date | From | To | Reason |
+|------|------|----|--------|
+| YYYY-MM-DD | [Previous idea] | [New idea] | [Why — e.g., result-to-claim negative, pivot after reviewer feedback] |
+
 ## Recommendation
 
-**Top idea for research_contract.md**: Idea [N] — [title]
+**Top idea for research_plan.md**: Idea [N] — [title]
 **Rationale**: [2-3 sentences]
-**Next step**: Copy to `research_contract.md` using template and run `geo-experiment` in DESIGN mode.
+**Next step**: Copy to `research_plan.md` using template.

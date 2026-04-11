@@ -6,121 +6,52 @@
 
 ---
 
-## Experiments Overview
+> **Template for Workflow 1.5 (`/experiment-bridge`).** Fill in, save as `refine-logs/EXPERIMENT_PLAN.md`, then run `/experiment-bridge`.
 
-| # | Name | Model | Dataset | Success Metric | Est. Runtime | Status |
-|---|------|-------|---------|---------------|-------------|--------|
-| 1 | OLS baseline | OLS | [dataset] | R², Moran's I | 1 min | pending |
-| 2 | GWR baseline | GWR | [dataset] | R², AICc | 10 min | pending |
-| 3 | MGWR baseline | MGWR | [dataset] | R², AICc, bws | 30 min | pending |
-| 4 | Proposed method | [method] | [dataset] | [metric] | [time] | pending |
-| 5 | Ablation: [component] | [method -X] | [dataset] | [metric] | [time] | pending |
+**Problem**: [What problem does your method solve?]
+**Method Thesis**: [One-sentence description of your approach]
 
----
+## Claim Map
 
-## Detailed Experiment Specs
+| Claim | Why It Matters | Minimum Convincing Evidence | Linked Blocks |
+|-------|----------------|----------------------------|---------------|
+| C1: [Main claim] | [Why] | [Evidence needed] | B1, B2 |
+| C2: [Supporting claim] | [Why] | [Evidence needed] | B3 |
 
-### Experiment 1: OLS Baseline
+## Experiment Blocks
 
-**Command:**
-```bash
-python geo_benchmark/baselines/ols_baseline.py \
-  --dataset [path/to/data.csv] \
-  --target [outcome_col] \
-  --features [col1] [col2] [col3] \
-  --output geo_benchmark/results/exp1_ols.json
-```
+### Block 1: Main Result
+- **Claim tested**: C1
+- **Dataset / split / task**: [e.g., ImageNet val]
+- **Compared systems**: [Your method vs. Baseline A vs. Baseline B]
+- **Metrics**: [Primary: accuracy/PPL. Secondary: throughput]
+- **Setup details**: [Backbone, optimizer, lr, epochs, seeds]
+- **Success criterion**: [e.g., "> 2% accuracy over baseline"]
+- **Failure interpretation**: [If negative, what does it mean?]
+- **Priority**: MUST-RUN
 
-**Expected output**: `geo_benchmark/results/exp1_ols.json`
-**Success criteria**: R² > 0, Moran's I p-value computed
-**Notes**: [any preprocessing needed]
+### Block 2: Ablation Study
+- **Claim tested**: C1 (novelty isolation)
+- **Compared systems**: [Full method, -component A, -component B]
+- **Success criterion**: [Each component contributes > 0.5%]
+- **Priority**: MUST-RUN
 
----
+### Block 3: [Additional Experiment]
+- **Priority**: NICE-TO-HAVE
 
-### Experiment 2: GWR Baseline
+## Run Order
 
-**Command:**
-```bash
-python geo_benchmark/baselines/gwr_baseline.py \
-  --dataset [path/to/data.csv] \
-  --target [outcome_col] \
-  --lat-col [lat] --lon-col [lon] \
-  --features [col1] [col2] [col3] \
-  --kernel bisquare --adaptive \
-  --max-n 5000 \
-  --output geo_benchmark/results/exp2_gwr.json
-```
+| Milestone | Goal | Runs | Decision Gate | Cost |
+|-----------|------|------|---------------|------|
+| M0: Sanity | Pipeline works | 1 quick run | Loss decreases? | ~0.5h |
+| M1: Baselines | Reproduce baselines | Block 3 | Numbers match? | ~4h |
+| M2: Main | Full method | Block 1 | Meets criterion? | ~8h |
+| M3: Ablation | Components | Block 2 | Each matters? | ~6h |
 
-**Expected output**: `geo_benchmark/results/exp2_gwr.json` + `exp2_gwr_local_coefficients.csv`
-**Success criteria**: AICc < OLS AICc, Moran's I residuals < OLS Moran's I
-**Notes**: Subsample flag `--max-n 5000` if dataset > 5000 rows
+## Compute Budget
+- **Total estimated GPU-hours**: ~18h
+- **Hardware**: [e.g., 4x RTX 3090]
+- **Biggest bottleneck**: [e.g., baseline reproduction]
 
----
-
-### Experiment 3: MGWR Baseline
-
-**Command:**
-```bash
-python geo_benchmark/baselines/mgwr_baseline.py \
-  --dataset [path/to/data.csv] \
-  --target [outcome_col] \
-  --lat-col [lat] --lon-col [lon] \
-  --features [col1] [col2] [col3] \
-  --max-n 3000 --max-features 8 \
-  --output geo_benchmark/results/exp3_mgwr.json
-```
-
-**Expected output**: `geo_benchmark/results/exp3_mgwr.json`
-**Success criteria**: Per-variable bandwidths computed; AICc competitive with GWR
-**Notes**: More intensive than GWR; max 3000 obs, max 8 features
-
----
-
-### Experiment 4: Proposed Method
-
-**Command:**
-```bash
-[command for proposed method]
-```
-
-**Expected output**: [path]
-**Success criteria**: [specific threshold vs. baseline]
-**Notes**: [implementation details]
-
----
-
-### Experiment 5: Ablation — [Component Name]
-
-**Command:**
-```bash
-[command with component removed]
-```
-
-**Expected output**: [path]
-**Success criteria**: Performance drops vs. Exp 4 (validates component contribution)
-
----
-
-## Success Gate
-
-The experiment set is successful if:
-- [ ] MGWR Moran's I residuals < 0.10 (spatial autocorrelation resolved)
-- [ ] MGWR AICc < GWR AICc (multi-scale model justified)
-- [ ] Proposed method meets criteria in research_contract.md
-- [ ] All ablations completed (at least one confirms component contribution)
-
-If gate fails: consult research_contract.md to decide whether to pivot method or dataset.
-
----
-
-## Dataset Preprocessing
-
-[Document any preprocessing steps BEFORE running experiments:]
-1. [Step 1: e.g., project to UTM Zone X (EPSG:XXXXX)]
-2. [Step 2: e.g., remove rows with NaN in target or features]
-3. [Step 3: e.g., standardize features to mean=0, std=1]
-
-```bash
-# Preprocessing commands (if applicable)
-python -c "[preprocessing code]"
-```
+## Risks
+- **Risk**: [What could go wrong] → **Mitigation**: [How to handle it]

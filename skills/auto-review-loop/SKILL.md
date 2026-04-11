@@ -1,6 +1,7 @@
 ---
 name: auto-review-loop
-description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to outputs/REVIEW_STATE.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to outputs/AUTO_REVIEW.md.
+description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to outputs/review_state.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to outputs/AUTO_REVIEW.md.
+argument-hint: [topic-or-scope]
 tools: all
 flags:
   HUMAN_CHECKPOINT: true    # If true, pause after each round for user approval of fixes
@@ -14,9 +15,459 @@ You run adversarial review cycles to iteratively improve research work. The arch
 
 ---
 
+## Context: $ARGUMENTS
+
 ## Core Principle: Generator-Evaluator Separation
 
 **Never let the same agent that wrote a section score it.**
+
+## Constants
+- MAX_ROUNDS = 4
+- POSITIVE_THRESHOLD: score >= 6/10, or verdict contains "accept", "sufficient", "ready for submission"
+- REVIEW_DOC: `auto_review.md` in project root (cumulative log)
+- REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`)
+- **HUMAN_CHECKPOINT = false** — When `true`, pause after each round's review (Phase B) and present the score + weaknesses to the user. Wait for user input before proceeding to Phase C. The user can: approve the suggested fixes, provide custom modification instructions, skip specific fixes, or stop the loop early. When `false` (default), the loop runs fully autonomously.
+- **COMPACT = false** — When `true`, (1) read `experiment_log.md` and `findings.md` instead of parsing full logs on session recovery, (2) append key findings to `findings.md` after each round.
+- **REVIEWER_DIFFICULTY = medium** — Controls how adversarial the reviewer is. Three levels:
+  - `medium` (default): Current behavior — MCP-based review, Claude controls what context GPT sees.
+  - `hard`: Adds **Reviewer Memory** (GPT tracks its own suspicions across rounds) + **Debate Protocol** (Claude can rebut, GPT rules).
+  - `nightmare`: Everything in `hard` + **GPT reads the repo directly** via `codex exec` (Claude cannot filter what GPT sees) + **Adversarial Verification** (GPT independently checks if code matches claims).
+
+> 💡 Override: `/auto-review-loop "topic" — compact: true, human checkpoint: true, difficulty: hard`
+
+## State Persistence (Compact Recovery)
+
+Long-running loops may hit the context window limit, triggering automatic compaction. To survive this, persist state to `review_state.json` after each round:
+
+```json
+{
+  "round": 2,
+  "threadId": "019cd392-...",
+  "status": "in_progress",
+  "difficulty": "medium",
+  "last_score": 5.0,
+  "last_verdict": "not ready",
+  "pending_experiments": ["screen_name_1"],
+  "timestamp": "2026-03-13T21:00:00"
+}
+```
+**Write this file at the end of every Phase E** (after documenting the round). Overwrite each time — only the latest state matters.
+
+**On completion** (positive assessment or max rounds), set `"status": "completed"` so future invocations don't accidentally resume a finished loop.
+
+
+## Workflow
+
+### Initialization
+
+1. **Check for `review_state.json`** in project root:
+   - If it does not exist: **fresh start** (normal case, identical to behavior before this feature existed)
+   - If it exists AND `status` is `"completed"`: **fresh start** (previous loop finished normally)
+   - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **fresh start** (stale state from a killed/abandoned run — delete the file and start over)
+   - If it exists AND `status` is `"in_progress"` AND `timestamp` is within 24 hours: **resume**
+     - Read the state file to recover `round`, `threadId`, `last_score`, `pending_experiments`
+     - Read `auto_review.md` to restore full context of prior rounds
+     - If `pending_experiments` is non-empty, check if they have completed (e.g., check screen sessions)
+     - Resume from the next round (round = saved round + 1)
+     - Log: "Recovered from context compaction. Resuming at Round N."
+2. Read project narrative documents, memory files, and any prior review documents. **When `COMPACT = true` and compact files exist**: read `findings.md` + `experiment_log.md` instead of full `auto_review.md` and raw logs — saves context window.
+3. Read recent experiment results (check output directories, logs)
+4. Identify current weaknesses and open TODOs from prior reviews
+5. Initialize round counter = 1 (unless recovered from state file)
+6. Create/update `auto_review.md` with header and timestamp
+
+### Loop (repeat up to MAX_ROUNDS)
+
+#### Phase A: Review
+
+**Route by REVIEWER_DIFFICULTY:**
+
+##### Medium (default) — MCP Review
+
+Send comprehensive context to the external reviewer:
+
+```
+mcp__codex__codex:
+  config: {"model_reasoning_effort": "xhigh"}
+  prompt: |
+    [Round N/MAX_ROUNDS of autonomous review loop]
+
+    [Full research context: claims, methods, results, known weaknesses]
+    [Changes since last round, if any]
+
+    Please act as a senior ML reviewer (NeurIPS/ICML level).
+
+    1. Score this work 1-10 for a top venue
+    2. List remaining critical weaknesses (ranked by severity)
+    3. For each weakness, specify the MINIMUM fix (experiment, analysis, or reframing)
+    4. State clearly: is this READY for submission? Yes/No/Almost
+
+    Be brutally honest. If the work is ready, say so clearly.
+```
+
+If this is round 2+, use `mcp__codex__codex-reply` with the saved threadId to maintain conversation context.
+
+##### Hard — MCP Review + Reviewer Memory
+
+Same as medium, but **prepend Reviewer Memory** to the prompt:
+
+```
+mcp__codex__codex:
+  config: {"model_reasoning_effort": "xhigh"}
+  prompt: |
+    [Round N/MAX_ROUNDS of autonomous review loop]
+
+    ## Your Reviewer Memory (persistent across rounds)
+    [Paste full contents of REVIEWER_MEMORY.md here]
+
+    IMPORTANT: You have memory from prior rounds. Check whether your
+    previous suspicions were genuinely addressed or merely sidestepped.
+    The author (Claude) controls what context you see — be skeptical
+    of convenient omissions.
+
+    [Full research context, changes since last round...]
+
+    Please act as a senior ML reviewer (NeurIPS/ICML level).
+    1. Score this work 1-10 for a top venue
+    2. List remaining critical weaknesses (ranked by severity)
+    3. For each weakness, specify the MINIMUM fix
+    4. State clearly: is this READY for submission? Yes/No/Almost
+    5. **Memory update**: List any new suspicions, unresolved concerns,
+       or patterns you want to track in future rounds.
+
+    Be brutally honest. Actively look for things the author might be hiding.
+```
+
+##### Nightmare — Codex Exec (GPT reads repo directly)
+
+**Do NOT use MCP.** Instead, let GPT access the repo autonomously via `codex exec`:
+
+```bash
+codex exec "$(cat <<'PROMPT'
+You are an adversarial senior reviewer.
+This is Round N/MAX_ROUNDS of an autonomous review loop.
+
+## Your Reviewer Memory (persistent across rounds)
+[Paste full contents of REVIEWER_MEMORY.md]
+
+## Instructions
+You have FULL READ ACCESS to this repository. The author (Claude) does NOT
+control what you see — explore freely. Your job is to find problems the
+author might hide or downplay.
+
+DO THE FOLLOWING:
+1. Read the experiment code, results files (JSON/CSV), and logs YOURSELF
+2. Verify that reported numbers match what's actually in the output files
+3. Check if evaluation metrics are computed correctly (ground truth, not model output)
+4. Look for cherry-picked results, missing ablations, or suspicious hyperparameter choices
+5. Read NARRATIVE_REPORT.md or AUTO_REVIEW.md for the author's claims — then verify each against code
+
+OUTPUT FORMAT:
+- Score: X/10
+- Verdict: ready / almost / not ready
+- Verified claims: [which claims you independently confirmed]
+- Unverified/false claims: [which claims don't match the code or results]
+- Weaknesses (ranked): [with MINIMUM fix for each]
+- Memory update: [new suspicions and patterns to track next round]
+
+Be adversarial. Trust nothing the author tells you — verify everything yourself.
+PROMPT
+)" --skip-git-repo-check 2>&1
+```
+
+**Key difference**: In nightmare mode, GPT independently reads code, result files, and logs. Claude cannot filter or curate what GPT sees. This is the closest analog to a real hostile reviewer who reads your actual paper + supplementary materials.
+
+#### Phase B: Parse Assessment
+
+**CRITICAL: Save the FULL raw response** from the external reviewer verbatim (store in a variable for Phase E). Do NOT discard or summarize — the raw text is the primary record.
+
+Then extract structured fields:
+- **Score** (numeric 1-10)
+- **Verdict** ("ready" / "almost" / "not ready")
+- **Action items** (ranked list of fixes)
+
+**STOP CONDITION**: If score >= 6 AND verdict contains "ready" or "almost" → stop loop, document final state.
+
+#### Phase B.5: Reviewer Memory Update (hard + nightmare only)
+
+**Skip entirely if `REVIEWER_DIFFICULTY = medium`.**
+
+After parsing the assessment, update `REVIEWER_MEMORY.md` in the project root:
+
+```markdown
+# Reviewer Memory
+
+## Round 1 — Score: X/10
+- **Suspicion**: [what the reviewer flagged]
+- **Unresolved**: [concerns not yet addressed]
+- **Patterns**: [recurring issues the reviewer noticed]
+
+## Round 2 — Score: X/10
+- **Previous suspicions addressed?**: [yes/no for each, with reviewer's judgment]
+- **New suspicions**: [...]
+- **Unresolved**: [carried forward + new]
+```
+
+**Rules**:
+- Append each round, never delete prior rounds (audit trail)
+- If the reviewer's response includes a "Memory update" section, copy it verbatim
+- This file is passed back to GPT in the next round's Phase A — it is GPT's persistent brain
+
+#### Phase B.6: Debate Protocol (hard + nightmare only)
+
+**Skip entirely if `REVIEWER_DIFFICULTY = medium`.**
+
+After parsing the review, Claude (the author) gets a chance to **rebut**:
+
+**Step 1 — Claude's Rebuttal:**
+
+For each weakness the reviewer identified, Claude writes a structured response:
+
+```markdown
+### Rebuttal to Weakness #1: [title]
+- **Accept / Partially Accept / Reject**
+- **Argument**: [why this criticism is invalid, already addressed, or based on a misunderstanding]
+- **Evidence**: [point to specific code, results, or prior round fixes]
+```
+
+Rules for Claude's rebuttal:
+- Must be honest — do NOT fabricate evidence or misrepresent results
+- Can point out factual errors in the review (reviewer misread code, wrong metric, etc.)
+- Can argue a weakness is out of scope or would require unreasonable effort
+- Maximum 3 rebuttals per round (pick the most impactful to contest)
+
+**Step 2 — GPT Rules on Rebuttal:**
+
+Send Claude's rebuttal back to GPT for a ruling:
+
+*Hard mode (MCP):*
+```
+mcp__codex__codex-reply:
+  threadId: [saved]
+  config: {"model_reasoning_effort": "xhigh"}
+  prompt: |
+    The author rebuts your review:
+
+    [paste Claude's rebuttal]
+
+    For each rebuttal, rule:
+    - SUSTAINED (author's argument is valid, withdraw this weakness)
+    - OVERRULED (your original criticism stands, explain why)
+    - PARTIALLY SUSTAINED (revise the weakness to a narrower scope)
+
+    Then update your score if any weaknesses were withdrawn.
+```
+
+*Nightmare mode (codex exec):*
+```bash
+codex exec "$(cat <<'PROMPT'
+You are the same adversarial reviewer. The author rebuts your review:
+
+[paste Claude's rebuttal]
+
+VERIFY the author's evidence claims yourself — read the files they reference.
+Do NOT take their word for it.
+
+For each rebuttal, rule:
+- SUSTAINED (verified and valid)
+- OVERRULED (evidence doesn't check out or argument is weak)
+- PARTIALLY SUSTAINED (partially valid, narrow the weakness)
+
+Update your score. Update your memory.
+PROMPT
+)" --skip-git-repo-check 2>&1
+```
+
+**Step 3 — Update score and action items** based on the ruling:
+- SUSTAINED weaknesses: remove from action items
+- OVERRULED: keep as-is
+- PARTIALLY SUSTAINED: revise scope
+
+Append the full debate transcript to `AUTO_REVIEW.md` under the round's entry.
+
+#### Human Checkpoint (if enabled)
+
+**Skip this step entirely if `HUMAN_CHECKPOINT = false`.**
+
+When `HUMAN_CHECKPOINT = true`, present the review results and wait for user input:
+
+```
+📋 Round N/MAX_ROUNDS review complete.
+
+Score: X/10 — [verdict]
+Top weaknesses:
+1. [weakness 1]
+2. [weakness 2]
+3. [weakness 3]
+
+Suggested fixes:
+1. [fix 1]
+2. [fix 2]
+3. [fix 3]
+
+Options:
+- Reply "go" or "continue" → implement all suggested fixes
+- Reply with custom instructions → implement your modifications instead
+- Reply "skip 2" → skip fix #2, implement the rest
+- Reply "stop" → end the loop, document current state
+```
+
+Wait for the user's response. Parse their input:
+- **Approval** ("go", "continue", "ok", "proceed"): proceed to Phase C with all suggested fixes
+- **Custom instructions** (any other text): treat as additional/replacement guidance for Phase C. Merge with reviewer suggestions where appropriate
+- **Skip specific fixes** ("skip 1,3"): remove those fixes from the action list
+- **Stop** ("stop", "enough", "done"): terminate the loop, jump to Termination
+
+
+#### Phase C: Implement Fixes (if not stopping)
+
+For each action item (highest priority first):
+
+1. **Code changes**: Write/modify experiment scripts, model code, analysis scripts
+2. **Run experiments**: Deploy to GPU server via SSH + screen/tmux
+3. **Analysis**: Run evaluation, collect results, update figures/tables
+4. **Documentation**: Update project notes and review document
+
+Prioritization rules:
+- Skip fixes requiring excessive compute (flag for manual follow-up)
+- Skip fixes requiring external data/models not available
+- Prefer reframing/analysis over new experiments when both address the concern
+- Always implement metric additions (cheap, high impact)
+
+#### Phase D: Wait for Results
+
+If experiments were launched:
+- Monitor remote sessions for completion
+- Collect results from output files and logs
+- **Training quality check** — if W&B is configured, invoke `/training-check` to verify training was healthy (no NaN, no divergence, no plateau). If W&B not available, skip silently. Flag any quality issues in the next review round.
+
+#### Phase E: Document Round
+
+Append to `AUTO_REVIEW.md`:
+
+```markdown
+## Round N (timestamp)
+
+### Assessment (Summary)
+- Score: X/10
+- Verdict: [ready/almost/not ready]
+- Key criticisms: [bullet list]
+
+### Reviewer Raw Response
+
+<details>
+<summary>Click to expand full reviewer response</summary>
+
+[Paste the COMPLETE raw response from the external reviewer here — verbatim, unedited.
+This is the authoritative record. Do NOT truncate or paraphrase.]
+
+</details>
+
+### Debate Transcript (hard + nightmare only)
+
+<details>
+<summary>Click to expand debate</summary>
+
+**Claude's Rebuttal:**
+[paste rebuttal]
+
+**GPT's Ruling:**
+[paste ruling — SUSTAINED / OVERRULED / PARTIALLY SUSTAINED for each]
+
+**Score adjustment**: X/10 → Y/10
+
+</details>
+
+### Actions Taken
+- [what was implemented/changed]
+
+### Results
+- [experiment outcomes, if any]
+
+### Status
+- [continuing to round N+1 / stopping]
+- Difficulty: [medium/hard/nightmare]
+```
+
+**Write `REVIEW_STATE.json`** with current round, threadId, score, verdict, and any pending experiments.
+
+**Append to `findings.md`** (when `COMPACT = true`): one-line entry per key finding this round:
+
+```markdown
+- [Round N] [positive/negative/unexpected]: [one-sentence finding] (metric: X.XX → Y.YY)
+```
+
+Increment round counter → back to Phase A.
+
+### Termination
+
+When loop ends (positive assessment or max rounds):
+
+1. Update `REVIEW_STATE.json` with `"status": "completed"`
+2. Write final summary to `AUTO_REVIEW.md`
+3. Update project notes with conclusions
+4. **Write method/pipeline description** to `AUTO_REVIEW.md` under a `## Method Description` section — a concise 1-2 paragraph description of the final method, its architecture, and data flow. This serves as input for `/paper-illustration` in Workflow 3 (so it can generate architecture diagrams automatically).
+5. **Generate claims from results** — invoke `/result-to-claim` to convert experiment results from `AUTO_REVIEW.md` into structured paper claims. Output: `claims_from_results.md`. This bridges Workflow 2 → Workflow 3 so `/paper-plan` can directly use validated claims instead of extracting them from scratch. If `/result-to-claim` is not available, skip silently.
+6. If stopped at max rounds without positive assessment:
+   - List remaining blockers
+   - Estimate effort needed for each
+   - Suggest whether to continue manually or pivot
+
+
+## Key Rules
+
+- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+
+- ALWAYS use `config: {"model_reasoning_effort": "xhigh"}` for maximum reasoning depth
+- Save threadId from first call, use `mcp__codex__codex-reply` for subsequent rounds
+- **Anti-hallucination citations**: When adding references during fixes, NEVER fabricate BibTeX. Use the same DBLP → CrossRef → `[VERIFY]` chain as `/paper-write`: (1) `curl -s "https://dblp.org/search/publ/api?q=TITLE&format=json"` → get key → `curl -s "https://dblp.org/rec/{key}.bib"`, (2) if not found, `curl -sLH "Accept: application/x-bibtex" "https://doi.org/{doi}"`, (3) if both fail, mark with `% [VERIFY]`. Do NOT generate BibTeX from memory.
+- Be honest — include negative results and failed experiments
+- Do NOT hide weaknesses to game a positive score
+- Implement fixes BEFORE re-reviewing (don't just promise to fix)
+- **Exhaust before surrendering** — before marking any reviewer concern as "cannot address": (1) try at least 2 different solution paths, (2) for experiment issues, adjust hyperparameters or try an alternative baseline, (3) for theory issues, provide a weaker version of the result or an alternative argument, (4) only then concede narrowly and bound the damage. Never give up on the first attempt.
+- If an experiment takes > 30 minutes, launch it and continue with other fixes while waiting
+- Document EVERYTHING — the review log should be self-contained
+- Update project notes after each round, not just at the end
+
+## Prompt Template for Round 2+
+
+```
+mcp__codex__codex-reply:
+  threadId: [saved from round 1]
+  config: {"model_reasoning_effort": "xhigh"}
+  prompt: |
+    [Round N update]
+
+    Since your last review, we have:
+    1. [Action 1]: [result]
+    2. [Action 2]: [result]
+    3. [Action 3]: [result]
+
+    Updated results table:
+    [paste metrics]
+
+    Please re-score and re-assess. Are the remaining concerns addressed?
+    Same format: Score, Verdict, Remaining Weaknesses, Minimum Fixes.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 - Generator: `paper-writer` agent writes content
 - Evaluator: `peer-reviewer` agent scores it — invoked independently with **no shared context** with the writer
