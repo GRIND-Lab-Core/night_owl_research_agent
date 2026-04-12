@@ -1,7 +1,7 @@
 # GeoResearchAgent-247 — Session Memory
 
 > **Read this file at the start of every Claude Code session.**
-> The stop hook updates it automatically. Keep it under 200 lines — archive older entries to `memory/archive/`.
+> The stop hook updates it automatically. Archive older entries to `memory/archive/`.
 
 ---
 
@@ -85,7 +85,6 @@ Cache hit rate:     —
 
 ## Key Papers Retrieved
 
-*(Populated by literature-scout — add entries after each lit-review stage)*
 
 | # | Authors | Year | Title (short) | Venue | Method | Gap addressed |
 |---|---------|------|--------------|-------|--------|--------------|
@@ -109,15 +108,6 @@ Cache hit rate:     —
 |---|-------------------|---------|-------|-------|---------|
 | — | — | — | — | — | — |
 
----
-
-## geo_benchmark Results
-
-*(Populated by benchmark runs — `python geo_benchmark/run_benchmark.py`)*
-
-| Dataset | OLS R² | GWR R² | MGWR R² | Best model | Moran's I (best) |
-|---------|--------|--------|---------|-----------|-----------------|
-| — | — | — | — | — | — |
 
 ---
 
@@ -158,12 +148,3 @@ Cache hit rate:     —
 
 ---
 
-## Runtime Notes
-
-*(API limits, data issues, environment quirks)*
-
-- mgwr library: GWR/MGWR requires subsampling for n > 3,000–5,000 (memory constraint)
-- Abstract token budget: set to 80 tokens (≈320 chars) — increase in `configs/*.yaml` if synthesis feels shallow
-- Response cache: stored in `.cache/responses/` — delete to force fresh API calls
-- Spatial CV: always use block CV or buffered LOBO, never random CV for spatial data
-- CRS rule: always project to local UTM or equal-area before any distance/area computation
