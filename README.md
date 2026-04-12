@@ -58,17 +58,7 @@ Or invoke skills directly:
 
 NORA is a **skills-first** system. All research logic lives in Markdown skill files that Claude reads and executes.
 
-```
-User (or /slash command)
-    ↓ invokes
-Skill (skills/<name>/SKILL.md)  ←── reads domain knowledge from skills/knowledge/
-    ↓ Claude decides what to do
-CLI tools (tools/arxiv_fetch.py, etc.)  ←── lightweight utilities
-    ↓ produce
-Output files (reports, figures, paper sections)
-    ↓ read by
-Next skill in pipeline
-```
+![NORA Architecture](res/nora_architecture.png)
 
 Skills describe workflow logic in Markdown. Claude reads a skill to understand the workflow, then decides the exact sequence of actions based on context — the skill provides guidelines and decision frameworks, not rigid procedures.
 
