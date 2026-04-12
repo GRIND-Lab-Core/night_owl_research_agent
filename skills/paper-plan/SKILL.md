@@ -1,6 +1,6 @@
 ---
 name: paper-plan
-description: Produces a detailed paper outline from research_contract.md, findings.md, and approved_claims.md. Creates section-by-section plan with word budgets, key claims per section, and figures list. Uses journal templates from templates/ for venue-specific formatting.
+description: Produces a detailed paper outline from research_contract.md, output/FINDINGS.md, and memory/APPROVED_CLAIMS.md. Creates section-by-section plan with word budgets, key claims per section, and figures list. Uses journal templates from templates/ for venue-specific formatting.
 tools: Read, Write
 ---
 
@@ -14,10 +14,10 @@ You produce a concrete, actionable paper outline before any writing begins.
 
 Read:
 - `research_contract.md` — problem, method, contributions
-- `memory/approved_claims.md` — verified results to highlight
-- `memory/gap-analysis.md` — gaps addressed by this paper
-- `memory/synthesis-YYYY-MM-DD.md` — related work context
-- `outputs/AUTO_REVIEW.md` — if review has run, incorporate reviewer feedback into outline
+- `memory/APPROVED_CLAIMS.md` — verified results to highlight
+- `memory/GAP_ANALYSIS.md` — gaps addressed by this paper
+- `memory/SYNTHESIS_YYYY-MM-DD.md` — related work context
+- `output/AUTO_REVIEW.md` — if review has run, incorporate reviewer feedback into outline
 - Target venue from `program.md` Section 2
 
 ---
@@ -33,8 +33,8 @@ Choose the appropriate template from `templates/`:
 
 ## Phase 3: Build Outline
 
-Write `memory/outline.md` with:
-- For each section: title, word budget, key claims to make, evidence to cite (from approved_claims.md), figures/tables needed
+Write `memory/OUTLINE.md` with:
+- For each section: title, word budget, key claims to make, evidence to cite (from memory/APPROVED_CLAIMS.md), figures/tables needed
 - Especially for Methods: list every tool/dataset/parameter to document
 - For Results: reference specific table/figure numbers (pre-assign them)
 
@@ -51,8 +51,8 @@ Required: problem / gap / method / 1+ specific number / contribution
 Para 1: Broad problem (cite 2-3 authoritative sources)
 Para 2: Scale/significance (quantified)
 Para 3: Current approaches + shortcomings
-Para 4: The specific gap (cite boundary papers from gap-analysis.md)
-Para 5: Your contribution (numbered, match approved_claims.md)
+Para 4: The specific gap (cite boundary papers from memory/GAP_ANALYSIS.md)
+Para 5: Your contribution (numbered, match memory/APPROVED_CLAIMS.md)
 Para 6: Paper organization
 
 ## Section 3: Literature Review (1500 words, 3 subsections)
@@ -93,7 +93,7 @@ Future work (3-5 specific directions from claim audit)
 
 List all figures/tables with:
 - Figure N: description, data source, which Python script to call
-- `python geo_benchmark/evaluation/visualize.py --results [path] --type [map|scatter|comparison]`
+- `python output/figures/scripts/visualize.py --results [path] --type [map|scatter|comparison]`
 - Or use `.claude/agents/geo-specialist.md` to suggest appropriate visualization
 
-Write figure list to `memory/figure_plan.md`.
+Write figure list to `memory/FIGURE_PLAN.md`.

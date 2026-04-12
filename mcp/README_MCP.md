@@ -1,4 +1,4 @@
-# MCP Servers for GeoResearchAgent-247
+# MCP Servers for NORA
 
 Model Context Protocol (MCP) servers extend Claude Code's capabilities with domain-specific tools.
 

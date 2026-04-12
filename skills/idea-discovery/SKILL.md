@@ -1,6 +1,6 @@
 ---
 name: idea-discovery
-description: The full pipeline for idea gernation. It generates 8-12 novel research ideas from literature gaps. Evaluates each on novelty, feasibility, and domain fit. Orchestrates lit-review → generate-idea → novelty-check → research-review to go from a broad research direction to validated, pilot-tested ideas. Produces idea_report.md.
+description: The full pipeline for idea gernation. It generates 8-12 novel research ideas from literature gaps. Evaluates each on novelty, feasibility, and domain fit. Orchestrates lit-review → generate-idea → novelty-check → research-review to go from a broad research direction to validated, pilot-tested ideas. Produces output/IDEA_REPORT.md.
 argument-hint: [research-direction]
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Agent, Skill
 ---
@@ -19,7 +19,7 @@ This skill chains sub-skills into a single automated pipeline:
 /lit-review → /generate-idea → /novelty-check → /research-review → /experiment-design-pipeline 
 ```
 
-Each phase builds on the previous one's output. The final deliverables are a validated `idea_report.md` with ranked ideas, plus a refined proposal (`final_proposal.md`) and experiment plan (`experiment_plan.md`) for the top idea.
+Each phase builds on the previous one's output. The final deliverables are a validated `output/IDEA_REPORT.md` with ranked ideas, plus a refined proposal (`final_proposal.md`) and experiment plan (`output/EXPERIMENT_PLAN.md`) for the top idea.
 
 ## Constants
 
@@ -30,8 +30,8 @@ Each phase builds on the previous one's output. The final deliverables are a val
 - **AUTO_PROCEED = true** — If user doesn't respond at a checkpoint, automatically proceed with the best option after presenting results. Set to `false` to always wait for explicit user confirmation.
 - **REVIEWER_MODEL = `gpt-5.4`** — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`). Passed to sub-skills. If not configured properly, use Claude code subagent.
 - **ARXIV_DOWNLOAD = false** — When `true`, `/lit-review` downloads the top relevant arXiv PDFs during Phase 1. When `false` (default), only fetches metadata. Passed through to `/lit-review`.
-- **COMPACT = false** — When `true`, generate compact summary files for short-context models and session recovery. Writes `idea_candidates.md` (top 3-5 ideas only) at the end of this workflow. Downstream skills read this instead of the full `idea_report.md`.
-- **REF_PAPER = false** — Reference paper to base ideas on. Accepts: local PDF path, arXiv URL, or any paper URL. When set, the paper is summarized first (`ref_paper_summary.md`), then idea generation uses it as context. Combine with `base repo` for "improve this paper with this codebase" workflows.
+- **COMPACT = false** — When `true`, generate compact summary files for short-context models and session recovery. Writes `output/IDEA_CANDIDATES.md` (top 3-5 ideas only) at the end of this workflow. Downstream skills read this instead of the full `output/IDEA_REPORT.md`.
+- **REF_PAPER = false** — Reference paper to base ideas on. Accepts: local PDF path, arXiv URL, or any paper URL. When set, the paper is summarized first (`memory/REF_PAPER_SUMMARY.md`), then idea generation uses it as context. Combine with `base repo` for "improve this paper with this codebase" workflows.
 
 > 💡 These are defaults. Override by telling the skill, e.g., `/idea-discovery "topic" — ref paper: https://arxiv.org/abs/2406.04329` or `/idea-discovery "topic" — compact: true`.
 
@@ -71,7 +71,7 @@ Summarize the reference paper before searching the literature:
 3. **If other URL**:
    - Fetch and extract content via WebFetch
 
-4. **Generate `ref_paper_summary.md`**:
+4. **Generate `memory/REF_PAPER_SUMMARY.md`**:
 
 ```markdown
 # Reference Paper Summary
@@ -107,7 +107,7 @@ Summarize the reference paper before searching the literature:
 Proceeding to literature survey with this as context.
 ```
 
-Phase 1 and Phase 2 will use `ref_paper_summary.md` as additional context — `/lit-review` searches for related and competing work, `/generate-idea` generates ideas that build on or improve the reference paper.
+Phase 1 and Phase 2 will use `memory/REF_PAPER_SUMMARY.md` as additional context — `/lit-review` searches for related and competing work, `/generate-idea` generates ideas that build on or improve the reference paper.
 
 ### Phase 1: Literature Review
 
@@ -138,22 +138,22 @@ Does this match your understanding? Should I adjust the scope before generating 
 
 ### Phase 2: Idea Generation + Filtering + Pilots
 
-Invoke `/generate-idea` with the landscape context (and `ref_paper_summary.md` if available):
+Invoke `/generate-idea` with the landscape context (and `memory/REF_PAPER_SUMMARY.md` if available):
 
 ```
 /generate-idea "$ARGUMENTS"
 ```
 
 **What this does:**
-- If `ref_paper_summary.md` exists, include it as context — ideas should build on, improve, or extend the reference paper
+- If `memory/REF_PAPER_SUMMARY.md` exists, include it as context — ideas should build on, improve, or extend the reference paper
 - Brainstorm 8-12 concrete ideas
 - Filter by feasibility, compute cost, quick novelty search
 - Deep validate top ideas (full novelty check + devil's advocate)
 - Run parallel pilot experiments on available GPUs (top 2-3 ideas)
 - Rank by empirical signal
-- Output `idea_report.md`
+- Output `output/IDEA_REPORT.md`
 
-**🚦 Checkpoint:** Present `idea_report.md` ranked ideas to the user. Ask:
+**🚦 Checkpoint:** Present `output/IDEA_REPORT.md` ranked ideas to the user. Ask:
 
 ```
 💡 Generated X ideas, filtered to Y, piloted Z. Top results:
@@ -185,7 +185,7 @@ For each top idea (positive pilot signal), invoke skills to run thorough novelty
 - Check for concurrent work (last 3-6 months)
 - Identify closest existing work and differentiation points
 
-**Update `idea_report.md`** with deep novelty results. Eliminate any idea that turns out to be already published.
+**Update `output/IDEA_REPORT.md`** with deep novelty results. Eliminate any idea that turns out to be already published.
 
 ### Phase 4: External Critical Review
 
@@ -200,7 +200,7 @@ For the surviving top idea(s), get brutal feedback:
 - Scores the idea, identifies weaknesses, suggests minimum viable improvements
 - Provides concrete feedback on experimental design
 
-**Update `idea_report.md`** with reviewer feedback and revised plan.
+**Update `output/IDEA_REPORT.md`** with reviewer feedback and revised plan.
 
 ### Phase 4.5: Method Refinement + Experiment Planning
 
@@ -214,7 +214,7 @@ After review, refine the top idea into a concrete proposal and plan experiments:
 - Freeze a **Problem Anchor** to prevent scope drift
 - Iteratively refine the method via GPT-5.4 review (up to 5 rounds, until score ≥ 9)
 - Generate a claim-driven experiment roadmap with ablations, budgets, and run order
-- Output: `final_proposal.md`, `experiment_plan.md`, `experiment_tracker.md`
+- Output: `final_proposal.md`, `output/EXPERIMENT_PLAN.md`, `experiment_tracker.md`
 
 **🚦 Checkpoint:** Present the refined proposal summary:
 
@@ -235,7 +235,7 @@ Proceed to implementation? Or adjust the proposal?
 
 ### Phase 5: Final Report
 
-Finalize `idea_report.md` with all accumulated information:
+Finalize `output/IDEA_REPORT.md` with all accumulated information:
 
 ```markdown
 # Idea Discovery Report
@@ -266,9 +266,9 @@ Finalize `idea_report.md` with all accumulated information:
 [ideas killed at each phase, with reasons]
 
 ## Refined Proposal
-- Proposal: `refine-logs/final_proposal.md`
-- Experiment plan: `refine-logs/experiment_plan.md`
-- Tracker: `refine-logs/experiment_tracker.md`
+- Proposal: `output/refine-logs/FINAL_PROPOSAL.md`
+- Experiment plan: `output/refine-logs/output/EXPERIMENT_PLAN.md`
+- Tracker: `output/refine-logs/EXPERIMENT_TRACKER.md`
 
 ## Next Steps
 - [ ] /deploy-experiment to deploy experiments from the plan
@@ -280,7 +280,7 @@ Finalize `idea_report.md` with all accumulated information:
 
 **Skip entirely if `COMPACT` is `false`.**
 
-Write `idea_candidates.md` — a lean summary of the top 3-5 surviving ideas:
+Write `output/IDEA_CANDIDATES.md` — a lean summary of the top 3-5 surviving ideas:
 
 ```markdown
 # Idea Candidates
@@ -297,7 +297,7 @@ Write `idea_candidates.md` — a lean summary of the top 3-5 surviving ideas:
 - Next step: /experiment-bridge or /research-refine
 ```
 
-This file is intentionally small (~30 lines) so downstream skills and session recovery can read it without loading the full `idea_report.md` (~200+ lines).
+This file is intentionally small (~30 lines) so downstream skills and session recovery can read it without loading the full `output/IDEA_REPORT.md` (~200+ lines).
 
 ## Key Rules
 

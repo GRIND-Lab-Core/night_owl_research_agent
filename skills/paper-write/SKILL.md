@@ -1,23 +1,23 @@
 ---
 name: paper-write
-description: Writes individual paper sections using an iterative scoring loop (write → score → revise → accept at ≥7.5). Reads from memory/outline.md and memory/approved_claims.md. Only uses verified claims. Follows IMRAD conventions from skills/knowledge/academic-writing.md.
+description: Writes individual paper sections using an iterative scoring loop (write → score → revise → accept at ≥7.5). Reads from memory/OUTLINE.md and memory/APPROVED_CLAIMS.md. Only uses verified claims. Follows IMRAD conventions from skills/knowledge/academic-writing.md.
 tools: Read, Write
 ---
 
 # Skill: paper-write
 
-You write one paper section at a time using an iterative write-score-revise loop. You only use claims from `memory/approved_claims.md`.
+You write one paper section at a time using an iterative write-score-revise loop. You only use claims from `memory/APPROVED_CLAIMS.md`.
 
 ---
 
 ## Pre-Writing Checklist
 
 Before writing any section:
-1. Read `memory/outline.md` for section plan, word budget, and required claims
-2. Read `memory/approved_claims.md` — **only use claims listed here**
+1. Read `memory/OUTLINE.md` for section plan, word budget, and required claims
+2. Read `memory/APPROVED_CLAIMS.md` — **only use claims listed here**
 3. Read `skills/knowledge/academic-writing.md` for section-specific guidance
 4. Read `skills/knowledge/apa-citations.md` for citation formatting
-5. Read relevant section from `memory/synthesis-YYYY-MM-DD.md` for literature content
+5. Read relevant section from `memory/SYNTHESIS_YYYY-MM-DD.md` for literature content
 6. Read `skills/knowledge/spatial-methods.md` for spatial conventions (CRS, Moran's I reporting)
 
 ---
@@ -47,8 +47,8 @@ Report: `Score: X.X (N:X.X, R:X.X, L:X.X, C:X.X, I:X.X)`
 
 ## Section-Specific Rules
 
-**Abstract**: Self-contained, ≤ 250 words, ≥ 1 specific number from approved_claims.md, no citations.
-**Introduction**: Funnel structure. Contributions list MUST match approved_claims.md. No fabricated contributions.
+**Abstract**: Self-contained, ≤ 250 words, ≥ 1 specific number from memory/APPROVED_CLAIMS.md, no citations.
+**Introduction**: Funnel structure. Contributions list MUST match memory/APPROVED_CLAIMS.md. No fabricated contributions.
 **Literature Review**: Thematic, not chronological. Synthesis table optional. Gap paragraph mandatory.
 **Methodology**: CRS must be stated for all datasets. Spatial CV specified. All hyperparameters listed.
 **Results**: Lead with best approved claim + its specific number. Moran's I residuals reported. No interpretation.
@@ -59,7 +59,7 @@ Report: `Score: X.X (N:X.X, R:X.X, L:X.X, C:X.X, I:X.X)`
 
 ## Output
 
-Save each accepted section to: `outputs/papers/<title-slug>/<section>.md`
+Save each accepted section to: `output/papers/<title-slug>/<section>.md`
 Git commit: `git commit -m "feat: accept <section> — score <X.X>"`
 Update `memory/MEMORY.md` Section Quality Scores table.
-Update `memory/outline.md` status: `- [x] <section> (score: X.X)`
+Update `memory/OUTLINE.md` status: `- [x] <section> (score: X.X)`

@@ -1,4 +1,4 @@
-# GeoResearchAgent-247 — Session Memory
+# NORA — Session Memory
 
 > **Read this file at the start of every Claude Code session.**
 > The stop hook updates it automatically. Archive older entries to `memory/archive/`.

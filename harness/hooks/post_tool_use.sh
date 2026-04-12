@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GeoResearchAgent-247 — PostToolUse Hook
+# NORA — PostToolUse Hook
 # Updates experiment state after tool execution; caches written files.
 
 set -euo pipefail

@@ -16,7 +16,7 @@ You identify and rank research gaps from the synthesis to guide hypothesis gener
 
 ## Protocol
 
-1. Read memory/synthesis-YYYY-MM-DD.md (most recent)
+1. Read memory/SYNTHESIS_YYYY-MM-DD.md (most recent)
 2. Read program.md for research questions and domain focus
 3. Identify gaps across these dimensions:
    - **Methodological**: algorithms/methods not yet tried on this problem
@@ -27,7 +27,7 @@ You identify and rank research gaps from the synthesis to guide hypothesis gener
    - **Validation**: baselines not compared, metrics not reported
 4. Score each gap on: Novelty (0-10), Feasibility (0-10), Impact (0-10)
 5. Rank by weighted score: 0.4×Novelty + 0.35×Feasibility + 0.25×Impact
-6. Save to memory/gap-analysis.md
+6. Save to memory/GAP_ANALYSIS.md
 
 ## Output Format
 

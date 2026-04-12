@@ -33,7 +33,7 @@ Before searching for data, classify what is actually needed.
 
 ### Step 0.1: Infer Data Requirements
 
-Extract from the user's request, the research question, or existing project files (`research_contract.md`, `EXPERIMENT_PLAN.md`, `research_plan.md`):
+Extract from the user's request, the research question, or existing project files (`research_contract.md`, `output/EXPERIMENT_PLAN.md`, `research_plan.md`):
 
 | Dimension | Question to answer |
 |---|---|
@@ -75,7 +75,7 @@ Map the need to one or more data categories:
 | **Vegetation / agriculture** | NDVI, crop type, cropland extent | MODIS, Sentinel-2, USDA CDL |
 | **Ocean / coastal** | Bathymetry, sea surface temp, shorelines | NOAA NCEI, GEBCO, Copernicus Marine |
 
-Write the data requirement summary to `data/download_plan.md`:
+Write the data requirement summary to `data/DOWNLOAD_PLAN.md`:
 
 ```markdown
 # Data Download Plan
@@ -710,7 +710,7 @@ This section provides starting points. Always verify URLs are current before dow
 - `data/raw/[dataset_name]/` — Raw downloaded files, never modified
 - `data/processed/` — User-created processed versions (this skill does not write here)
 - `data/DATA_MANIFEST.md` — Provenance log for all downloaded datasets
-- `data/download_plan.md` — Requirements and source evaluation (if complex multi-dataset download)
+- `data/DOWNLOAD_PLAN.md` — Requirements and source evaluation (if complex multi-dataset download)
 - `data/raw/[dataset_name]/metadata.json` — Per-dataset metadata (for API or complex downloads)
 
 ---
@@ -740,7 +740,6 @@ This skill provides data for the rest of the research pipeline:
 ```
 /data-download "what data is needed"   ← you are here
 /spatial-analysis "research question"  → analyze the downloaded data
-/geo-experiment                        → formal experiment execution
 /lit-review                            → literature context (separate concern)
 /paper-write                           → document data sources in Methodology
 /paper-figure                          → visualize the downloaded data
@@ -749,6 +748,6 @@ This skill provides data for the rest of the research pipeline:
 
 **Integration points:**
 - **To spatial-analysis**: Downloaded data lands in `data/raw/`. The `spatial-analysis` skill reads from there (or from paths the user specifies).
-- **To geo-experiment**: If `geo_benchmark/download_data.py` handles benchmark-specific datasets, this skill handles everything else — custom study area data, external covariates, boundary files, remote sensing imagery.
+- **To deploy-experiment**: This skill handles all external data — custom study area data, external covariates, boundary files, remote sensing imagery.
 - **To paper-write / submit-check**: The `DATA_MANIFEST.md` provides source URLs, citations, and access dates for the Methodology section and submission checklist.
 - **Knowledge base**: Read `skills/knowledge/spatial-methods.md` for CRS guidance when downloading spatial data.

@@ -71,7 +71,7 @@ Stop iterating when:
 - The narrative structure is settled
 
 ### Step 5: Document Everything
-Save the full interaction and conclusions to a `idea_review_report.md` in the project root:
+Save the full interaction and conclusions to a `output/IDEA_REVIEW_REPORT.md` in the project root:
 - Round-by-round summary of criticisms and responses
 - Final consensus on claims, narrative, and experiments
 - Claims matrix (what claims are allowed under each possible outcome)

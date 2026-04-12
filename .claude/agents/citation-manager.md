@@ -17,7 +17,7 @@ You validate and format all references for a geo/RS/GIScience paper in APA 7th e
 
 ## Protocol
 
-1. Read all section files in outputs/papers/<title-slug>/
+1. Read all section files in output/papers/<title-slug>/
 2. Extract all in-text citations: (Author, Year) patterns and Author (Year) patterns
 3. Extract all reference list entries from any existing references section
 4. For each reference: verify DOI resolves if possible (use https://doi.org/ prefix)

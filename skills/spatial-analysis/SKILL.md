@@ -1,86 +1,73 @@
 ---
 name: spatial-analysis
-description: 'Research-question-driven spatial analysis workflow designer and executor. Given a research question, infers analytical objective, selects appropriate spatial methods, constructs a coherent analysis pipeline, implements it in Python, runs diagnostics, and writes interpretation. Use when user says "spatial analysis", "analyze spatial data", "run spatial regression", "check for clustering", "map this", or needs to go from a research question to a complete spatial analysis workflow.'
+description: 'Guideline-driven spatial analysis skill. Given a research question and data context, provides decision frameworks for selecting appropriate spatial methods, diagnostics, and interpretation strategies. Adapts to available data, spatial units, and analytical objectives — Claude Code determines the optimal workflow. Use when user says "spatial analysis", "analyze spatial data", "run spatial regression", "check for clustering", "map this", or needs to go from a research question to a complete spatial analysis.'
 argument-hint: [research-question-or-analysis-goal]
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent
 ---
 
-# Spatial Analysis: Research-Question-Driven Workflow
+# Spatial Analysis: Guideline-Driven Decision Framework
 
-Design and execute a spatial analysis workflow for: **$ARGUMENTS**
+Analyze: **$ARGUMENTS**
 
-## Overview
+## Purpose
 
-This skill turns a research question into a complete, justified spatial analysis workflow. It does NOT apply every available method. It reasons from the question to the minimum set of methods that answer it rigorously.
+This skill provides **guidelines, decision tables, and guardrails** for spatial analysis — not a fixed procedure. The sequence and combination of methods should be determined by Claude Code based on:
 
-The workflow is always: **research question → analytical objective → data assessment → method selection → implementation → diagnostics → interpretation → output**.
+1. The research question and its analytical objective
+2. The available data (type, size, quality, spatial unit)
+3. The study context (domain, audience, publication target)
 
-Read `skills/knowledge/spatial-methods.md` for reference implementations before starting. That file has code snippets and parameter details; this skill decides *when* and *why* to use them.
+Read `skills/knowledge/spatial-methods.md` for reference implementations. This skill decides *when*, *why*, and *under what conditions* to use them.
 
 ## Constants
 
-- **OUTPUT_DIR = `spatial-analysis-outputs/`** — Default destination for all analysis artifacts (scripts, figures, tables, reports).
-- **MAX_FEATURES = 15** — Soft cap on predictor variables before recommending dimensionality reduction or domain-driven selection.
-- **MGWR_MAX_N = 3000** — Subsample threshold for MGWR. Above this, spatially stratified subsample.
+- **OUTPUT_DIR = `output/spatial-analysis`** — Default destination for all analysis artifacts.
+- **MAX_FEATURES = 15** — Soft cap on predictors before recommending dimensionality reduction.
+- **MGWR_MAX_N = 3000** — Subsample threshold for MGWR.
 - **GWR_MAX_N = 5000** — Subsample threshold for GWR.
-- **SIGNIFICANCE_LEVEL = 0.05** — Default alpha for statistical tests unless user specifies otherwise.
-- **SPATIAL_CV_FOLDS = 5** — Default number of spatial cross-validation folds for predictive workflows.
+- **SIGNIFICANCE_LEVEL = 0.05** — Default alpha unless user specifies otherwise.
+- **SPATIAL_CV_FOLDS = 5** — Default spatial cross-validation folds.
 
 > Override via argument, e.g., `/spatial-analysis "question" — significance: 0.01, max features: 8`.
 
 ---
 
-## Phase 0: Understand the Research Question
+## 1. Research Question Classification
 
-Before touching data or methods, classify the research question along these dimensions:
+Before selecting any method, classify the research question. This classification drives every downstream decision.
 
-### Step 0.1: Infer the Analytical Objective
+### 1.1 Analytical Objective Mapping
 
-Map the user's question to one or more of these objective types:
-
-| Objective | Signal phrases | Primary methods |
+| Objective | Signal phrases | Typical method families |
 |---|---|---|
 | **Description** | "what is the spatial pattern of...", "how is X distributed" | Choropleth, KDE, summary statistics, ESDA |
-| **Explanation** | "what factors explain...", "why does X vary across..." | Regression (OLS → spatial lag/error → GWR/MGWR) |
-| **Comparison** | "does X differ between regions...", "is the pattern different in..." | Stratified analysis, interaction terms, regional subsetting |
-| **Prediction** | "can we predict...", "where will X occur next..." | ML + spatial CV, feature engineering, residual autocorrelation check |
-| **Clustering / hot spots** | "are events clustered...", "where are hot spots..." | Moran's I, LISA, Getis-Ord Gi*, nearest neighbor, DBSCAN |
-| **Association** | "is X related to Y spatially...", "do areas with more X have more Y..." | Bivariate Moran's I, correlation with spatial adjustment, regression |
-| **Accessibility** | "who has access to...", "what areas are underserved..." | Network analysis, service areas, 2SFCA, isochrones |
-| **Temporal-spatial change** | "how has X changed over time across space..." | Panel methods, temporal faceting, spatiotemporal aggregation |
-| **Causal inference** | "does X cause Y...", "what is the effect of..." | Spatial DiD, IV, RDD with spatial dimension — flag limitations |
-| **Interpolation** | "what is the value at unsampled locations..." | Kriging, IDW, cross-validation comparison |
+| **Explanation** | "what factors explain...", "why does X vary across..." | Regression ladder (OLS → spatial → local) |
+| **Comparison** | "does X differ between regions..." | Stratified analysis, interaction terms, regional subsetting |
+| **Prediction** | "can we predict...", "where will X occur..." | ML + spatial CV, feature engineering |
+| **Clustering / hot spots** | "are events clustered...", "where are hot spots..." | Moran's I, LISA, Getis-Ord Gi*, DBSCAN |
+| **Association** | "is X related to Y spatially..." | Bivariate Moran's I, spatial regression |
+| **Accessibility** | "who has access to...", "what areas are underserved..." | Network analysis, 2SFCA, isochrones |
+| **Temporal-spatial change** | "how has X changed over time across space..." | Panel methods, spatiotemporal aggregation |
+| **Causal inference** | "does X cause Y..." | Spatial DiD, IV, RDD — flag limitations explicitly |
+| **Interpolation** | "what is the value at unsampled locations..." | Kriging, IDW, cross-validation |
 
-If the question maps to multiple objectives, identify the **primary** objective and treat others as supporting.
+**If the question maps to multiple objectives**, identify the primary one and treat others as supporting. If the question is too vague, ask the user to clarify the outcome, spatial unit, and study area.
 
-If the question is too vague (e.g., "analyze this spatial data"), STOP and ask the user to specify:
-- What outcome or pattern are you trying to understand?
-- What is your spatial unit of analysis?
-- What is the study area and time period?
+### 1.2 Should Spatial Methods Be Used at All?
 
-### Step 0.2: Identify Key Analysis Components
+Not every geographic dataset requires spatial statistics. Evaluate:
 
-Extract from the question and any provided data:
+| Question | If "no" | If "yes" |
+|---|---|---|
+| Is spatial dependence theoretically plausible? | Standard methods may suffice | Spatial structure likely matters |
+| Is the spatial structure itself the research question? | Spatial methods are optional | Spatial methods are mandatory |
+| Would ignoring spatial structure bias results? | OLS may be adequate | Spatial adjustment needed |
 
-- **Outcome variable** (dependent variable, if applicable)
-- **Explanatory variables** (predictors, if applicable)
-- **Spatial unit** (point, polygon, raster cell, network edge)
-- **Temporal unit** (cross-sectional, panel, time series)
-- **Study extent** (local, regional, national, global)
-- **Sample size** (affects method feasibility — GWR/MGWR have hard limits)
-- **Data type** (vector points, vector polygons, raster, network)
+**Guideline:** If all three are "no", recommend non-spatial analysis and explain why. Do not force spatial methods where they add no value.
 
-### Step 0.3: Decide if Spatial Methods are Necessary
+### 1.3 Write Question Classification
 
-Not every question about geographic data requires spatial statistics. Ask:
-
-1. **Is spatial dependence theoretically plausible?** If observations are independent conditional on covariates, OLS may suffice.
-2. **Is the spatial structure the research question itself?** If yes, spatial methods are mandatory.
-3. **Would ignoring spatial structure bias the results?** If residuals are spatially autocorrelated, OLS standard errors are wrong.
-
-If the answer to all three is "no," recommend a non-spatial analysis and explain why. Do not force spatial methods.
-
-Write the question classification to `spatial-analysis-outputs/question_classification.md`:
+Save classification to `output/spatial-analysis/question_classification.md`:
 
 ```markdown
 # Research Question Classification
@@ -104,508 +91,337 @@ Write the question classification to `spatial-analysis-outputs/question_classifi
 - [Yes / No / Conditional on diagnostics]
 - Reasoning: [why]
 
-## Preliminary Method Candidates
-1. [method — why it fits]
-2. [method — why it fits]
-3. [method — may be needed if condition X holds]
+## Method Candidates
+1. [method — why it fits this question]
+2. [method — why it fits this question]
+3. [method — conditional on X]
 ```
 
 ---
 
-## Phase 1: Inspect and Prepare Data
+## 2. Data Readiness Guidelines
 
-### Step 1.1: Load and Inspect
+These guidelines apply regardless of analytical objective. Evaluate data readiness before proceeding to any analysis. The depth of preparation depends on the situation.
 
-```python
-import geopandas as gpd
-import pandas as pd
-import numpy as np
+### 2.1 CRS Decision Framework
 
-gdf = gpd.read_file('path/to/data')  # or gpd.GeoDataFrame from CSV with geometry
-print(f"Shape: {gdf.shape}")
-print(f"CRS: {gdf.crs}")
-print(f"Geometry types: {gdf.geom_type.value_counts().to_dict()}")
-print(f"Bounds: {gdf.total_bounds}")
-print(gdf.describe())
-print(f"Missing values:\n{gdf.isnull().sum()}")
-```
+**This is non-negotiable.** Wrong CRS invalidates distance, area, and density calculations.
 
-Check for:
-- **CRS defined?** If `gdf.crs is None`, ask the user or infer from coordinates.
-- **Geometry validity?** Run `gdf.geometry.is_valid.all()`. Fix with `gdf.geometry = gdf.geometry.buffer(0)` if needed.
-- **Duplicated geometries?** `gdf.geometry.duplicated().sum()` — investigate before dropping.
-- **Multipart features?** `gdf[gdf.geom_type.str.startswith('Multi')]` — explode if analysis requires single-part.
-- **Empty geometries?** `gdf[gdf.is_empty]` — drop or investigate.
-
-### Step 1.2: CRS Assessment
-
-**This step is non-negotiable.** Wrong CRS invalidates distance, area, and density calculations.
-
-| Analysis type | Required CRS property | Recommended |
+| If the analysis involves... | CRS requirement | Recommendation |
 |---|---|---|
-| Distance calculations | Projected (meters) | Local UTM or national grid |
-| Area calculations | Equal-area | Albers, Mollweide, or national equal-area |
-| Density / KDE | Projected (meters) | Local UTM |
-| Web mapping / display only | Any (geographic OK) | WGS84 (EPSG:4326) |
+| Distance or density calculations | Projected (meters) | Local UTM or national grid |
+| Area calculations | Equal-area projection | Albers, Mollweide, or national equal-area |
+| Only display / web mapping | Any (geographic OK) | WGS84 (EPSG:4326) |
 | Spatial joins / overlays | Both layers must match | Reproject to analysis CRS first |
+| Mixed (distance + display) | Analyze in projected, display in geographic | Two CRS in workflow |
 
+**Guardrail:** If data is in EPSG:4326 and the analysis involves distances, areas, or density — project first. Never compute Euclidean distance on lat/lon.
+
+**UTM zone estimation** (when no local CRS is obvious):
 ```python
-# Determine appropriate CRS
-import pyproj
-
-if gdf.crs is None or gdf.crs.to_epsg() == 4326:
-    # Need to project — estimate UTM zone from centroid
-    centroid = gdf.geometry.unary_union.centroid
-    utm_zone = int((centroid.x + 180) / 6) + 1
-    hemisphere = 'north' if centroid.y >= 0 else 'south'
-    epsg = 32600 + utm_zone if hemisphere == 'north' else 32700 + utm_zone
-    gdf_proj = gdf.to_crs(epsg=epsg)
-    print(f"Projected to EPSG:{epsg} (UTM Zone {utm_zone}{hemisphere[0].upper()})")
-else:
-    gdf_proj = gdf
+centroid = gdf.geometry.unary_union.centroid
+utm_zone = int((centroid.x + 180) / 6) + 1
+hemisphere = 'north' if centroid.y >= 0 else 'south'
+epsg = 32600 + utm_zone if hemisphere == 'north' else 32700 + utm_zone
 ```
 
-**GUARDRAIL**: If the user's data is in EPSG:4326 and the analysis involves distances, areas, or density — project first. Never compute Euclidean distance on lat/lon.
+### 2.2 Data Quality Checklist
 
-### Step 1.3: Data Harmonization
+Evaluate these as needed — not all checks apply to every dataset:
 
-If multiple datasets are involved:
+| Issue | When to check | How to handle |
+|---|---|---|
+| Missing CRS | Always | Ask user or infer from coordinate range |
+| Invalid geometries | Before spatial operations | `gdf.geometry.buffer(0)` to fix |
+| Duplicated geometries | Before spatial statistics | Investigate context before dropping |
+| Multipart features | When analysis requires single-part | `gdf.explode()` |
+| Empty geometries | Always | Drop or investigate |
+| Missing values | Always | Document spatial pattern of missingness — clustered missingness biases spatial statistics |
 
-1. **CRS alignment**: `assert gdf1.crs == gdf2.crs` before any spatial operation.
-2. **Spatial join**: Use `gpd.sjoin(gdf1, gdf2, how='left', predicate='intersects')` — choose predicate carefully (`intersects`, `within`, `contains`).
-3. **Temporal alignment**: Verify that datasets cover the same time period. Flag mismatches.
-4. **Resolution mismatch**: If combining data at different spatial resolutions, document the aggregation/disaggregation method and warn about MAUP.
-5. **Missing data**: Document missingness spatially — is it random or clustered? Clustered missingness biases spatial statistics.
+### 2.3 Multi-Dataset Integration
 
-### Step 1.4: Variable Preparation
+When combining datasets, address these issues in the order they arise:
 
-- **Outlier inspection**: Box plots, z-scores. Do NOT auto-remove — investigate spatial context first (an "outlier" may be a real local phenomenon).
-- **Skewness**: Check distributions. Log-transform only if theoretically justified and skewness > |2|.
-- **Multicollinearity**: Compute VIF for regression predictors. VIF > 10 → drop or combine.
-- **Standardization**: For GWR/MGWR, standardize predictors (mean=0, std=1) so bandwidths are comparable.
+| Issue | Guideline |
+|---|---|
+| CRS mismatch | Reproject all layers to a common analysis CRS before any spatial operation |
+| Temporal mismatch | Document the assumption that spatial patterns are stable over the time gap; flag if gap > 2 years |
+| Resolution mismatch (MAUP) | Document aggregation/disaggregation method; warn about ecological fallacy; consider sensitivity analysis at different scales |
+| Boundary mismatch | Use areal interpolation if administrative boundaries don't align |
 
-```python
-from statsmodels.stats.outliers_influence import variance_inflation_factor
+### 2.4 Variable Preparation Guidelines
 
-X = gdf_proj[feature_cols].dropna()
-vif = pd.DataFrame({
-    'Variable': X.columns,
-    'VIF': [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
-})
-print(vif.sort_values('VIF', ascending=False))
-```
+| Situation | Guideline |
+|---|---|
+| Suspected outliers | Inspect in spatial context — an "outlier" may be a real local phenomenon. Do NOT auto-remove |
+| Skewed distributions | Log-transform only if theoretically justified AND skewness > \|2\| |
+| Many predictors (> MAX_FEATURES) | Apply domain-driven selection or dimensionality reduction before modeling |
+| Multicollinearity (VIF > 10) | Drop or combine correlated predictors |
+| Preparing for GWR/MGWR | Standardize predictors (mean=0, std=1) so bandwidths are comparable |
 
 ---
 
-## Phase 2: Exploratory Spatial Data Analysis (ESDA)
+## 3. Spatial Weights Selection Guide
 
-**Always do ESDA before modeling.** It reveals patterns that inform method choice and catches data problems early.
+Spatial weights underpin most spatial statistics. The choice is consequential and must be justified.
 
-### Step 2.1: Non-Spatial Summaries
-
-- Descriptive statistics for outcome and predictors
-- Histograms and distribution plots
-- Correlation matrix (Pearson or Spearman depending on distributions)
-
-### Step 2.2: Spatial Visualization
-
-Choose map type based on data:
-
-| Data type | Default map | When to use alternatives |
+| Data type | Recommended weights | Rationale |
 |---|---|---|
-| Polygon counts/rates | Choropleth | Cartogram if area distortion matters |
-| Point events | Point map | KDE if too many points overlap |
-| Point values | Graduated symbols | Interpolated surface if continuous field |
-| Raster | Continuous color map | Classified if discrete categories |
+| Regular polygon tessellation (counties, tracts) | Queen contiguity | Captures all adjacency relationships |
+| Grid-like polygons | Rook contiguity | Corner adjacency often not meaningful |
+| Point data | KNN (k=5–8) | Adapts to varying point density |
+| Irregular polygon sizes | KNN or distance band | Contiguity unreliable with very different sizes |
+| Interaction decays with distance | Distance band | Captures distance-decay process |
 
-```python
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-gdf_proj.plot(column='outcome_var', cmap='viridis', legend=True,
-              scheme='quantiles', k=5, ax=ax,
-              edgecolor='0.8', linewidth=0.3)
-ax.set_title('Outcome Variable Distribution')
-ax.set_axis_off()
-plt.tight_layout()
-plt.savefig('spatial-analysis-outputs/fig_eda_choropleth.png', dpi=300, bbox_inches='tight')
-```
-
-**Classification choice matters.** Different schemes tell different stories:
-
-| Scheme | Use when | Avoid when |
-|---|---|---|
-| `quantiles` | Want equal-count bins; good default | Distribution is multimodal |
-| `natural_breaks` (Jenks) | Want to minimize within-class variance | Need reproducibility (algorithm is non-deterministic in some implementations) |
-| `equal_interval` | Distribution is roughly uniform | Skewed data (most observations in one bin) |
-| `std_mean` | Want to highlight deviation from mean | Non-normal distributions |
-| `fisher_jenks` | Stable alternative to natural breaks | — |
-
-**GUARDRAIL**: Never use a sequential colormap (e.g., `viridis`) for diverging data (e.g., residuals, change). Use a diverging colormap (`RdBu_r`, `coolwarm`) centered on zero or the mean.
-
-### Step 2.3: Spatial Autocorrelation Screening
-
-Run global Moran's I on the outcome variable to decide whether spatial modeling is needed:
-
-```python
-import libpysal
-import esda
-
-# Construct spatial weights — choose based on data type
-# Polygons: Queen contiguity
-W = libpysal.weights.Queen.from_dataframe(gdf_proj)
-# Points: KNN (default k=8, adjust based on density)
-# W = libpysal.weights.KNN.from_dataframe(gdf_proj, k=8)
-# Distance band: use when irregular spacing
-# W = libpysal.weights.DistanceBand.from_dataframe(gdf_proj, threshold=d)
-
-W.transform = 'R'  # Row-standardize
-
-moran = esda.Moran(gdf_proj['outcome_var'].values, W)
-print(f"Moran's I: {moran.I:.4f}")
-print(f"Expected I: {moran.EI:.4f}")
-print(f"p-value: {moran.p_sim:.4f}")
-print(f"z-score: {moran.z_sim:.4f}")
-```
-
-**Interpretation guide:**
-
-| Moran's I p-value | Interpretation | Implication |
-|---|---|---|
-| p < 0.01 | Strong evidence of spatial autocorrelation | Spatial methods likely needed |
-| 0.01 ≤ p < 0.05 | Moderate evidence | Spatial methods recommended; compare with OLS |
-| p ≥ 0.05 | No significant spatial autocorrelation | OLS may be sufficient; still check residuals after modeling |
-
-**Weights matrix choice is consequential.** Document your choice and reasoning:
-
-| Weights type | Best for | Watch out for |
-|---|---|---|
-| Queen contiguity | Regular polygon tessellations (counties, census tracts) | Islands with no neighbors (add manual connections) |
-| Rook contiguity | Grid-like polygons where corner adjacency is not meaningful | — |
-| KNN (k=5-8) | Point data; irregular polygon sizes | k too small → disconnected components; k too large → smooths real variation |
-| Distance band | When interaction decays with distance | Choice of threshold is arbitrary; try multiple |
-
-**GUARDRAIL**: Always check for islands (observations with no neighbors): `W.islands`. If islands exist, they break spatial statistics. Either add manual neighbor connections or use KNN instead.
-
-### Step 2.4: Local Pattern Detection (if global Moran's I is significant)
-
-```python
-# Local Moran's I (LISA)
-lisa = esda.Moran_Local(gdf_proj['outcome_var'].values, W)
-gdf_proj['lisa_cluster'] = lisa.q  # 1=HH, 2=LH, 3=LL, 4=HL
-gdf_proj['lisa_sig'] = lisa.p_sim < SIGNIFICANCE_LEVEL
-
-# Getis-Ord Gi* (hot/cold spots)
-gstar = esda.G_Local(gdf_proj['outcome_var'].values, W, star=True)
-gdf_proj['gstar_z'] = gstar.Zs
-gdf_proj['gstar_sig'] = gstar.p_sim < SIGNIFICANCE_LEVEL
-```
-
-**When to use LISA vs Getis-Ord Gi*:**
-
-| Method | Detects | Better when |
-|---|---|---|
-| LISA (Local Moran's I) | Clusters (HH, LL) AND outliers (HL, LH) | You care about both types of spatial association |
-| Getis-Ord Gi* | Hot spots (high values) and cold spots (low values) only | You only care about concentration of high/low values |
-
-**GUARDRAIL**: Multiple testing. With N spatial units, you run N local tests. Report the number of significant clusters at your chosen alpha AND note that some may be false positives. Consider using Bonferroni or FDR correction for conservative inference, or report both corrected and uncorrected results.
+**Guardrails:**
+- Always check for islands: `W.islands`. Islands break spatial statistics — add manual connections or switch to KNN.
+- Always row-standardize: `W.transform = 'R'`.
+- Document your choice and reasoning. If results are sensitive to weights choice, report this.
 
 ---
 
-## Phase 3: Method Selection and Execution
+## 4. Analytical Approach Guidelines
 
-Route to the appropriate analysis based on the objective from Phase 0.
+Select your approach based on the analytical objective from Section 1. These are **not sequential steps** — choose the relevant section(s) and adapt.
 
-### Route A: Explanation (Regression)
+### 4.1 Exploratory Spatial Data Analysis (ESDA)
 
-**Decision tree:**
+**When to use:** Almost always — ESDA should precede formal modeling in most situations. Skip only if the question is purely about accessibility/network analysis with no distributional component.
+
+**What to include depends on the question:**
+
+| If the question is about... | ESDA should include |
+|---|---|
+| Spatial patterns or distribution | Choropleth/KDE maps, global Moran's I, LISA or Gi* |
+| Regression / explanation | Distribution of outcome + predictors, correlation matrix, global Moran's I to determine if spatial modeling is needed |
+| Prediction | Feature distributions, spatial autocorrelation of target variable, visual inspection for spatial structure |
+| Clustering | Global clustering test first (Moran's I or General G), then local tests |
+
+**Map classification guidance:**
+
+| Data distribution | Best classification scheme |
+|---|---|
+| Roughly uniform | `equal_interval` |
+| Skewed (common) | `quantiles` (equal-count bins) |
+| Multimodal or natural groupings | `natural_breaks` or `fisher_jenks` |
+| Need to highlight deviation from mean | `std_mean` (only if roughly normal) |
+
+**Color scheme rules:**
+
+| Variable type | Use | Never use |
+|---|---|---|
+| Sequential (counts, rates) | `viridis`, `YlOrRd`, `Blues` | rainbow/jet |
+| Diverging (residuals, change) | `RdBu_r`, `coolwarm`, `PiYG` | sequential colormap |
+| Categorical (clusters) | `Set2`, `tab10` | continuous colormap |
+
+**Global Moran's I interpretation:**
+
+| Result | Implication |
+|---|---|
+| p < 0.01 | Strong spatial autocorrelation — spatial methods likely needed |
+| 0.01 ≤ p < 0.05 | Moderate — spatial methods recommended; compare with non-spatial |
+| p ≥ 0.05 | Not significant — non-spatial methods may suffice; still check residuals after modeling |
+
+**Local pattern detection — LISA vs Getis-Ord Gi*:**
+
+| Use LISA when | Use Gi* when |
+|---|---|
+| You care about both clusters AND spatial outliers (HH, LL, HL, LH) | You only care about hot spots and cold spots |
+| You want to identify areas that deviate from neighbors | You want to identify concentration of extreme values |
+
+**Guardrail:** Multiple testing — with N spatial units, you run N local tests. Report the number of significant clusters and note potential false positives. Consider Bonferroni or FDR correction.
+
+### 4.2 Explanatory Analysis (Regression)
+
+**When to use:** The research question asks *why* a spatial pattern exists or *what factors explain* spatial variation.
+
+**Decision framework — choose the model based on diagnostics, not assumption:**
 
 ```
-Research question is explanatory
+Start with OLS baseline (always)
     │
-    ├── Run OLS first (always)
-    │   ├── Check residual Moran's I
-    │   │   ├── p ≥ 0.05 → OLS is adequate. Report and stop.
-    │   │   └── p < 0.05 → Spatial dependence in residuals. Continue.
+    ├── Check residual Moran's I
+    │   ├── p ≥ 0.05 → OLS is adequate. Report and stop.
+    │   └── p < 0.05 → Spatial dependence in residuals. Continue below.
+    │
+    ├── Determine the nature of spatial dependence:
+    │   ├── Substantive (spillover: outcome in i depends on neighbors)
+    │   │   → Spatial Lag Model
+    │   │   Example: crime spillover, housing price contagion
     │   │
-    │   ├── Is the spatial dependence substantive (spillover)?
-    │   │   ├── Yes → Spatial Lag Model (ML_Lag)
-    │   │   └── No / Nuisance → Spatial Error Model (ML_Error)
+    │   ├── Nuisance (unobserved spatially-structured factors)
+    │   │   → Spatial Error Model
+    │   │   Example: unmeasured soil quality, regional culture
     │   │
-    │   ├── Do relationships plausibly vary across space?
-    │   │   ├── Yes, all at same scale → GWR
-    │   │   └── Yes, at different scales → MGWR (preferred)
-    │   │   └── No theoretical reason → Do NOT run GWR/MGWR
+    │   └── Both LM tests significant → Use Robust LM tests
+    │       ├── Only Robust LM-Lag remains significant → Spatial Lag
+    │       ├── Only Robust LM-Error remains significant → Spatial Error
+    │       └── Both remain significant → Spatial Durbin Model
+    │
+    ├── Do relationships plausibly vary across space?
+    │   ├── Yes AND theoretical justification exists
+    │   │   ├── N ≤ MGWR_MAX_N → MGWR (preferred — per-variable bandwidth)
+    │   │   ├── N ≤ GWR_MAX_N → GWR
+    │   │   └── N > GWR_MAX_N → Spatially stratified subsample, or regional submodels
     │   │
-    │   └── Compare models: AICc, R², residual Moran's I
-    │       └── Report the best-fitting model with full diagnostics
+    │   └── No theoretical reason → Do NOT run GWR/MGWR
+    │
+    └── Compare all fitted models: AICc, R², residual Moran's I
+        └── Report best model with full diagnostics
 ```
 
-#### Step 3A.1: OLS Baseline
+**OLS diagnostics to check:**
+- R², Adjusted R², RMSE, MAE, AIC/BIC
+- Residual Moran's I (spatial autocorrelation)
+- Breusch-Pagan (heteroskedasticity)
+- Jarque-Bera (residual normality)
+- VIF (multicollinearity), Condition number (< 30 preferred)
 
-```python
-import statsmodels.api as sm
+**GWR/MGWR guardrails:**
+- Only run when there is a **theoretical reason** to expect spatially varying relationships
+- Always standardize predictors first
+- Coordinates must be in projected CRS
+- Interpret bandwidths: < 50 neighbors = local process; 50–200 = regional; > n/3 = effectively global
 
-y = gdf_proj['outcome_var'].values.reshape(-1, 1)
-X = gdf_proj[feature_cols].values
-X = sm.add_constant(X)
-
-ols = sm.OLS(y, X).fit(cov_type='HC3')
-print(ols.summary())
-
-# Residual spatial autocorrelation
-residuals = ols.resid
-moran_resid = esda.Moran(residuals, W)
-print(f"Residual Moran's I: {moran_resid.I:.4f}, p={moran_resid.p_sim:.4f}")
-```
-
-**OLS diagnostics checklist:**
-- [ ] R², Adjusted R²
-- [ ] RMSE, MAE
-- [ ] AIC, BIC
-- [ ] Residual Moran's I (p-value)
-- [ ] Breusch-Pagan test (heteroskedasticity)
-- [ ] Jarque-Bera test (normality of residuals)
-- [ ] VIF for all predictors (multicollinearity)
-- [ ] Condition number (< 30 preferred)
-
-#### Step 3A.2: Spatial Regression (if residual Moran's I is significant)
-
-```python
-from spreg import ML_Lag, ML_Error
-
-# Spatial Lag Model
-lag_model = ML_Lag(y, X, w=W, name_y='outcome', name_x=feature_cols)
-
-# Spatial Error Model
-error_model = ML_Error(y, X, w=W, name_y='outcome', name_x=feature_cols)
-```
-
-**Choose between lag and error:**
-
-| Criterion | Spatial Lag | Spatial Error |
-|---|---|---|
-| Theory | Outcome in area i depends on outcome in neighbors | Unobserved factors with spatial structure affect the outcome |
-| Example | Crime in one area spills to neighbors | Soil quality (unmeasured) varies smoothly across space |
-| Diagnostic | Lagrange Multiplier (lag) significant | Lagrange Multiplier (error) significant |
-| If both significant | Use Robust LM tests; pick the one that remains significant | If both remain significant, consider Spatial Durbin |
-
-#### Step 3A.3: GWR / MGWR (only if theoretically justified)
-
-**GUARDRAIL**: Do NOT run GWR/MGWR as a default. Run them only when:
-1. There is a theoretical reason to expect spatially varying relationships (e.g., the effect of greenspace on health plausibly differs between urban and rural areas).
-2. OLS or spatial lag/error models leave substantial residual spatial structure.
-3. The research question asks about *where* relationships differ, not just *whether* they exist.
-
-```python
-from mgwr.gwr import GWR, MGWR
-from mgwr.sel_bw import Sel_BW
-
-# Prepare coordinates — MUST be in projected CRS
-coords = np.column_stack((gdf_proj.geometry.x, gdf_proj.geometry.y))
-
-# Standardize predictors for GWR/MGWR
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-X_std = scaler.fit_transform(gdf_proj[feature_cols].values)
-X_std = np.column_stack((np.ones(X_std.shape[0]), X_std))  # add intercept
-y_arr = gdf_proj['outcome_var'].values.reshape(-1, 1)
-
-# Subsample if needed
-n = len(gdf_proj)
-if n > GWR_MAX_N:
-    print(f"WARNING: n={n} exceeds GWR limit ({GWR_MAX_N}). Spatially stratified subsample recommended.")
-
-# GWR
-bw_sel = Sel_BW(coords, y_arr, X_std, kernel='bisquare', fixed=False)
-bw = bw_sel.search()
-gwr_model = GWR(coords, y_arr, X_std, bw=bw, kernel='bisquare', fixed=False).fit()
-
-# MGWR (preferred — allows per-variable bandwidth)
-if n <= MGWR_MAX_N:
-    bw_sel_multi = Sel_BW(coords, y_arr, X_std, multi=True, kernel='bisquare', fixed=False)
-    bws = bw_sel_multi.search(multi_bw_min=[2])
-    mgwr_model = MGWR(coords, y_arr, X_std, selector=bw_sel_multi,
-                       kernel='bisquare', fixed=False).fit()
-```
-
-**Interpret MGWR bandwidths:**
-
-| Bandwidth range | Interpretation | Example |
-|---|---|---|
-| < 50 neighbors | Local process | Land use effects on temperature |
-| 50–200 neighbors | Regional process | Socioeconomic gradients |
-| > n/3 | Effectively global | Elevation effect on precipitation |
-
-### Route B: Clustering / Hot Spot Detection
-
-If the objective is clustering detection, the workflow is:
-
-1. **Global test** (Moran's I or Getis-Ord General G) — is there spatial clustering at all?
-2. **Local test** (LISA or Gi*) — where are the clusters?
-3. **Visualize** — map significant clusters with appropriate symbology.
-4. **Interpret** — what do the clusters mean substantively?
-
-**GUARDRAIL**: If analyzing event counts (e.g., disease cases), always normalize by population at risk. Raw counts cluster where people live, not where rates are elevated. Use rates or standardized incidence ratios.
-
-### Route C: Prediction
-
-If the objective is prediction:
-
-1. **Feature engineering** — include spatial features (coordinates, distance to landmarks, spatial lag of predictors, neighborhood summaries).
-2. **Spatial cross-validation** — NEVER use random CV. Use spatial block CV to prevent data leakage from spatial autocorrelation.
-3. **Model selection** — compare models by spatial CV performance, not in-sample fit.
-4. **Residual check** — even for predictive models, check residual Moran's I. Remaining spatial structure means the model is missing a spatial predictor or process.
-
-```python
-from sklearn.model_selection import KFold
-import mapclassify
-
-# Create spatial folds using geographic blocks
-# Option 1: Grid-based blocks
-gdf_proj['block'] = pd.cut(gdf_proj.geometry.x, bins=SPATIAL_CV_FOLDS, labels=False)
-
-# Option 2: K-means clustering on coordinates (more balanced)
-from sklearn.cluster import KMeans
-coords_for_cv = np.column_stack((gdf_proj.geometry.x, gdf_proj.geometry.y))
-gdf_proj['spatial_fold'] = KMeans(n_clusters=SPATIAL_CV_FOLDS, random_state=42).fit_predict(coords_for_cv)
-```
-
-### Route D: Accessibility / Network Analysis
-
-```python
-import osmnx as ox
-import networkx as nx
-
-# Download street network
-G = ox.graph_from_place("City Name", network_type='drive')
-
-# Compute shortest paths / isochrones
-# Service area analysis, 2SFCA, etc.
-```
-
-Only invoke network analysis when the research question specifically concerns accessibility, reachability, or service coverage. Do not add network analysis to a regression workflow just because it exists.
-
-### Route E: Interpolation
-
-Use interpolation only when the goal is estimating values at unsampled locations from point observations.
-
-```python
-from pykrige.ok import OrdinaryKriging
-
-# Always fit and inspect the variogram first
-OK = OrdinaryKriging(x, y, z, variogram_model='spherical')
-z_pred, z_var = OK.execute('grid', gridx, gridy)
-```
-
-**GUARDRAIL**: Interpolation is not prediction in the regression sense. It assumes spatial continuity. If the variable is not spatially continuous (e.g., categorical land use), interpolation is inappropriate.
-
----
-
-## Phase 4: Diagnostics and Validation
-
-### Step 4.1: Model Diagnostics (for regression workflows)
-
-| Diagnostic | What it checks | Tool |
-|---|---|---|
-| Residual Moran's I | Remaining spatial autocorrelation | `esda.Moran(residuals, W)` |
-| Breusch-Pagan | Heteroskedasticity | `statsmodels.stats.diagnostic.het_breuschpagan()` |
-| Jarque-Bera | Normality of residuals | `statsmodels.stats.stattools.jarque_bera()` |
-| VIF | Multicollinearity | `statsmodels.stats.outliers_influence.variance_inflation_factor()` |
-| Cook's distance | Influential observations | `ols.get_influence().cooks_distance` |
-| AICc comparison | Model selection | Lower is better; prefer simpler model if AICc difference < 2 |
-
-### Step 4.2: Model Comparison Table
-
-Always produce a comparison table when multiple models are run:
+**Model comparison table** (always produce when multiple models are run):
 
 ```markdown
 | Model | R² | Adj. R² | AICc | RMSE | Residual Moran's I | p(Moran) |
 |-------|-----|---------|------|------|--------------------|----------|
-| OLS   |     |         |      |      |                    |          |
-| Spatial Lag |  |      |      |      |                    |          |
-| Spatial Error | |     |      |      |                    |          |
-| GWR   |     |         |      |      |                    |          |
-| MGWR  |     |         |      |      |                    |          |
 ```
 
-**Model selection logic:**
-1. Best AICc among candidates (with > 2 difference being meaningful).
-2. Residual Moran's I closest to 0 (spatial autocorrelation resolved).
-3. If AICc and Moran's I disagree, prefer the model that resolves spatial autocorrelation — biased standard errors are worse than slightly lower fit.
-4. Prefer the simpler model when differences are marginal.
+**Selection logic:** (1) Best AICc with > 2 difference being meaningful. (2) Residual Moran's I closest to 0. (3) If AICc and Moran's I disagree, prefer the model that resolves spatial autocorrelation. (4) Prefer simpler model when differences are marginal.
 
-### Step 4.3: Robustness Checks
+### 4.3 Clustering and Hot Spot Detection
 
-Depending on the analysis, consider:
+**When to use:** The question asks *whether* or *where* spatial clustering exists.
 
-- **Sensitivity to spatial weights**: Re-run key statistics with a different weights matrix (e.g., KNN instead of Queen). If results change substantially, report this.
-- **Sensitivity to spatial scale (MAUP)**: If data can be aggregated to a different level, test whether conclusions hold. If not feasible, acknowledge the limitation.
-- **Boundary effects**: Observations at study area edges have fewer neighbors. Note potential bias.
-- **Temporal mismatch**: If combining datasets from different years, explicitly acknowledge the assumption that spatial patterns are stable over that period.
+**Decision framework:**
+
+| Situation | Approach |
+|---|---|
+| Testing for global clustering | Global Moran's I (spatial autocorrelation) or Getis-Ord General G (concentration of high/low values) |
+| Locating specific clusters | LISA (clusters + outliers) or Gi* (hot/cold spots only) |
+| Detecting clusters without predefined weights | DBSCAN or other density-based methods |
+| Analyzing event/count data | **Normalize by population at risk first** — raw counts cluster where people live |
+
+**Guardrail:** If analyzing event counts (disease cases, crime incidents), always normalize by population at risk or use standardized rates. Raw count clusters reflect population density, not elevated risk.
+
+### 4.4 Prediction
+
+**When to use:** The goal is to estimate values at locations where the outcome is unknown.
+
+**Key guidelines:**
+
+| Guideline | Rationale |
+|---|---|
+| Include spatial features | Coordinates, distance to landmarks, spatial lag of predictors, neighborhood summaries — these capture spatial structure |
+| Use spatial cross-validation, NEVER random CV | Random CV leaks spatial autocorrelation and overestimates predictive accuracy |
+| Compare models by spatial CV performance | Not in-sample fit |
+| Check residual Moran's I even for ML models | Remaining spatial structure means the model misses a spatial predictor or process |
+
+**Spatial CV approaches:**
+- Grid-based blocks (simple, may be imbalanced)
+- K-means clustering on coordinates (more balanced folds)
+- Buffer-based exclusion (strongest protection against leakage)
+
+Choose based on the spatial structure of the data and the prediction task.
+
+### 4.5 Accessibility and Network Analysis
+
+**When to use:** The question concerns reachability, service coverage, or spatial access to facilities.
+
+**Guideline:** Only invoke network analysis when the research question specifically requires it. Do not add network analysis to a regression workflow just because spatial data is involved.
+
+**Common approaches:** Street network analysis (OSMnx + NetworkX), isochrone construction, 2-step floating catchment area (2SFCA), service area delineation.
+
+### 4.6 Interpolation
+
+**When to use:** Estimating values at unsampled locations from point observations, assuming spatial continuity.
+
+**Key guidelines:**
+
+| Guideline | Rationale |
+|---|---|
+| Always inspect the variogram first | The variogram reveals the spatial structure; fitting without inspection is reckless |
+| Cross-validate to choose method | Compare Kriging variants, IDW, etc. by leave-one-out or k-fold spatial CV |
+| Do NOT interpolate categorical variables | Interpolation assumes spatial continuity — categorical data is not continuous |
+| Distinguish from regression-based prediction | Interpolation leverages spatial proximity, not covariates |
+
+### 4.7 Temporal-Spatial Analysis
+
+**When to use:** The question involves change over time across space.
+
+**Guideline:** Choose approach based on data structure:
+
+| Data structure | Approach |
+|---|---|
+| Repeated cross-sections (same areas, multiple time points) | Panel methods, fixed/random effects with spatial terms |
+| Two time points | Change analysis, spatial pattern of change |
+| Continuous time series at fixed locations | Spatiotemporal modeling, temporal faceting |
+| Irregular temporal observations | Aggregate to consistent time windows first; document the choice |
 
 ---
 
-## Phase 5: Visualization and Communication
+## 5. Diagnostics and Robustness Guidelines
 
-### Step 5.1: Publication-Quality Maps
+Apply diagnostics proportional to the complexity of the analysis and the stakes of the conclusions.
 
-Every map must include:
-- [ ] Clear title
-- [ ] Legend with units and classification scheme named
-- [ ] Scale bar
-- [ ] North arrow (if convention for the venue requires it)
-- [ ] CRS stated in caption
-- [ ] Source attribution for basemap (if used)
-- [ ] Consistent color scheme across related maps
+### 5.1 Core Diagnostics
 
-```python
-import matplotlib.pyplot as plt
-import contextily as cx
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-gdf_proj.plot(column='outcome_var', cmap='viridis', legend=True,
-              scheme='fisher_jenks', k=5, ax=ax,
-              edgecolor='0.8', linewidth=0.3,
-              legend_kwds={'title': 'Outcome (units)', 'loc': 'lower right'})
-
-# Add basemap (requires Web Mercator or auto-reproject)
-# cx.add_basemap(ax, crs=gdf_proj.crs, source=cx.providers.CartoDB.Positron)
-
-ax.set_title('Title', fontsize=14, fontweight='bold')
-ax.set_axis_off()
-plt.tight_layout()
-plt.savefig('spatial-analysis-outputs/fig_main_map.png', dpi=300, bbox_inches='tight')
-```
-
-### Step 5.2: Diagnostic Plots
-
-| Plot | When to include | Purpose |
+| Diagnostic | When to apply | What it checks |
 |---|---|---|
-| Residual map | Any regression | Visual check for spatial patterns in residuals |
-| LISA cluster map | When clustering is detected | Show HH, HL, LH, LL significant clusters |
-| Coefficient map (GWR/MGWR) | When local coefficients vary | Show where each predictor is strong/weak |
-| Local R² map | GWR/MGWR | Show where the model fits well vs poorly |
-| Moran scatter plot | When reporting Moran's I | Visual complement to the statistic |
-| QQ plot of residuals | Regression diagnostics | Check normality assumption |
+| Residual Moran's I | Any regression model | Remaining spatial autocorrelation |
+| Breusch-Pagan | Regression | Heteroskedasticity |
+| Jarque-Bera | Regression | Normality of residuals |
+| VIF | Multiple regression | Multicollinearity |
+| Cook's distance | Regression with suspected influential observations | Outlier influence |
+| AICc comparison | When multiple models are fit | Relative model quality |
+| Spatial CV metrics | Prediction tasks | Out-of-sample predictive accuracy |
 
-### Step 5.3: Color Scheme Rules
+### 5.2 Robustness Checks — Apply When Conclusions Are Sensitive
 
-| Variable type | Colormap | Example |
+| Check | When to consider | What it tests |
 |---|---|---|
-| Sequential (counts, rates) | `viridis`, `YlOrRd`, `Blues` | Population density |
-| Diverging (residuals, change, coefficients) | `RdBu_r`, `coolwarm`, `PiYG` | Regression residuals |
-| Categorical (clusters, land use) | `Set2`, `tab10`, custom | LISA clusters |
+| Alternative spatial weights | When results depend heavily on clustering detection or spatial regression | Sensitivity to neighborhood definition |
+| Alternative spatial scale (MAUP) | When data could be aggregated differently | Whether conclusions hold across scales |
+| Boundary effects | When study area has hard boundaries | Whether edge observations bias results |
+| Temporal mismatch sensitivity | When combining datasets from different years | Stability of spatial patterns over the time gap |
+| Subset analysis | When study area is heterogeneous | Whether patterns hold across subregions |
 
-**GUARDRAIL**: Never use rainbow/jet colormaps. They are perceptually non-uniform and misleading.
+**Guideline:** Report robustness checks that you performed AND note which checks you considered but deemed unnecessary for this analysis (with reasoning).
 
 ---
 
-## Phase 6: Write Interpretation
+## 6. Visualization Guidelines
 
-### Step 6.1: Analysis Narrative
+### 6.1 Map Requirements
 
-Write a 3-6 paragraph interpretation to `spatial-analysis-outputs/analysis_report.md`:
+Every map must include: title, legend with units and classification scheme, scale bar, CRS in caption, consistent color scheme across related maps. Add north arrow and source attribution if publication conventions require them.
+
+### 6.2 Which Plots to Include
+
+Choose based on what was analyzed — do not produce plots that add no information:
+
+| Plot type | Include when |
+|---|---|
+| Choropleth / KDE map | Describing spatial distribution (almost always) |
+| Residual map | Any regression model was fit |
+| LISA cluster map | Local clustering was detected |
+| Gi* hot/cold spot map | Hot spot analysis was performed |
+| Coefficient surface map | GWR/MGWR was run and coefficients vary meaningfully |
+| Local R² map | GWR/MGWR and local fit varies |
+| Moran scatter plot | Reporting Moran's I (visual complement) |
+| QQ plot of residuals | Regression diagnostics, normality in question |
+| Model comparison bar chart | Multiple models compared |
+
+---
+
+## 7. Interpretation and Reporting
+
+### 7.1 Report Structure
+
+Write to `output/spatial-analysis/analysis_report.md`:
 
 ```markdown
 # Spatial Analysis Report
@@ -615,82 +431,83 @@ Write a 3-6 paragraph interpretation to `spatial-analysis-outputs/analysis_repor
 **Data**: [description — N, spatial extent, time period]
 
 ## Data and Study Area
-[Para 1: Data sources, spatial units, sample size, key variables, CRS used]
+[Data sources, spatial units, sample size, key variables, CRS used]
 
 ## Exploratory Findings
-[Para 2: Distribution of outcome, initial spatial patterns, global Moran's I result]
+[Distribution of outcome, initial spatial patterns, global Moran's I result if computed]
 
-## Model Results
-[Para 3: Model comparison table, best model selection rationale]
-
-## Key Spatial Patterns
-[Para 4: For GWR/MGWR — which variables vary locally, where are effects strongest/weakest]
-[For clustering — where are hot/cold spots, what characterizes them]
+## Analytical Results
+[Method(s) used and why, model comparison if applicable, key findings]
 
 ## Diagnostics and Robustness
-[Para 5: Residual spatial autocorrelation status, sensitivity checks, caveats]
+[Residual checks, sensitivity analysis, caveats]
 
 ## Implications
-[Para 6: What the results mean for the research question, limitations, next steps]
+[What the results mean for the research question, limitations, next steps]
 ```
 
-### Step 6.2: Update Project Files
+**Adapt the depth to the complexity of the analysis.** A descriptive analysis needs 2–3 paragraphs. A full regression comparison may need 5–6. Do not pad simple analyses with unnecessary sections.
 
-- Append key findings to `findings.md` (one line each).
-- Update `memory/MEMORY.md` if results feed into the broader research pipeline.
-- If this analysis feeds into `geo-experiment`, write results to `geo_benchmark/results/` in the expected JSON format.
+### 7.2 Interpretation Guardrails
 
----
-
-## Guardrails: Common Mistakes This Skill Prevents
-
-| Mistake | How this skill prevents it |
+| Guardrail | Rationale |
 |---|---|
-| Using lat/lon for distance calculations | Phase 1 Step 1.2 forces CRS check and projection |
-| Applying Moran's I without thoughtful weights choice | Phase 2 Step 2.3 requires explicit weights justification |
-| Interpreting raw count clusters as rate clusters | Route B guardrail: normalize by population at risk |
-| Running GWR/MGWR by default | Route A Step 3A.3 guardrail: require theoretical justification |
-| Ignoring MAUP | Phase 4 Step 4.3 includes scale sensitivity check |
-| Random CV on spatial data | Route C forces spatial block CV |
-| Reporting OLS when residuals are spatially autocorrelated | Route A decision tree forces spatial model if Moran's I significant |
-| Misleading map classification | Phase 2 Step 2.2 table guides classification choice |
-| Rainbow colormaps | Phase 5 Step 5.3 explicitly bans rainbow/jet |
-| Overclaiming causality from observational spatial data | Phase 0 Step 0.1 distinguishes explanation from causal inference |
-| Mixing incompatible spatial resolutions silently | Phase 1 Step 1.3 requires documenting resolution mismatch |
-| Treating significance as substantive importance | Phase 6 narrative requires effect size interpretation, not just p-values |
-| Overcomplicating when simple methods suffice | Phase 0 Step 0.3 checks whether spatial methods are even needed |
+| Report effect sizes, not just significance | p-values alone are uninformative about practical importance |
+| Never claim causality from cross-sectional observational data without explicit justification | Spatial association ≠ causation |
+| Acknowledge MAUP if results could depend on spatial scale | Results at county level may not hold at census tract level |
+| Note boundary effects for edge observations | Fewer neighbors = less reliable local statistics |
+| Distinguish statistical significance from substantive importance | A Moran's I of 0.02 with p < 0.01 is significant but trivially small |
 
 ---
 
-## Outputs
+## 8. Guardrails Summary
 
-- `spatial-analysis-outputs/question_classification.md` — Research question classification and method candidates
-- `spatial-analysis-outputs/analysis_report.md` — Full analysis narrative
-- `spatial-analysis-outputs/model_comparison.md` — Model comparison table (if regression)
-- `spatial-analysis-outputs/scripts/` — All Python scripts used (for reproducibility)
-- `spatial-analysis-outputs/figures/` — All maps and diagnostic plots
-- `findings.md` — One-line findings appended
-- `geo_benchmark/results/` — JSON results (if feeding into geo-experiment pipeline)
+These are mistakes this skill is designed to prevent. Claude Code should internalize these as hard constraints:
+
+| Mistake | Prevention |
+|---|---|
+| Using lat/lon for distance calculations | CRS guidelines require projection for any distance/area/density analysis |
+| Applying Moran's I without thoughtful weights choice | Weights selection guide requires explicit justification |
+| Interpreting raw count clusters as rate clusters | Clustering guidelines mandate normalizing by population at risk |
+| Running GWR/MGWR by default | Regression guidelines require theoretical justification |
+| Ignoring MAUP | Robustness guidelines include scale sensitivity |
+| Random CV on spatial data | Prediction guidelines mandate spatial CV |
+| Reporting OLS when residuals are spatially autocorrelated | Regression decision framework forces spatial model when Moran's I is significant |
+| Misleading map classification | ESDA guidelines match classification scheme to data distribution |
+| Rainbow/jet colormaps | Color scheme rules explicitly ban them |
+| Overclaiming causality | Objective mapping distinguishes explanation from causal inference |
+| Mixing incompatible spatial resolutions silently | Data integration guidelines require documenting resolution mismatch |
+| Overcomplicating when simple methods suffice | Question classification checks whether spatial methods are even needed |
 
 ---
 
-## Key Rules
+## 9. Outputs
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- `output/spatial-analysis/question_classification.md` — Research question classification and method candidates
+- `output/spatial-analysis/analysis_report.md` — Analysis narrative (depth proportional to complexity)
+- `output/spatial-analysis/model_comparison.md` — Model comparison table (if regression)
+- `output/spatial-analysis/scripts/` — Python scripts used (for reproducibility)
+- `output/spatial-analysis/figures/` — Maps and diagnostic plots
+- `output/FINDINGS.md` — One-line findings appended
+- `output/results/` — JSON results (if feeding into geo-experiment pipeline)
 
-- **Research question first.** Never start with a method. Start by classifying the question.
+---
+
+## 10. Key Principles
+
+- **Research question first.** Never start with a method. The question determines everything.
 - **Justify every method choice.** If you cannot explain why a method is needed for this question, do not use it.
-- **OLS before spatial models.** Always establish the non-spatial baseline.
-- **Document CRS decisions.** Every analysis must state which CRS was used and why.
 - **Parsimonious workflows.** If a choropleth and summary statistics answer the question, do not run MGWR.
-- **Honest interpretation.** Report effect sizes, not just significance. Acknowledge limitations. Never claim causality from cross-sectional observational data without explicit justification.
-- **Reproducibility.** Save all scripts to `spatial-analysis-outputs/scripts/`. Log all parameter choices.
-- **Do not fabricate results.** Only report numbers that came from executed code.
-- **Respect computational limits.** GWR maxes at ~5,000 observations; MGWR at ~3,000. Subsample with spatial stratification if needed.
+- **Adapt to the data.** The guidelines above are decision frameworks, not checklists. Skip what doesn't apply; go deeper where the data demands it.
+- **Honest interpretation.** Report what the analysis actually shows, including null results and limitations.
+- **Reproducibility.** Save scripts, log parameter choices, document CRS decisions.
+- **Do not fabricate results.** Only report numbers from executed code.
+- **Respect computational limits.** GWR ≤ 5,000 obs; MGWR ≤ 3,000. Subsample spatially if needed.
+- **Large file handling**: If the Write tool fails due to file size, retry using Bash (`cat << 'EOF' > file`). Do not ask permission — just do it.
 
-## Composing with Other Skills
+---
 
-This skill connects to the broader research pipeline:
+## 11. Composing with Other Skills
 
 ```
 /lit-review "spatial topic"       → literature context
@@ -705,7 +522,7 @@ This skill connects to the broader research pipeline:
 ```
 
 **Integration points:**
-- **From geo-experiment**: If `geo-experiment` runs OLS/GWR/MGWR via `geo_benchmark/run_benchmark.py`, this skill interprets those results. Read from `geo_benchmark/results/`.
-- **To paper-figure**: This skill produces draft figures in `spatial-analysis-outputs/figures/`. The `paper-figure` skill can polish them with cartographic conventions.
-- **To result-to-claim**: This skill's model comparison table feeds directly into claim validation.
-- **Knowledge base**: Read `skills/knowledge/spatial-methods.md` for code snippets, CRS reference table, and detailed method parameters.
+- **From geo-experiment**: If `geo-experiment` runs OLS/GWR/MGWR, this skill interprets those results. Read from `output/results/`.
+- **To paper-figure**: Draft figures in `output/spatial-analysis/figures/`. The `paper-figure` skill polishes them.
+- **To result-to-claim**: Model comparison table feeds directly into claim validation.
+- **Knowledge base**: Read `skills/knowledge/spatial-methods.md` for code snippets, CRS reference, and detailed method parameters.

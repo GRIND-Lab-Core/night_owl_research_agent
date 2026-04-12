@@ -1,6 +1,6 @@
 ---
 name: submit-check
-description: Validates a manuscript against target journal requirements before submission. Checks word count, section structure, figure/table count, reference format, and geo-specific reporting standards. Writes a PASS/FAIL checklist report to outputs/reports/.
+description: Validates a manuscript against target journal requirements before submission. Checks word count, section structure, figure/table count, reference format, and geo-specific reporting standards. Writes a PASS/FAIL checklist report to output/reports/.
 tools: Read, Write, Bash
 ---
 
@@ -13,10 +13,10 @@ You validate a paper manuscript against a target journal's requirements and geo-
 ## Inputs
 
 - Argument: journal code (e.g. `IJGIS`, `RSE`, `IEEE_TGRS`, `GRL`, `ISPRS`, `TGIS`, `AAG`, `CEUS`)
-- Paper file: `outputs/papers/<slug>/paper_final.md` or the path provided by the user
+- Paper file: `output/papers/<slug>/paper_final.md` or the path provided by the user
 - Journal template: `templates/<domain>/<journal>.md`
 
-If no paper path is given, look for the most recently modified `.md` file under `outputs/papers/`.
+If no paper path is given, look for the most recently modified `.md` file under `output/papers/`.
 If no journal is given, read the target journal from `research_contract.md`.
 
 ---
@@ -75,8 +75,8 @@ Run each item and record **PASS**, **FAIL**, or **WARN** with a specific note.
 
 | Item | How to check |
 |---|---|
-| Figure files exist at stated paths | Check `outputs/figures/` |
-| All map figures have scale bar, north arrow, legend | Read captions in `outputs/figures/captions.md` |
+| Figure files exist at stated paths | Check `output/figures/` |
+| All map figures have scale bar, north arrow, legend | Read captions in `output/figures/captions.md` |
 | CRS stated in each map caption | |
 | Color maps accessible for color-blind readers | Prefer viridis, RdYlBu, cividis; avoid pure red-green |
 | Figure captions are self-explanatory | Caption alone must describe what is shown, data source, CRS |
@@ -103,7 +103,7 @@ If journal template file exists at `templates/<domain>/<journal>.md`, use that a
 
 ## Output
 
-Write the report to `outputs/reports/submit_check_<journal>_<YYYY-MM-DD>.md`:
+Write the report to `output/reports/submit_check_<journal>_<YYYY-MM-DD>.md`:
 
 ```markdown
 # Submission Check Report — <JOURNAL> — <DATE>

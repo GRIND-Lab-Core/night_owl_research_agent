@@ -94,9 +94,9 @@ Output a structured novelty report:
 [How to frame the contribution to maximize novelty perception]
 ```
 
-**Write report to `novelty_report.md`**
+**Write report to `output/NOVELTY_REPORT.md`**
 
-**Update `idea_report.md` with verdict and score.**
+**Update `output/IDEA_REPORT.md` with verdict and score.**
 
 ### Important Rules
 - Be BRUTALLY honest — false novelty claims waste months of research time

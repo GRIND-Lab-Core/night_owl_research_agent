@@ -1,11 +1,11 @@
 ---
 name: auto-review-loop
-description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to outputs/review_state.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to outputs/AUTO_REVIEW.md.
+description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to output/REVIEW_STATE.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to output/AUTO_REVIEW.md.
 argument-hint: [topic-or-scope]
 tools: all
 flags:
   HUMAN_CHECKPOINT: true    # If true, pause after each round for user approval of fixes
-  COMPACT_MODE: false       # If true, use findings.md instead of full experiment logs
+  COMPACT_MODE: false       # If true, use output/FINDINGS.md instead of full experiment logs
   EXTERNAL_REVIEW: false    # If true, use MCP claude-review or gemini-review server
 ---
 
@@ -24,10 +24,10 @@ You run adversarial review cycles to iteratively improve research work. The arch
 ## Constants
 - MAX_ROUNDS = 4
 - POSITIVE_THRESHOLD: score >= 6/10, or verdict contains "accept", "sufficient", "ready for submission"
-- REVIEW_DOC: `auto_review.md` in project root (cumulative log)
+- REVIEW_DOC: `output/AUTO_REVIEW.md` in project root (cumulative log)
 - REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`)
 - **HUMAN_CHECKPOINT = false** — When `true`, pause after each round's review (Phase B) and present the score + weaknesses to the user. Wait for user input before proceeding to Phase C. The user can: approve the suggested fixes, provide custom modification instructions, skip specific fixes, or stop the loop early. When `false` (default), the loop runs fully autonomously.
-- **COMPACT = false** — When `true`, (1) read `experiment_log.md` and `findings.md` instead of parsing full logs on session recovery, (2) append key findings to `findings.md` after each round.
+- **COMPACT = false** — When `true`, (1) read `output/EXPERIMENT_LOG.md` and `output/FINDINGS.md` instead of parsing full logs on session recovery, (2) append key findings to `output/FINDINGS.md` after each round.
 - **REVIEWER_DIFFICULTY = medium** — Controls how adversarial the reviewer is. Three levels:
   - `medium` (default): Current behavior — MCP-based review, Claude controls what context GPT sees.
   - `hard`: Adds **Reviewer Memory** (GPT tracks its own suspicions across rounds) + **Debate Protocol** (Claude can rebut, GPT rules).
@@ -37,7 +37,7 @@ You run adversarial review cycles to iteratively improve research work. The arch
 
 ## State Persistence (Compact Recovery)
 
-Long-running loops may hit the context window limit, triggering automatic compaction. To survive this, persist state to `review_state.json` after each round:
+Long-running loops may hit the context window limit, triggering automatic compaction. To survive this, persist state to `output/REVIEW_STATE.json` after each round:
 
 ```json
 {
@@ -60,21 +60,21 @@ Long-running loops may hit the context window limit, triggering automatic compac
 
 ### Initialization
 
-1. **Check for `review_state.json`** in project root:
+1. **Check for `output/REVIEW_STATE.json`** in project root:
    - If it does not exist: **fresh start** (normal case, identical to behavior before this feature existed)
    - If it exists AND `status` is `"completed"`: **fresh start** (previous loop finished normally)
    - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **fresh start** (stale state from a killed/abandoned run — delete the file and start over)
    - If it exists AND `status` is `"in_progress"` AND `timestamp` is within 24 hours: **resume**
      - Read the state file to recover `round`, `threadId`, `last_score`, `pending_experiments`
-     - Read `auto_review.md` to restore full context of prior rounds
+     - Read `output/AUTO_REVIEW.md` to restore full context of prior rounds
      - If `pending_experiments` is non-empty, check if they have completed (e.g., check screen sessions)
      - Resume from the next round (round = saved round + 1)
      - Log: "Recovered from context compaction. Resuming at Round N."
-2. Read project narrative documents, memory files, and any prior review documents. **When `COMPACT = true` and compact files exist**: read `findings.md` + `experiment_log.md` instead of full `auto_review.md` and raw logs — saves context window.
+2. Read project narrative documents, memory files, and any prior review documents. **When `COMPACT = true` and compact files exist**: read `output/FINDINGS.md` + `output/EXPERIMENT_LOG.md` instead of full `output/AUTO_REVIEW.md` and raw logs — saves context window.
 3. Read recent experiment results (check output directories, logs)
 4. Identify current weaknesses and open TODOs from prior reviews
 5. Initialize round counter = 1 (unless recovered from state file)
-6. Create/update `auto_review.md` with header and timestamp
+6. Create/update `output/AUTO_REVIEW.md` with header and timestamp
 
 ### Loop (repeat up to MAX_ROUNDS)
 
@@ -118,7 +118,7 @@ mcp__codex__codex:
     [Round N/MAX_ROUNDS of autonomous review loop]
 
     ## Your Reviewer Memory (persistent across rounds)
-    [Paste full contents of REVIEWER_MEMORY.md here]
+    [Paste full contents of memory/REVIEWER_MEMORY.md here]
 
     IMPORTANT: You have memory from prior rounds. Check whether your
     previous suspicions were genuinely addressed or merely sidestepped.
@@ -148,7 +148,7 @@ You are an adversarial senior reviewer.
 This is Round N/MAX_ROUNDS of an autonomous review loop.
 
 ## Your Reviewer Memory (persistent across rounds)
-[Paste full contents of REVIEWER_MEMORY.md]
+[Paste full contents of memory/REVIEWER_MEMORY.md]
 
 ## Instructions
 You have FULL READ ACCESS to this repository. The author (Claude) does NOT
@@ -160,7 +160,7 @@ DO THE FOLLOWING:
 2. Verify that reported numbers match what's actually in the output files
 3. Check if evaluation metrics are computed correctly (ground truth, not model output)
 4. Look for cherry-picked results, missing ablations, or suspicious hyperparameter choices
-5. Read NARRATIVE_REPORT.md or AUTO_REVIEW.md for the author's claims — then verify each against code
+5. Read output/NARRATIVE_REPORT.md or output/AUTO_REVIEW.md for the author's claims — then verify each against code
 
 OUTPUT FORMAT:
 - Score: X/10
@@ -192,7 +192,7 @@ Then extract structured fields:
 
 **Skip entirely if `REVIEWER_DIFFICULTY = medium`.**
 
-After parsing the assessment, update `REVIEWER_MEMORY.md` in the project root:
+After parsing the assessment, update `memory/REVIEWER_MEMORY.md` in the project root:
 
 ```markdown
 # Reviewer Memory
@@ -283,7 +283,7 @@ PROMPT
 - OVERRULED: keep as-is
 - PARTIALLY SUSTAINED: revise scope
 
-Append the full debate transcript to `AUTO_REVIEW.md` under the round's entry.
+Append the full debate transcript to `output/AUTO_REVIEW.md` under the round's entry.
 
 #### Human Checkpoint (if enabled)
 
@@ -343,7 +343,7 @@ If experiments were launched:
 
 #### Phase E: Document Round
 
-Append to `AUTO_REVIEW.md`:
+Append to `output/AUTO_REVIEW.md`:
 
 ```markdown
 ## Round N (timestamp)
@@ -389,9 +389,9 @@ This is the authoritative record. Do NOT truncate or paraphrase.]
 - Difficulty: [medium/hard/nightmare]
 ```
 
-**Write `REVIEW_STATE.json`** with current round, threadId, score, verdict, and any pending experiments.
+**Write `output/REVIEW_STATE.json`** with current round, threadId, score, verdict, and any pending experiments.
 
-**Append to `findings.md`** (when `COMPACT = true`): one-line entry per key finding this round:
+**Append to `output/FINDINGS.md`** (when `COMPACT = true`): one-line entry per key finding this round:
 
 ```markdown
 - [Round N] [positive/negative/unexpected]: [one-sentence finding] (metric: X.XX → Y.YY)
@@ -403,11 +403,11 @@ Increment round counter → back to Phase A.
 
 When loop ends (positive assessment or max rounds):
 
-1. Update `REVIEW_STATE.json` with `"status": "completed"`
-2. Write final summary to `AUTO_REVIEW.md`
+1. Update `output/REVIEW_STATE.json` with `"status": "completed"`
+2. Write final summary to `output/AUTO_REVIEW.md`
 3. Update project notes with conclusions
-4. **Write method/pipeline description** to `AUTO_REVIEW.md` under a `## Method Description` section — a concise 1-2 paragraph description of the final method, its architecture, and data flow. This serves as input for `/paper-illustration` in Workflow 3 (so it can generate architecture diagrams automatically).
-5. **Generate claims from results** — invoke `/result-to-claim` to convert experiment results from `AUTO_REVIEW.md` into structured paper claims. Output: `claims_from_results.md`. This bridges Workflow 2 → Workflow 3 so `/paper-plan` can directly use validated claims instead of extracting them from scratch. If `/result-to-claim` is not available, skip silently.
+4. **Write method/pipeline description** to `output/AUTO_REVIEW.md` under a `## Method Description` section — a concise 1-2 paragraph description of the final method, its architecture, and data flow. This serves as input for `/paper-illustration` in Workflow 3 (so it can generate architecture diagrams automatically).
+5. **Generate claims from results** — invoke `/result-to-claim` to convert experiment results from `output/AUTO_REVIEW.md` into structured paper claims. Output: `output/CLAIMS_FROM_RESULTS.md`. This bridges Workflow 2 → Workflow 3 so `/paper-plan` can directly use validated claims instead of extracting them from scratch. If `/result-to-claim` is not available, skip silently.
 6. If stopped at max rounds without positive assessment:
    - List remaining blockers
    - Estimate effort needed for each
@@ -480,11 +480,11 @@ If you are currently acting as a writer and are asked to evaluate, refuse and re
 ## Startup: Initialize or Resume
 
 1. Check if `handoff.json` exists — read it first for pipeline state (fast context recovery)
-2. Check if `outputs/REVIEW_STATE.json` exists:
+2. Check if `output/REVIEW_STATE.json` exists:
    - If yes: read current round number, score, per-criterion scores, and pending_fixes. Resume from next phase.
-   - If no: initialize `outputs/REVIEW_STATE.json` with round=0, per_criterion={}, status="in_progress"
-3. Check if `outputs/AUTO_REVIEW.md` exists; if not, create it with header
-4. Identify what to review: read `outputs/papers/` for sections, or `EXPERIMENT_LOG.md` for experiment results
+   - If no: initialize `output/REVIEW_STATE.json` with round=0, per_criterion={}, status="in_progress"
+3. Check if `output/AUTO_REVIEW.md` exists; if not, create it with header
+4. Identify what to review: read `output/papers/` for sections, or `output/EXPERIMENT_LOG.md` for experiment results
 
 ---
 
@@ -536,12 +536,12 @@ For each round (while round < 4 AND NOT all_floors_met AND weighted_avg < 7.5):
 
 Build the review context (**evaluator does NOT read generator's working notes**):
 - Current work: the specific section file(s) being reviewed
-- Previous round scores: last entry from `outputs/AUTO_REVIEW.md` (scores only, not writer's reasoning)
+- Previous round scores: last entry from `output/AUTO_REVIEW.md` (scores only, not writer's reasoning)
 - Research contract: `research_contract.md` (ground truth for what was promised)
-- Approved claims: `memory/approved_claims.md` (to check if claims are grounded)
+- Approved claims: `memory/APPROVED_CLAIMS.md` (to check if claims are grounded)
 
-COMPACT_MODE: use `findings.md` + latest section files only (not full EXPERIMENT_LOG).
-Full context: read section files + `memory/approved_claims.md`.
+COMPACT_MODE: use `output/FINDINGS.md` + latest section files only (not full EXPERIMENT_LOG).
+Full context: read section files + `memory/APPROVED_CLAIMS.md`.
 
 **Do NOT include**: writer's draft notes, prior writer context, or any information that blurs generator/evaluator separation.
 
@@ -589,11 +589,11 @@ Parse the reviewer response to extract per-criterion scores and floors.
 **FORCE STOP if:**
 - round == 4 (max rounds reached, even if not accepted)
 
-On ACCEPT: write to `outputs/AUTO_REVIEW.md`: `STOP — accepted at round N, score X.X/10, all floors met`
-Update `outputs/REVIEW_STATE.json`: `{"status": "complete", "final_score": X.X, "all_floors_met": true}`
+On ACCEPT: write to `output/AUTO_REVIEW.md`: `STOP — accepted at round N, score X.X/10, all floors met`
+Update `output/REVIEW_STATE.json`: `{"status": "complete", "final_score": X.X, "all_floors_met": true}`
 
-On FORCE STOP: write to `outputs/AUTO_REVIEW.md`: `STOP — max rounds reached, score X.X/10 — human review required`
-Update `outputs/REVIEW_STATE.json`: `{"status": "max_rounds", "final_score": X.X}`
+On FORCE STOP: write to `output/AUTO_REVIEW.md`: `STOP — max rounds reached, score X.X/10 — human review required`
+Update `output/REVIEW_STATE.json`: `{"status": "max_rounds", "final_score": X.X}`
 
 ### Round Step 4: Implement Fixes (Generator)
 
@@ -601,7 +601,7 @@ Focus only on dimensions that failed their floor or are below 7.5.
 
 For each must-fix item, route to the appropriate generator:
 - **Write more content / restructure**: call `.claude/agents/paper-writer.md` with section + specific reviewer feedback + calibration target
-- **Run new experiment or ablation**: add to `EXPERIMENT_PLAN.md` and run skill `geo-experiment` EXECUTE mode
+- **Run new experiment or ablation**: add to `output/EXPERIMENT_PLAN.md` and run skill `geo-experiment` EXECUTE mode
 - **Fix spatial analysis**: run skill `spatial-analysis` for re-interpretation and Moran's I
 - **Add or fix citations**: call `.claude/agents/citation-manager.md` with APA 7th edition format
 - **Fix figures**: run skill `paper-figure` with corrected cartographic conventions
@@ -612,7 +612,7 @@ After implementing fixes, re-evaluate only the fixed dimensions (not all five) t
 
 ### Round Step 5: Persist State
 
-Write to `outputs/REVIEW_STATE.json`:
+Write to `output/REVIEW_STATE.json`:
 ```json
 {
   "round": <N>,
@@ -633,7 +633,7 @@ Write to `outputs/REVIEW_STATE.json`:
 }
 ```
 
-Append to `outputs/AUTO_REVIEW.md`:
+Append to `output/AUTO_REVIEW.md`:
 ```markdown
 ## Round N — Weighted avg: X.X/10 — <timestamp>
 
@@ -677,8 +677,8 @@ Key improvements made:
 - [improvement 1]
 - [improvement 2]
 
-Full history: outputs/AUTO_REVIEW.md
-State file: outputs/REVIEW_STATE.json
+Full history: output/AUTO_REVIEW.md
+State file: output/REVIEW_STATE.json
 
 [If not accepted]: The following dimensions are below floor — do not proceed to final submission:
   - [Dimension]: X.X (floor Y.Y) — [specific remaining issue]

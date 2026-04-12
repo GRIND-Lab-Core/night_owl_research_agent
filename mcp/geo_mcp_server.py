@@ -1,5 +1,5 @@
 """
-GeoResearchAgent-247 Custom MCP Server
+NORA Custom MCP Server
 Provides geo-specific tools: GADM boundaries, OSM data, Census access, GEE queries.
 
 This implements the Model Context Protocol (MCP) server spec.

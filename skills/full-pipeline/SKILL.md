@@ -4,7 +4,7 @@ description: Complete 5-stage research pipeline. Runs: idea discovery → experi
 tools: all
 argument-hint: [coarse-research-idea]
 flags:
-  COMPACT_MODE: false       # If true, read findings.md instead of full logs to save context
+  COMPACT_MODE: false       # If true, read output/FINDINGS.md instead of full logs to save context
 ---
 
 # Skill: full-pipeline
@@ -26,9 +26,9 @@ End-to-end research pipeline for $ARGUMENTS. You are the pipeline conductor — 
 ## Startup: Check & Resume
 
 1. Read `memory/MEMORY.md` for current pipeline stage.
-2. Read `outputs/review_state.json` if it exists — resume from saved round.
+2. Read `output/REVIEW_STATE.json` if it exists — resume from saved round.
 3. Read `research_plan.md` if it exists; otherwise read `program.md`.
-4. Read `findings.md` (compact) if COMPACT_MODE is true; read full `EXPERIMENT_LOG.md` otherwise.
+4. Read `output/FINDINGS.md` (compact) if COMPACT_MODE is true; read full `output/EXPERIMENT_LOG.md` otherwise.
 5. Display current pipeline position and confirm with user before proceeding.
 
 ---
@@ -48,7 +48,7 @@ Invoke the idea discovery pipeline:
 
 This internally runs: `/lit-review` → `/generate-idea` → `/novelty-check` → `/research-review`
 
-**Output:** `idea_report.md` with ranked, validated, pilot-tested ideas. (see template at `templates/IDEA_CANDIDATES_TEMPLATE.md`).
+**Output:** `output/IDEA_REPORT.md` with ranked, validated, pilot-tested ideas. (see template at `templates/IDEA_CANDIDATES_TEMPLATE.md`).
 
 **Gate 1**: If AUTO_PROCEED is false, stop here and present the top ideas to the user.
 
@@ -67,7 +67,7 @@ Recommended: Idea 1. Shall I proceed with implementation?
 - **Pick a different idea** → proceed with their choice.
 - **Request changes** (e.g., "combine Idea 1 and 3", "focus more on X") → update the idea prompt with user feedback, re-run `/idea-discovery` with refined constraints, and present again.
 - **Reject all ideas** → collect feedback on what's missing, re-run Stage 1 with adjusted research direction. Repeat until the user commits to an idea.
-- **Stop here** → save current state to `idea_report.md` for future reference.
+- **Stop here** → save current state to `output/IDEA_REPORT.md` for future reference.
 
 **If AUTO_PROCEED=true:** Present the top ideas, wait 10 seconds for user input. If no response, auto-select the #1 ranked idea (highest pilot signal + novelty confirmed) and proceed to Stage 2. Log: `"AUTO_PROCEED: selected Idea 1 — [title]"`.
 
@@ -101,7 +101,7 @@ Update `memory/MEMORY.md`
    - Are results saved to JSON/CSV for later analysis?
    - Is there proper logging for debugging?
 4. Run a sanity-check experiment: smallest dataset, fastest model. Auto-debug up to 3 times if it errors.
-5. Produce `experiment_plan.md` (template: `templates/EXPERIMENT_PLAN_TEMPLATE.md`).
+5. Produce `output/EXPERIMENT_PLAN.md` (template: `templates/EXPERIMENT_PLAN_TEMPLATE.md`).
 
 **Gate 2** (if HUMAN_CHECKPOINT is true): Show experiment plan to user before deploying full suite.
 
@@ -114,10 +114,10 @@ Update `memory/MEMORY.md`
 **Goal**: Run all experiments and collect results.
 
 **Steps**:
-1. Run skill `deploy-experiment` in EXECUTE mode — dispatch all experiments from `experiment_plan.md`.
+1. Run skill `deploy-experiment` in EXECUTE mode — dispatch all experiments from `output/EXPERIMENT_PLAN.md`.
 2. Periodically (every 15 min) run skill `monitor-progress` to monitor progress.
 3. Wait for experiments to complete and collect results.
-5. Update `experiment_log.md` (append results). Write discoveries to `findings.md`.
+5. Update `output/EXPERIMENT_LOG.md` (append results). Write discoveries to `output/FINDINGS.md`.
 
 Update `memory/MEMORY.md`
 
@@ -139,7 +139,7 @@ This handles all review rounds internally. What it does:
 3. Deploy fixes, collect new results
 4. Re-review → repeat until score ≥ 6/10 or 4 rounds reached
 
-After review loop completes, read final score from `outputs/review_states.json`.
+After review loop completes, read final score from `output/REVIEW_STATE.json`.
 
 **If score ≥ 7.5**: Proceed to paper writing.
 **If score 6–7.4**: Proceed to paper writing with noted limitations.
@@ -184,9 +184,9 @@ Update `memory/MEMORY.md`
 ## Recovery Instructions
 
 If context overflows mid-pipeline:
-1. Read `outputs/review_states.json` to find current stage/round.
+1. Read `output/REVIEW_STATE.json` to find current stage/round.
 2. Read `memory/MEMORY.md` for pipeline state flags.
-3. Read `findings.md` for compact discovery summary (COMPACT_MODE).
+3. Read `output/FINDINGS.md` for compact discovery summary (COMPACT_MODE).
 4. Resume from the interrupted stage — do NOT re-run completed stages.
 
 

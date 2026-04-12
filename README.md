@@ -1,4 +1,4 @@
-# GeoResearchAgent-247
+# NORA (Night Owl Research Agent)
 
 > A fully automatic, domain-aware AI research agent for Geoscientists, Remote Sensing researchers, and GIScientists.
 
@@ -6,19 +6,16 @@
 
 ## What It Does
 
-GeoResearchAgent-247 automates the complete academic research lifecycle:
+NORA automates the complete academic research lifecycle using **Claude Code skills** — Markdown-defined workflows that Claude reads and executes, selecting appropriate tools and methods based on context.
 
 1. **Literature review** — searches ArXiv, Semantic Scholar, Google Scholar, Zotero, and Obsidian for relevant papers; synthesizes findings and identifies research gaps
-2. **Idea discovery** — generates 8-12 research ideas from literature gaps, validates novelty via multi-source search + GPT-5.4, and pilot-tests top candidates on GPU
-3. **Method refinement** — iteratively refines vague research directions into problem-anchored, elegant, implementation-ready proposals via adversarial GPT-5.4 review
+2. **Idea discovery** — generates 8-12 research ideas from literature gaps, validates novelty via multi-source search, and pilot-tests top candidates
+3. **Method refinement** — iteratively refines vague research directions into problem-anchored, implementation-ready proposals via adversarial review
 4. **Experiment design & execution** — produces claim-driven experiment roadmaps and deploys to local, remote SSH, or Modal serverless GPU
 5. **Data acquisition** — discovers, evaluates, downloads, validates, and documents datasets from government portals, APIs, cloud archives, and open repositories
-6. **Spatial analysis** — research-question-driven workflows: classifies analytical objectives, selects appropriate methods (OLS → spatial regression → GWR/MGWR), runs diagnostics, and writes interpretation
+6. **Spatial analysis** — guideline-driven spatial analysis: classifies analytical objectives, provides decision frameworks for method selection, and adapts to available data
 7. **Paper writing** — drafts full academic papers using journal-specific templates (IJGIS, IEEE TGRS, GRL, RSE, and more) with iterative scoring loops
-8. **Adversarial review** — up to 4 rounds of generator-evaluator-separated review with per-criterion hard floors, optional debate protocol, and optional GPT repo-level verification
-9. **Spatial benchmarking** — provides a ready-to-run benchmark suite (geo_benchmark) with OLS, GWR, and MGWR baselines
-10. **Memory management** — three-layer memory (working / session / long-term) persists research knowledge across agents and sessions, with token-aware retrieval and automatic pruning
-11. **Token optimization** — eight complementary techniques (prompt compression, response caching, tiered model routing, context windowing, dynamic max_tokens, abstract truncation, context budgeting, session ledger) reduce API costs by 40–70%
+8. **Adversarial review** — up to 4 rounds of generator-evaluator-separated review with per-criterion hard floors
 
 ---
 
@@ -26,46 +23,10 @@ GeoResearchAgent-247 automates the complete academic research lifecycle:
 
 ### Prerequisites
 
-```bash
-pip install -r requirements.txt
-```
+- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`) or Claude Code desktop/web app
+- Anthropic API key (for API-based tools like ArXiv/Semantic Scholar search)
 
-Required:
-- Python ≥ 3.11
-- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`)
-- Anthropic API key (`export ANTHROPIC_API_KEY=your_key`)
-- Optional: OpenAI API key for Codex workers (`export OPENAI_API_KEY=your_key`)
-
-### Run Full Automatic Research
-
-```bash
-# Full overnight research loop (literature → experiments → paper)
-python core/orchestrator.py --config configs/full_auto.yaml --topic "Spatial non-stationarity in urban heat island effects"
-
-# Quick single-pass draft (~10 minutes)
-python core/orchestrator.py --config configs/quick_mode.yaml --topic "GWR vs MGWR for house price prediction"
-
-# Claude as orchestrator, Codex as coding workers
-python core/orchestrator.py --config configs/codex_hybrid.yaml --topic "Deep learning for SAR flood mapping"
-```
-
-### Run Individual Agent Functions
-
-```bash
-# Literature review only
-python agents/literature_agent.py --topic "Geographically Weighted Regression" --output lit_review.md
-
-# Run geo_benchmark only
-python geo_benchmark/run_benchmark.py --dataset california_housing --models ols,gwr,mgwr
-
-# Generate paper from existing results
-python agents/writing_agent.py --results results/experiment.json --template templates/giscience/ijgis.md
-
-# Simulated peer review
-python agents/review_agent.py --paper draft.md --journal IJGIS
-```
-
-### Use Claude Code Skills (Slash Commands)
+### Getting Started
 
 Open this folder in Claude Code and use the interactive launcher:
 
@@ -73,7 +34,7 @@ Open this folder in Claude Code and use the interactive launcher:
 /launcher
 ```
 
-The launcher walks you through two choices — **backend** (API or Claude Code subscription) and **task** — then routes to the correct skill automatically.
+The launcher walks you through choosing a task and routes to the correct skill automatically.
 
 Or invoke skills directly:
 
@@ -82,90 +43,79 @@ Or invoke skills directly:
 /find-gaps "soundscape urban imagery"       — discover and score research ideas
 /lit-review "GWR urban heat island"         — full literature review pipeline
 /geo-search "spatial heterogeneity"         — targeted literature search
-/refine-research "problem | approach"       — iterative method refinement via GPT-5.4 review
+/refine-research "problem | approach"       — iterative method refinement
 /data-download "US census tracts 2020"      — discover, download, validate, and document datasets
-/spatial-analysis "research question"       — research-question-driven spatial analysis workflow
+/spatial-analysis "research question"       — guideline-driven spatial analysis
 /deploy-experiment                          — deploy experiments to local/remote/Modal GPU
-/review-draft outputs/papers/methodology.md — adversarial peer-review loop
+/review-draft output/papers/methodology.md — adversarial peer-review loop
 /write-section results                      — write one paper section
 /submit-check IJGIS                         — validate manuscript against journal requirements
 ```
 
 ---
 
-## Modes of Operation
+## Architecture
 
-### Mode 1: Full Auto (Overnight Research)
+NORA is a **skills-first** system. All research logic lives in Markdown skill files that Claude reads and executes.
 
-The agent runs autonomously from topic to paper. Recommended for new research directions.
-
-```bash
-python core/orchestrator.py --config configs/full_auto.yaml \
-  --topic "Multiscale spatial analysis of PM2.5 and respiratory health" \
-  --journal RSE \
-  --output-dir output/pm25_study/
+```
+User (or /slash command)
+    ↓ invokes
+Skill (skills/<name>/SKILL.md)  ←── reads domain knowledge from skills/knowledge/
+    ↓ Claude decides what to do
+CLI tools (tools/arxiv_fetch.py, etc.)  ←── lightweight utilities
+    ↓ produce
+Output files (reports, figures, paper sections)
+    ↓ read by
+Next skill in pipeline
 ```
 
-This will:
-1. Search literature (ArXiv + Semantic Scholar, top 30 papers)
-2. Identify 3 novel hypotheses
-3. Design experiments for each
-4. Download relevant open datasets via geo_benchmark
-5. Execute Python code (sandboxed)
-6. Write the paper using the RSE template
-7. Run simulated peer review
-8. Revise and produce final PDF
-
-**Estimated runtime:** 2–6 hours depending on complexity.
+Skills describe workflow logic in Markdown. Claude reads a skill to understand the workflow, then decides the exact sequence of actions based on context — the skill provides guidelines and decision frameworks, not rigid procedures.
 
 ---
 
-### Mode 2: Claude Code Only
+## Skills
 
-All coding tasks handled by Claude Code directly.
+**19 skills** in `skills/`. Each skill is a self-contained Markdown workflow file.
 
-```bash
-python core/orchestrator.py --backend claude-only --topic "..."
-```
+### Workflow Skills
 
----
+| Skill | Invoke | What it does |
+|---|---|---|
+| `full-pipeline` | `/full-pipeline` | 5-stage master pipeline: idea discovery → experiment design → execution → review → report |
+| `lit-review` | `/lit-review <topic>` | Search + synthesize + gap analysis (ArXiv, Semantic Scholar, Zotero, Obsidian) |
+| `idea-discovery` | `/find-gaps <topic>` | Full idea pipeline: lit-review → generate-idea → novelty-check → research-review → experiment-design |
+| `generate-idea` | (called by idea-discovery) | Brainstorm 8-12 ideas, filter, pilot-test top 3, rank |
+| `novelty-check` | (called by idea-discovery) | Verify idea is genuinely new via multi-source search |
+| `idea-review` | (called by idea-discovery) | External critical review of research ideas |
+| `refine-research` | `/refine-research` | Iterative method refinement (up to 5 rounds, score ≥ 9 target) |
+| `experiment-design` | `/experiment-design` | Claim-driven experiment roadmap with run order, budget, decision gates |
+| `experiment-design-pipeline` | (called by idea-discovery) | One-shot wrapper: refine-research → experiment-design |
+| `deploy-experiment` | `/deploy-experiment` | Deploy experiments to local/remote/Modal GPU |
+| `data-download` | `/data-download` | Discover, evaluate, download datasets with provenance tracking |
+| `spatial-analysis` | `/spatial-analysis` | Guideline-driven spatial analysis: question classification → method selection → diagnostics → interpretation |
+| `result-to-claim` | (called before paper-write) | Verify claims against actual results (safety gate) |
+| `auto-review-loop` | `/review-draft <file>` | Up to 4 adversarial review rounds with per-criterion floors |
+| `paper-plan` | (called before paper-write) | Build section outline + figure plan |
+| `paper-write` | `/write-section <name>` | Write section with iterative scoring loop |
+| `paper-figure` | `/geo-plot` | Generate spatial figures and captions with cartographic conventions |
+| `submit-check` | `/submit-check` | Validate manuscript against journal requirements |
+| `training-check` | (called by full-pipeline Stage 3) | Monitor running experiments for stalls/failures |
 
-### Mode 3: Claude as Orchestrator + Codex Workers
+### Domain Knowledge
 
-Claude handles planning, writing, and review. Codex (GPT-4o-mini or o1) handles parallel coding tasks. Useful for experiment-heavy work.
+Skills read from `skills/knowledge/` for reference material:
 
-```bash
-python core/orchestrator.py --config configs/codex_hybrid.yaml --topic "..."
-```
-
-Configuration in `configs/codex_hybrid.yaml`:
-```yaml
-backend:
-  orchestrator: claude-sonnet-4-6
-  coding_workers:
-    provider: openai
-    model: gpt-4o-mini
-    max_workers: 4
-    task_types: [code_generation, data_analysis, plotting]
-```
-
-This mode spawns up to 4 parallel Codex workers for coding subtasks while Claude maintains research coherence.
-
----
-
-### Mode 4: Partial Agent Functions
-
-Use individual components without running the full loop:
-
-```bash
-# Flags to include/exclude specific agents
-python core/orchestrator.py --agents literature,writing --skip experiment,review
-
-# Available agent flags:
-# literature, experiment, writing, review, geo_specialist, codex_worker
-```
-
-Or call agents directly (see scripts above).
+| File | Domain |
+|---|---|
+| `spatial-methods.md` | Spatial statistics, regression, autocorrelation |
+| `geoai-domain.md` | GeoAI, spatial deep learning, foundation models |
+| `academic-writing.md` | Academic writing conventions |
+| `apa-citations.md` | APA 7th edition citation formatting |
+| `disaster-resilience.md` | Disaster management, community resilience |
+| `environmental-health.md` | Environmental epidemiology, exposure assessment |
+| `literature-mining.md` | Literature search and synthesis strategies |
+| `research-iteration.md` | Iterative research refinement patterns |
 
 ---
 
@@ -178,277 +128,39 @@ The agent uses **Claude Code's hook system** for automated lifecycle management.
 | Hook | When | What It Does |
 |------|------|--------------|
 | `PreToolUse` | Before Bash/Write | Validates paths, blocks dangerous commands, logs intent |
-| `PostToolUse` | After tool execution | Updates `experiment_state.json`, caches results |
+| `PostToolUse` | After tool execution | Updates state, caches results |
 | `Stop` | Agent session ends | Saves checkpoint, generates summary, sends notification |
 | `Notification` | Long tasks finish | Desktop alert via `notify-send` or macOS `osascript` |
 
-### Configuring Hooks
-
-Edit `settings.json` to customize hook behavior:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "bash harness/hooks/pre_tool_use.sh"}]}],
-    "PostToolUse": [{"matcher": "Write", "hooks": [{"type": "command", "command": "bash harness/hooks/post_tool_use.sh"}]}],
-    "Stop": [{"hooks": [{"type": "command", "command": "bash harness/hooks/stop_hook.sh"}]}]
-  }
-}
-```
-
-### Custom Skills
-
-Skills are slash commands invoked inside a Claude Code session. Defined in `.claude/commands/` and implemented by `skills/<name>/SKILL.md`.
-
-| Command | What it does |
-|---|---|
-| `/launcher` | Interactive entry point — choose backend and task |
-| `/full-pipeline` | 5-stage autonomous pipeline: idea discovery → experiment design → execution → review → report |
-| `/find-gaps <topic>` | Full idea pipeline: literature → idea generation → novelty check → review → experiment plan |
-| `/lit-review <topic>` | Search + synthesize + gap analysis (ArXiv, Semantic Scholar, Zotero, Obsidian, local PDFs) |
-| `/geo-search <topic>` | Targeted ArXiv + Semantic Scholar search |
-| `/refine-research` | Iterative method refinement via GPT-5.4 review (up to 5 rounds, score ≥ 9 target) |
-| `/data-download` | Discover, evaluate, and download datasets from the internet with provenance tracking |
-| `/spatial-analysis` | Research-question-driven spatial analysis: ESDA → method selection → diagnostics → interpretation |
-| `/deploy-experiment` | Deploy experiments to local, remote SSH, or Modal serverless GPU |
-| `/write-section <name>` | Write one paper section with iterative scoring loop |
-| `/review-draft <file>` | Adversarial review loop (up to 4 rounds, generator-evaluator separation) |
-| `/submit-check <journal>` | Validate manuscript against journal requirements before submission |
-
-**19 skills** total in `skills/`. Review loop outputs are written to `outputs/AUTO_REVIEW.md` and `outputs/REVIEW_STATE.json`.
-
 ---
 
-## Memory Management
+## Autoresearch Scoring Loop
 
-GeoResearchAgent-247 includes a three-layer memory system (`core/memory_manager.py`) that persists research knowledge across agent stages and sessions.
-
-### Memory Layers
-
-| Layer | Scope | Storage | Purpose |
-|-------|-------|---------|---------|
-| **Working memory** | Current process | In-process dict | Fast inter-agent data sharing within one run |
-| **Session memory** | Current run | `.checkpoints/{run_id}_memory.json` | Resume interrupted runs; carry stage outputs forward |
-| **Long-term memory** | All runs | `.memory/long_term.json` | Reuse literature summaries, remember failed hypotheses, track review decisions across topics |
-
-### Key Capabilities
-
-- **Token-aware retrieval** — `build_context(keys, token_budget=3000)` ranks entries by priority and recency, dropping lowest-priority items when the budget is exhausted
-- **Keyword search** — `search_long_term(query)` finds relevant past entries without a vector database
-- **Automatic pruning** — when the long-term store exceeds `lt_max_entries` (default 200) or `lt_token_budget` (default 32,000 tokens), lowest-priority entries are evicted
-- **Priority system** — agents assign priorities (e.g., `literature=1.8`, `draft=1.5`); review decisions and failed hypotheses are stored with lower priority so they persist without crowding working context
-
-### Usage in Code
-
-```python
-from core.memory_manager import MemoryManager
-
-mm = MemoryManager(run_id="run_20260331_143000")
-
-# Store a result with auto-generated summary
-mm.store("literature", result, priority=1.8, tags=["giscience"])
-
-# Build a token-bounded context string for a prompt
-context = mm.build_context(["literature", "geo_context"], token_budget=2000)
-
-# Save a plain-text fact to long-term memory
-mm.remember("mgwr_diverged_small_n", "MGWR failed to converge on n<100 datasets", priority=1.0)
-
-# Search long-term memory by keyword
-relevant = mm.search_long_term("GWR bandwidth selection", token_budget=800)
-
-# Flush to disk
-mm.persist()
-
-# Token usage report
-print(mm.token_usage_report())
-# → {"working_tokens": 412, "session_tokens": 1840, "long_term_tokens": 5200, "long_term_entries": 47}
-```
-
-### Memory Files
+Every paper section uses this loop:
 
 ```
-.checkpoints/
-└── run_20260331_143000_memory.json   ← per-run session memory
-.memory/
-└── long_term.json                    ← shared across all runs
-output/run_20260331_143000/
-└── memory_report.json                ← end-of-run stats
+paper-writer writes draft
+    ↓
+peer-reviewer scores it (separate context — generator-evaluator separation)
+    ↓
+All 5 dimension floors met AND weighted avg ≥ 7.5? → ACCEPT
+    ↓ (else)
+paper-writer revises (max 3 attempts total)
+    ↓
+If still not accepted after 3 attempts → flag for human review
 ```
 
----
+**The writer does NOT score its own work.** Always uses `peer-reviewer` as evaluator.
 
-## Token Optimization
+| Dimension | Weight | Hard floor |
+|---|---|---|
+| Novelty | 30% | ≥ 6.5 |
+| Rigor | 25% | ≥ 7.0 |
+| Literature coverage | 20% | ≥ 6.5 |
+| Clarity | 15% | ≥ 6.0 |
+| Impact | 10% | ≥ 6.0 |
 
-GeoResearchAgent-247 applies eight complementary techniques to minimize Anthropic API token usage without sacrificing output quality. All techniques are configurable in `configs/*.yaml` under the `token_optimizer` key.
-
-### Techniques
-
-#### 1. Token Counting Before Dispatch
-Every prompt is estimated (1 token ≈ 4 chars) before the API call. Prompts that would exceed the context window are rejected early with a clear error, preventing wasted spend on truncated responses.
-
-#### 2. Prompt Compression
-`compress_prompt()` in `core/token_optimizer.py` runs before every API call:
-- Collapses 3+ consecutive blank lines → 2
-- Strips trailing whitespace per line
-- Removes HTML comments (`<!-- ... -->`)
-- Collapses repeated inline spaces
-
-Typical savings: **5–15%** of input tokens with no semantic loss.
-
-#### 3. Tiered Model Routing
-`select_model()` routes each call to the cheapest model that can handle it, based on estimated input token count and declared task complexity:
-
-| Input size | Complexity flag | Model selected |
-|-----------|-----------------|----------------|
-| < 800 tokens | `simple` | `claude-haiku-4-5` (~20× cheaper than Opus) |
-| 800–6,000 tokens | `default` | `claude-sonnet-4-6` (configured default) |
-| > 6,000 tokens | `complex` | `claude-opus-4-6` |
-
-Query generation, JSON extraction, and result analysis are automatically routed to Haiku. Literature synthesis and paper revision use Sonnet/Opus.
-
-#### 4. Response Caching
-`ResponseCache` stores API responses on disk, keyed by SHA-256 hash of `(model, system_prompt, user_prompt)`. On repeated runs (e.g., re-running after a crash, or re-reviewing the same draft), identical prompts return instantly at zero cost.
-
-```yaml
-token_optimizer:
-  response_caching: true
-  cache_dir: .cache/responses
-```
-
-Cache hit/miss statistics are written to `output/{run_id}/memory_report.json`.
-
-#### 5. Abstract & Field Truncation
-Literature abstracts are hard-truncated to `abstract_token_budget` (default 80 tokens / ~320 chars) at fetch time — before they are assembled into synthesis prompts. This prevents a single long abstract from crowding out other papers in the context window.
-
-```yaml
-token_optimizer:
-  abstract_token_budget: 80   # tokens per paper abstract
-```
-
-#### 6. Context Windowing
-`build_windowed_prompt(sections, token_budget)` assembles multi-section prompts within a strict token ceiling. Sections are ranked by a relevance score; lower-ranked sections are dropped (not truncated mid-sentence) when the budget is exhausted.
-
-```python
-# Example: writing agent section generation
-build_windowed_prompt(
-    sections=[
-        ("Topic", topic, 2.0),           # highest priority — always included
-        ("Results Summary", results, 1.2), # dropped first if budget is tight
-        ("Section Guidance", guide, 1.8),
-    ],
-    token_budget=3000,
-)
-```
-
-#### 7. Dynamic `max_tokens` per Task
-Rather than using a single blanket `max_tokens=4096` ceiling, each task type has a calibrated output budget:
-
-| Task type | `max_tokens` |
-|-----------|-------------|
-| `query_generation` | 512 |
-| `json` (hypothesis extraction) | 1,024 |
-| `section_short` (abstract, conclusion) | 1,024 |
-| `section_long` (methods, results) | 2,048 |
-| `code` | 4,096 |
-| `revision` | 8,192 |
-
-Over-allocating `max_tokens` does not cost tokens directly, but it increases latency and can encourage verbose responses that consume more output tokens.
-
-#### 8. Session Token Ledger
-`TokenLedger` accumulates input tokens, output tokens, and Anthropic prompt-cache reads across every API call in a session. At the end of each run it writes `output/{run_id}/token_usage.json`:
-
-```json
-{
-  "input_tokens": 48320,
-  "output_tokens": 19840,
-  "cache_read_tokens": 12100,
-  "total_tokens": 68160,
-  "api_calls": 31,
-  "estimated_cost_usd": 0.4421
-}
-```
-
-A configurable `hard_limit_tokens` raises `RuntimeError` before the limit is breached, preventing runaway overnight spend.
-
-```yaml
-token_optimizer:
-  hard_limit_tokens: 2000000   # ~$10 at Sonnet pricing; null = unlimited
-```
-
-### Configuration Reference
-
-```yaml
-token_optimizer:
-  prompt_compression: true        # strip whitespace / collapse blank lines
-  response_caching: true          # disk cache keyed on SHA-256(model+prompts)
-  tiered_model_routing: true      # haiku → sonnet → opus based on input size
-  context_windowing: true         # rank + drop sections to fit token budget
-  abstract_token_budget: 80       # tokens per fetched paper abstract
-  context_token_budget: 3000      # max tokens for assembled context per call
-  hard_limit_tokens: null         # set an integer to cap total session spend
-  cache_dir: .cache/responses     # where to store cached responses
-```
-
-### Estimated Savings
-
-When all techniques are enabled on a full-auto run (literature + experiments + writing + review):
-
-| Technique | Typical reduction |
-|-----------|-------------------|
-| Prompt compression | 5–15% input tokens |
-| Abstract truncation | 30–50% literature-stage input |
-| Context windowing | 20–40% writing-stage input |
-| Response caching | 0–100% on repeated/resumed runs |
-| Tiered routing | 40–80% cost reduction on simple calls |
-| Dynamic max_tokens | 10–20% output token reduction |
-
-**Combined: 40–70% reduction in total token cost vs. naive implementation.**
-
----
-
-## geo_benchmark
-
-A reproducible spatial regression benchmark for comparing models across multiple datasets.
-
-### Included Datasets (all open-source)
-
-| Dataset | N | Features | Task |
-|---------|---|---------|------|
-| California Housing (1990 Census) | 20,640 | 8 + coordinates | House value prediction |
-| Boston Housing | 506 | 13 + coordinates | Median home value |
-| London House Prices | ~1.5M | 20+ + coordinates | Transaction price |
-| Beijing PM2.5 | 8,760 | 11 + coordinates | Air quality prediction |
-| US County Health Rankings | 3,142 | 40+ + coordinates | Health outcome prediction |
-
-### Included Baselines
-
-| Model | Library | Key Parameters |
-|-------|---------|---------------|
-| OLS | `statsmodels` | Heteroskedasticity-robust standard errors |
-| GWR | `mgwr` | Adaptive bi-square kernel, AICc bandwidth selection |
-| MGWR | `mgwr` | Adaptive kernels per variable, AICc selection |
-| Ordinary Kriging | `pykrige` | Variogram fitting, CV-optimized range |
-| Spatial RF | `scikit-learn` | + spatial lag features + XY coordinates |
-
-### Running the Benchmark
-
-```bash
-# Download all datasets (first run)
-python geo_benchmark/download_data.py
-
-# Run all models on all datasets
-python geo_benchmark/run_benchmark.py --all
-
-# Run specific dataset + models
-python geo_benchmark/run_benchmark.py \
-  --dataset california_housing \
-  --models ols,gwr,mgwr \
-  --output-dir geo_benchmark/results/
-
-# Open interactive notebook
-jupyter notebook geo_benchmark/notebooks/benchmark_demo.ipynb
-```
+Accept requires: weighted avg ≥ 7.5 AND all five floors met.
 
 ---
 
@@ -458,31 +170,31 @@ Templates enforce correct structure, section ordering, word limits, and formatti
 
 ### Geoscience
 
-| Journal | Template | Impact Factor |
-|---------|----------|--------------|
-| Nature Geoscience | `templates/geoscience/nature_geoscience.md` | ~19 |
-| JGR: Solid Earth | `templates/geoscience/jgr_solid_earth.md` | ~4 |
-| Geophysical Research Letters | `templates/geoscience/grl_template.md` | ~5 |
-| Earth System Science Data | `templates/geoscience/earth_system_sci.md` | ~12 |
+| Journal | Template |
+|---------|----------|
+| Nature Geoscience | `templates/geoscience/nature_geoscience.md` |
+| JGR: Solid Earth | `templates/geoscience/jgr_solid_earth.md` |
+| Geophysical Research Letters | `templates/geoscience/grl_template.md` |
+| Earth System Science Data | `templates/geoscience/earth_system_sci.md` |
 
 ### Remote Sensing
 
-| Journal | Template | Impact Factor |
-|---------|----------|--------------|
-| Remote Sensing of Environment | `templates/remote_sensing/remote_sensing_env.md` | ~14 |
-| IEEE TGRS | `templates/remote_sensing/ieee_tgrs.md` | ~8 |
-| ISPRS JPRS | `templates/remote_sensing/isprs_jprs.md` | ~12 |
-| Remote Sensing (MDPI) | `templates/remote_sensing/rs_mdpi.md` | ~5 |
+| Journal | Template |
+|---------|----------|
+| Remote Sensing of Environment | `templates/remote_sensing/remote_sensing_env.md` |
+| IEEE TGRS | `templates/remote_sensing/ieee_tgrs.md` |
+| ISPRS JPRS | `templates/remote_sensing/isprs_jprs.md` |
+| Remote Sensing (MDPI) | `templates/remote_sensing/rs_mdpi.md` |
 
 ### GIScience
 
-| Journal | Template | Impact Factor |
-|---------|----------|--------------|
-| IJGIS | `templates/giscience/ijgis.md` | ~4 |
-| Transactions in GIS | `templates/giscience/transactions_gis.md` | ~3 |
-| Annals of AAG | `templates/giscience/annals_aag.md` | ~4 |
-| Cartography & GIS | `templates/giscience/cagis.md` | ~3 |
-| Environment & Planning B | `templates/giscience/epb_template.md` | ~4 |
+| Journal | Template |
+|---------|----------|
+| IJGIS | `templates/giscience/ijgis.md` |
+| Transactions in GIS | `templates/giscience/transactions_gis.md` |
+| Annals of AAG | `templates/giscience/annals_aag.md` |
+| Cartography & GIS | `templates/giscience/cagis.md` |
+| Environment & Planning B | `templates/giscience/epb_template.md` |
 
 ---
 
@@ -490,89 +202,12 @@ Templates enforce correct structure, section ordering, word limits, and formatti
 
 MCP (Model Context Protocol) servers extend the agent's capabilities. Configured in `.mcp.json`.
 
-### Bundled MCP Servers
-
 | Server | Purpose |
 |--------|---------|
 | `filesystem` | Read/write local files and datasets |
 | `fetch` | Fetch web content (papers, data portals) |
-| `geo_mcp_server` | Spatial data access: GADM, OSM, GEE, Census |
+| `geo_mcp_server` | Spatial data access: GADM, OSM, Census |
 | `arxiv_mcp` | ArXiv search, paper fetch, abstract parsing |
-
-### Adding New MCP Servers
-
-```json
-// .mcp.json
-{
-  "mcpServers": {
-    "my_custom_server": {
-      "command": "python",
-      "args": ["mcp/my_server.py"],
-      "env": {"API_KEY": "${MY_API_KEY}"}
-    }
-  }
-}
-```
-
----
-
-## Configuration Reference
-
-### `configs/default.yaml`
-
-```yaml
-agent:
-  max_literature_papers: 30
-  max_experiment_iterations: 3
-  writing_temperature: 0.7
-  review_rounds: 2
-
-backend:
-  orchestrator: claude-sonnet-4-6
-  coding_workers:
-    provider: claude          # or "openai" for Codex
-    model: claude-sonnet-4-6
-    max_workers: 1
-
-output:
-  format: markdown            # markdown | latex | pdf
-  save_intermediate: true
-  checkpoint_dir: .checkpoints/
-```
-
----
-
-## File Outputs
-
-All outputs are saved to `output/<run_id>/`:
-
-```
-output/
-└── run_20260331_143000/
-    ├── literature_review.md
-    ├── hypotheses.json
-    ├── experiment_log.json
-    ├── results/
-    │   ├── figures/
-    │   └── tables/
-    ├── draft_v1.md
-    ├── review_feedback.md
-    ├── draft_v2.md        ← revised after review
-    └── paper_final.pdf
-```
-
----
-
-## research_architect
-
-The `research_architect/` folder is a shared space for collaborators to contribute:
-- Custom experiment scripts
-- Additional journal templates
-- Domain-specific prompts
-- Pilot datasets
-- Research notes
-
-No files are committed here by default. Add your own content and document it with a `README.md` inside.
 
 ---
 
@@ -580,48 +215,42 @@ No files are committed here by default. Add your own content and document it wit
 
 | File | Location | Written by |
 |---|---|---|
-| Review loop history | `outputs/AUTO_REVIEW.md` | `auto-review-loop` skill |
-| Review loop state | `outputs/REVIEW_STATE.json` | `auto-review-loop` skill |
-| Paper sections | `outputs/papers/<slug>/` | `paper-write` skill |
-| Figures | `outputs/figures/` | `paper-figure` skill |
+| Review loop history | `output/AUTO_REVIEW.md` | `auto-review-loop` skill |
+| Review loop state | `output/REVIEW_STATE.json` | `auto-review-loop` skill |
+| Paper sections | `output/papers/<slug>/` | `paper-write` skill |
+| Figures | `output/figures/` | `paper-figure` skill |
 | Session handoff | `handoff.json` | Stop hook (on session end) |
-| Experiment record | `EXPERIMENT_LOG.md` | `geo-experiment` / `deploy-experiment` skill |
-| Discovery log | `findings.md` | All skills (append-only) |
-| Approved claims | `memory/approved_claims.md` | `result-to-claim` skill |
-| Ranked idea candidates | `idea_report.md` | `idea-discovery` skill |
-| Experiment plan | `EXPERIMENT_PLAN.md` | `experiment-design` skill |
-| Refined proposal | `refine-logs/final_proposal.md` | `refine-research` skill |
+| Experiment record | `output/EXPERIMENT_LOG.md` | `deploy-experiment` skill |
+| Discovery log | `output/FINDINGS.md` | All skills (append-only) |
+| Approved claims | `memory/APPROVED_CLAIMS.md` | `result-to-claim` skill |
+| Ranked idea candidates | `output/IDEA_REPORT.md` | `idea-discovery` skill |
+| Experiment plan | `output/EXPERIMENT_PLAN.md` | `experiment-design` skill |
 | Data provenance log | `data/DATA_MANIFEST.md` | `data-download` skill |
-| Raw downloaded datasets | `data/raw/` | `data-download` skill |
-| Spatial analysis report | `spatial-analysis-outputs/analysis_report.md` | `spatial-analysis` skill |
-| Submission check report | `outputs/reports/submit_check_*.md` | `submit-check` skill |
+| Spatial analysis report | `output/spatial-analysis/analysis_report.md` | `spatial-analysis` skill |
+| Submission check report | `output/reports/submit_check_*.md` | `submit-check` skill |
 
 ---
 
 ## Project Structure
 
 ```
-geo_research_agent_247/
-├── program.md                   ← Research brief (edit before starting)
-├── research_contract.md         ← Active idea context (condensed)
-├── findings.md                  ← Compact discovery log (append-only)
-├── EXPERIMENT_LOG.md            ← Full experiment record (append-only)
-├── handoff.json                 ← Context-reset handoff (written on stop)
-├── CLAUDE.md                    ← Dashboard and project conventions
-├── AGENT_STRUCTURE.md           ← Full architecture map
+night_owl_research_agent/
+├── CLAUDE.md                        ← Dashboard and project conventions
+├── README.md                        ← This file
+├── settings.json                    ← Claude Code hooks and permissions
 │
 ├── .claude/
-│   ├── commands/                ← Slash commands (8 total)
-│   │   ├── launcher.md          ← /launcher (interactive entry point)
-│   │   ├── orchestrate.md       ← /orchestrate
-│   │   ├── full-pipeline.md     ← /full-pipeline
-│   │   ├── find-gaps.md         ← /find-gaps
-│   │   ├── lit-review.md        ← /lit-review
-│   │   ├── geo-search.md        ← /geo-search
-│   │   ├── write-section.md     ← /write-section
-│   │   └── review-draft.md      ← /review-draft
+│   ├── commands/                    ← Slash commands
+│   │   ├── launcher.md              ← /launcher (interactive entry point)
+│   │   ├── orchestrate.md           ← /orchestrate
+│   │   ├── full-pipeline.md         ← /full-pipeline
+│   │   ├── find-gaps.md             ← /find-gaps
+│   │   ├── lit-review.md            ← /lit-review
+│   │   ├── geo-search.md            ← /geo-search
+│   │   ├── write-section.md         ← /write-section
+│   │   └── review-draft.md          ← /review-draft
 │   │
-│   └── agents/                  ← Specialist sub-agent definitions (9 total)
+│   └── agents/                      ← Specialist sub-agent definitions
 │       ├── orchestrator.md
 │       ├── literature-scout.md
 │       ├── synthesis-analyst.md
@@ -632,27 +261,27 @@ geo_research_agent_247/
 │       ├── peer-reviewer.md
 │       └── citation-manager.md
 │
-├── skills/                      ← Skill logic: Markdown workflow files (19 skills)
-│   ├── full-pipeline/           ← 5-stage master pipeline
-│   ├── lit-review/              ← Literature search + synthesis
-│   ├── idea-discovery/          ← Full idea pipeline (lit → generate → novelty → review)
-│   ├── generate-idea/           ← Brainstorm + filter + pilot-test ideas
-│   ├── novelty-check/           ← Verify idea novelty
-│   ├── idea-review/             ← External critical review via Codex MCP
-│   ├── refine-research/         ← Iterative method refinement (GPT-5.4)
-│   ├── experiment-design/       ← Claim-driven experiment roadmap
-│   ├── experiment-design-pipeline/ ← One-shot: refine + experiment planning
-│   ├── deploy-experiment/       ← Deploy to local/remote/Modal GPU
-│   ├── data-download/           ← Discover, evaluate, download datasets
-│   ├── spatial-analysis/        ← Research-question-driven spatial analysis
-│   ├── result-to-claim/         ← Validate claims vs results (safety gate)
-│   ├── auto-review-loop/        ← Adversarial review (4 rounds, per-criterion floors)
-│   ├── paper-plan/              ← Section outline + figure plan
-│   ├── paper-write/             ← Section writing with iterative scoring
-│   ├── paper-figure/            ← Spatial figures + captions
-│   ├── submit-check/            ← Validate manuscript vs journal requirements
-│   ├── training-check/          ← Monitor running experiments
-│   └── knowledge/               ← Domain reference files (read by skills)
+├── skills/                          ← Skill logic: Markdown workflow files (19 skills)
+│   ├── full-pipeline/SKILL.md
+│   ├── lit-review/SKILL.md
+│   ├── idea-discovery/SKILL.md
+│   ├── generate-idea/SKILL.md
+│   ├── novelty-check/SKILL.md
+│   ├── idea-review/SKILL.md
+│   ├── refine-research/SKILL.md
+│   ├── experiment-design/SKILL.md
+│   ├── experiment-design-pipeline/SKILL.md
+│   ├── deploy-experiment/SKILL.md
+│   ├── data-download/SKILL.md
+│   ├── spatial-analysis/SKILL.md
+│   ├── result-to-claim/SKILL.md
+│   ├── auto-review-loop/SKILL.md
+│   ├── paper-plan/SKILL.md
+│   ├── paper-write/SKILL.md
+│   ├── paper-figure/SKILL.md
+│   ├── submit-check/SKILL.md
+│   ├── training-check/SKILL.md
+│   └── knowledge/                   ← Domain reference files
 │       ├── academic-writing.md
 │       ├── apa-citations.md
 │       ├── spatial-methods.md
@@ -662,72 +291,45 @@ geo_research_agent_247/
 │       ├── literature-mining.md
 │       └── research-iteration.md
 │
-├── geo_benchmark/               ← Spatial regression benchmark suite
-│   ├── run_benchmark.py
-│   ├── download_data.py
-│   ├── baselines/               ← OLS, GWR, MGWR
-│   │   ├── ols_baseline.py
-│   │   ├── gwr_baseline.py
-│   │   └── mgwr_baseline.py
-│   ├── datasets/
-│   └── evaluation/
-│       ├── metrics.py
-│       └── visualize.py
+├── tools/                           ← CLI utilities (called by skills)
+│   ├── arxiv_fetch.py               ← ArXiv Atom API search
+│   ├── semantic_scholar_fetch.py    ← Semantic Scholar API search
+│   └── convert_skills_to_llm_chat.py ← Skill-to-chat format converter
 │
-├── outputs/                     ← All generated outputs
-│   ├── AUTO_REVIEW.md           ← Review loop history
-│   ├── REVIEW_STATE.json        ← Review loop state
-│   ├── papers/                  ← Written sections per paper slug
-│   ├── figures/                 ← Spatial maps, plots, captions
-│   └── reports/                 ← Literature reviews, submit-check reports
+├── configs/
+│   └── default.yaml                 ← Scoring weights, domain keywords, literature settings
 │
-├── tools/                       ← Python CLI utilities (called by skills)
-│   ├── arxiv_fetch.py
-│   └── semantic_scholar_fetch.py
-│
-├── core/                        ← Core engine (API backend)
-│   ├── orchestrator.py
-│   ├── research_loop.py
-│   ├── paper_generator.py
-│   ├── code_executor.py
-│   ├── literature_manager.py
-│   ├── memory_manager.py
-│   ├── token_optimizer.py
-│   └── config.py
-│
-├── agents/                      ← Python agent implementations (API backend)
-│   ├── literature_agent.py
-│   ├── experiment_agent.py
-│   ├── writing_agent.py
-│   ├── review_agent.py
-│   ├── geo_specialist.py
-│   └── codex_worker.py
-│
-├── memory/                      ← Persistent session memory
-│   ├── MEMORY.md
-│   └── paper-cache/
-│
-├── templates/                   ← File format + journal templates
-│   ├── geoscience/
-│   ├── remote_sensing/
-│   └── giscience/
-│
-├── configs/                     ← Run mode YAML configs
-│   ├── default.yaml
-│   ├── full_auto.yaml
-│   ├── codex_hybrid.yaml
-│   └── benchmark_only.yaml
+├── templates/                       ← Journal-specific paper templates
+│   ├── geoscience/                  ← Nature Geoscience, JGR, GRL, ESSD
+│   ├── remote_sensing/              ← RSE, IEEE TGRS, ISPRS, RS-MDPI
+│   └── giscience/                   ← IJGIS, TGIS, AAG, CAGIS
 │
 ├── harness/
-│   ├── hooks/                   ← Claude Code lifecycle hooks
-│   └── prompts/                 ← System prompt templates
+│   ├── hooks/                       ← Claude Code lifecycle hooks (shell scripts)
+│   │   ├── pre_tool_use.sh
+│   │   ├── post_tool_use.sh
+│   │   ├── stop_hook.sh
+│   │   └── notification.sh
+│   └── prompts/
+│       └── system_geo.md            ← System prompt template
 │
-├── mcp/                         ← MCP server implementations
+├── mcp/                             ← MCP server implementations
 │   └── geo_mcp_server.py
 │
-├── research_architect/          ← Collaborator workspace
-├── pyproject.toml / requirements.txt
-└── settings.json                ← Permissions + hooks configuration
+├── memory/                          ← Persistent session memory
+│   └── MEMORY.md
+│
+├── output/                          ← All generated outputs
+│   ├── AUTO_REVIEW.md
+│   ├── REVIEW_STATE.json
+│   ├── papers/
+│   ├── figures/
+│   ├── reports/
+│   ├── refine-logs/
+│   └── spatial-analysis/
+│
+├── archived/                        ← Archived earlier versions
+└── res/                             ← Resources
 ```
 
 ---
@@ -735,9 +337,9 @@ geo_research_agent_247/
 ## Contributing
 
 1. Fork this repository
-2. Add your content to `research_architect/` or submit PRs for `templates/`, `agents/`, or `geo_benchmark/`
-3. Follow the coding standards in `pyproject.toml`
-4. Write tests in `tests/`
+2. Add skills in `skills/<name>/SKILL.md`
+3. Add journal templates in `templates/`
+4. Add domain knowledge in `skills/knowledge/`
 
 ---
 
@@ -749,12 +351,12 @@ MIT License. See `LICENSE` for details.
 
 ## Citation
 
-If you use GeoResearchAgent-247 in your research, please cite:
+If you use NORA in your research, please cite:
 
 ```bibtex
-@software{geo_research_agent_247,
-  title  = {GeoResearchAgent-247: Autonomous AI Research Agent for Geoscientists},
+@software{nora,
+  title  = {NORA: Autonomous AI Research Agent for Geoscientists},
   year   = {2026},
-  url    = {https://github.com/your-org/geo_research_agent_247}
+  url    = {https://github.com/your-org/nora}
 }
 ```

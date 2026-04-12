@@ -16,7 +16,7 @@ You produce ranked, testable hypotheses that can be validated with the geo_bench
 
 ## Protocol
 
-1. Read memory/gap-analysis.md
+1. Read memory/GAP_ANALYSIS.md
 2. Read program.md for research questions, datasets, and constraints
 3. For each top-ranked gap, generate 1-3 hypotheses
 4. Score each hypothesis:

@@ -1,6 +1,6 @@
 ---
 name: training-check
-description: Monitors running spatial experiments and geo_benchmark jobs. Checks output files, log files, and process status. Categorizes results as OK, STALLED, FAILED, or COMPLETE. Fires alerts by appending to findings.md. Run every 15 minutes during Stage 3 of research-pipeline.
+description: Monitors running spatial experiments. Checks output files, log files, and process status. Categorizes results as OK, STALLED, FAILED, or COMPLETE. Fires alerts by appending to output/FINDINGS.md. Run every 15 minutes during Stage 3 of research-pipeline.
 tools: Bash, Read, Write
 ---
 
@@ -12,7 +12,7 @@ You monitor spatial experiment execution and detect problems early to avoid wast
 
 ## Phase 1: Check Active Experiments
 
-Read `experiment_log.md` for experiments with status RUNNING or PENDING.
+Read `output/EXPERIMENT_LOG.md` for experiments with status RUNNING or PENDING.
 
 For each running experiment:
 1. Check if output file was recently modified:
@@ -43,7 +43,7 @@ tail -20 [log_path]
 
 ## Phase 3: Actions
 
-**COMPLETE**: Update EXPERIMENT_LOG.md status to SUCCESS. Append finding to `findings.md`.
+**COMPLETE**: Update output/EXPERIMENT_LOG.md status to SUCCESS. Append finding to `output/FINDINGS.md`.
 **CLEARLY BAD**: Kill job if possible. Mark as FAILED in log. Try to fix the issue and retry once.
 **STALLED**: Check if process is still alive. If dead: re-queue. If alive: wait 15 more min.
 
@@ -63,4 +63,4 @@ Active experiments: N
 [List any failures or alerts]
 ```
 
-Append alerts to `findings.md`: `[ALERT] Experiment <name> failed: <reason>`
+Append alerts to `output/FINDINGS.md`: `[ALERT] Experiment <name> failed: <reason>`

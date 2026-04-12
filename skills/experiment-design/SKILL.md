@@ -22,7 +22,7 @@ The goal is not to generate a giant benchmark wishlist. The goal is to turn a pr
 
 ## Constants
 
-- **OUTPUT_DIR = `refine-logs/`** — Default destination for experiment planning artifacts.
+- **OUTPUT_DIR = `output/refine-logs/`** — Default destination for experiment planning artifacts.
 - **MAX_PRIMARY_CLAIMS = 2** — Prefer one dominant claim plus one supporting claim.
 - **MAX_CORE_BLOCKS = 5** — Keep the must-run experimental story compact.
 - **MAX_BASELINE_FAMILIES = 3** — Prefer a few strong baselines over many weak ones.
@@ -34,9 +34,9 @@ The goal is not to generate a giant benchmark wishlist. The goal is to turn a pr
 
 Read the most relevant existing files first if they exist:
 
-- `refine-logs/final_proposal.md`
-- `refine-logs/review_summary.md`
-- `refine-logs/refine_report.md`
+- `output/refine-logs/FINAL_PROPOSAL.md`
+- `output/refine-logs/REVIEW_SUMMARY.md`
+- `output/refine-logs/REFINE_REPORT.md`
 
 Extract:
 
@@ -123,7 +123,7 @@ Separate **must-run** from **nice-to-have** experiments.
 
 ### Phase 5: Write the Outputs
 
-#### Step 5.1: Write `refine-logs/experiment_plan.md`
+#### Step 5.1: Write `output/refine-logs/output/EXPERIMENT_PLAN.md`
 
 Use this structure:
 
@@ -184,7 +184,7 @@ Use this structure:
 - [ ] Nice-to-have runs are separated from must-run runs
 ```
 
-#### Step 5.2: Write `refine-logs/experiment_tracker.md`
+#### Step 5.2: Write `output/refine-logs/EXPERIMENT_TRACKER.md`
 
 Use this structure:
 
@@ -215,8 +215,8 @@ First three runs to launch:
 2. [run]
 3. [run]
 
-Plan file: refine-logs/experiment_plan.md
-Tracker file: refine-logs/experiment_tracker.md
+Plan file: output/refine-logs/output/EXPERIMENT_PLAN.md
+Tracker file: output/refine-logs/EXPERIMENT_TRACKER.md
 ```
 
 ## Key Rules

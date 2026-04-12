@@ -1,13 +1,13 @@
 # Research Contract: [Idea Name]
 
-> **A focused working document for the currently selected idea.** Created when an idea is chosen from `idea_report.md`, updated throughout implementation and training. This is what the LLM reads on session recovery — not the full IDEA_REPORT with all 8-12 candidates.
+> **A focused working document for the currently selected idea.** Created when an idea is chosen from `output/IDEA_REPORT.md`, updated throughout implementation and training. This is what the LLM reads on session recovery — not the full IDEA_REPORT with all 8-12 candidates.
 >
-> **Why this file exists:** After brainstorming, `idea_report.md` contains many candidate ideas. Keeping all of them in context pollutes the LLM's working memory and degrades output quality. This contract extracts *only the active idea* into a standalone document, so new sessions and post-compaction recovery load focused context instead of the entire idea pool.
+> **Why this file exists:** After brainstorming, `output/IDEA_REPORT.md` contains many candidate ideas. Keeping all of them in context pollutes the LLM's working memory and degrades output quality. This contract extracts *only the active idea* into a standalone document, so new sessions and post-compaction recovery load focused context instead of the entire idea pool.
 
 ## Selected Idea
 
 - **Description**: [One-paragraph summary of the idea]
-- **Source**: idea_report.md, Idea #N
+- **Source**: output/IDEA_REPORT.md, Idea #N
 - **Selection rationale**: [Why this idea over others — pilot results, novelty score, feasibility]
 
 ## Core Claims

@@ -30,7 +30,7 @@ Given a broad research direction from the user, systematically generate, validat
 
 Map the research area to understand what exists and where the gaps are.
 
-If `memory/gap-analysis.md` and `memory/synthesis-YYYY-MM-DD.md` exist, read files and skip Phase 1 silently. If not, do the following:
+If `memory/GAP_ANALYSIS.md` and `memory/SYNTHESIS_YYYY-MM-DD.md` exist, read files and skip Phase 1 silently. If not, do the following:
 
 1. **Scan local paper library first**: Check `papers/` and `literature/` in the project directory for existing PDFs. Read first 3 pages of relevant papers to build a baseline understanding before searching online. This avoids re-discovering what the user already knows.
 
@@ -160,7 +160,7 @@ Note: Skip this phase if the ideas are purely theoretical or if no GPU is availa
 
 ### Phase 6: Output — Ranked Idea Report
 
-Write a structured report to `idea_report.md` in the project root:
+Write a structured report to `output/IDEA_REPORT.md` in the project root:
 
 ```markdown
 # Research Idea Report

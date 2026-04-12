@@ -1,7 +1,7 @@
-# Spatial Methods Knowledge Base — GeoResearchAgent-247
+# Spatial Methods Knowledge Base — NORA
 
 **Domain:** GIScience / Spatial Statistics / Remote Sensing Analysis
-**Maintainer:** GeoResearchAgent-247
+**Maintainer:** NORA
 
 ---
 
@@ -274,31 +274,8 @@ gdf.crs.to_epsg()                        # get EPSG code
 
 ---
 
-## 7. geo_benchmark Integration
 
-When a paper involves spatial regression, **always compare OLS / GWR / MGWR** using the geo_benchmark suite:
-
-```bash
-python geo_benchmark/run_benchmark.py \
-    --dataset your_data.csv \
-    --target y_column \
-    --lat lat_col --lon lon_col \
-    --features col1 col2 col3 \
-    --models ols gwr mgwr
-```
-
-Report in paper:
-| Model | R² | AICc | RMSE | Moran's I (residuals) |
-|---|---|---|---|---|
-| OLS | | | | |
-| GWR | | | | |
-| MGWR | | | | |
-
-**Standard phrasing:** "We benchmark against OLS and GWR baselines using the geo_benchmark suite. MGWR provides per-variable bandwidth estimation, allowing detection of multi-scale spatial non-stationarity in predictor effects."
-
----
-
-## 8. Common Errors and How to Avoid Them
+## 7. Common Errors and How to Avoid Them
 
 | Error | Correct Practice |
 |---|---|

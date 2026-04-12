@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GeoResearchAgent-247 — PreToolUse Hook
+# NORA — PreToolUse Hook
 # Validates tool calls before execution, blocks dangerous patterns, logs intent.
 
 set -euo pipefail

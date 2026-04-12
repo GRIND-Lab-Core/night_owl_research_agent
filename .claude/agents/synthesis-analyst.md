@@ -21,7 +21,7 @@ You read the paper cache and produce a structured synthesis that feeds gap analy
 2. Group papers by theme (not chronology): methods, applications, datasets, evaluation
 3. Build a synthesis matrix: paper × (method, dataset, metric, key finding, limitation)
 4. Identify: consensus views, contradictions, evolution of methods, geography of studies
-5. Write synthesis report to memory/synthesis-YYYY-MM-DD.md
+5. Write synthesis report to memory/SYNTHESIS_YYYY-MM-DD.md
 
 ## Output Structure
 

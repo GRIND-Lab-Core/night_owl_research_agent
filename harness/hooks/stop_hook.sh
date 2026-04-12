@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GeoResearchAgent-247 — Stop Hook
+# NORA — Stop Hook
 # Saves session checkpoint, updates memory/MEMORY.md, and notifies the user.
 
 set -euo pipefail
@@ -383,6 +383,6 @@ print(f"handoff.json written ({TS}) — next stage: {handoff['pipeline']['stage'
 PYEOF
 
 # Send desktop notification
-bash harness/hooks/notification.sh "GeoResearchAgent-247 session ended — MEMORY.md + handoff.json updated" 2>/dev/null || true
+bash harness/hooks/notification.sh "NORA session ended — MEMORY.md + handoff.json updated" 2>/dev/null || true
 
 exit 0

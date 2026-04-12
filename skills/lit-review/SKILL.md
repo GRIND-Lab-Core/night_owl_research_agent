@@ -195,12 +195,12 @@ then:
 1. Group papers by theme (not chronology).
 2. Build a synthesis matrix: paper × (method, dataset, key metric, finding, limitation).
 3. Identify consensus views, contradictions, and geographic biases.
-4. Write synthesis to `memory/synthesis-YYYY-MM-DD.md`.
+4. Write synthesis to `memory/SYNTHESIS_YYYY-MM-DD.md`.
 
 Find gaps that our work can fill. For each gap dimension (Methodological, Geographic, Temporal, Data, Equity, Validation):
 - Score gap: Novelty × 0.4 + Feasibility × 0.35 + Impact × 0.25
 - Rank top 5 gaps
-- Write to `memory/gap-analysis.md`
+- Write to `memory/GAP_ANALYSIS.md`
 
 ### Step 4: Output
 Present as a structured literature table:
@@ -222,9 +222,9 @@ If Zotero BibTeX was exported, include a `references.bib` snippet for direct use
 
 ## Outputs
 - `memory/paper-cache/` — JSON paper metadata files
-- `memory/synthesis-YYYY-MM-DD.md` — thematic synthesis
-- `memory/gap-analysis.md` — ranked gaps
-- One-line summary appended to `findings.md`
+- `memory/SYNTHESIS_YYYY-MM-DD.md` — thematic synthesis
+- `memory/GAP_ANALYSIS.md` — ranked gaps
+- One-line summary appended to `output/FINDINGS.md`
 
 
 ## Key Rules

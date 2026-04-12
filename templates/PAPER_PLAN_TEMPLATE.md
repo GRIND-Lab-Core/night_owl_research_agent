@@ -23,7 +23,7 @@
 
 ## Section 1: Abstract (250 words)
 
-Key claims to include (from memory/approved_claims.md):
+Key claims to include (from memory/APPROVED_CLAIMS.md):
 - [Claim 1 with specific number]
 - [Claim 2]
 
