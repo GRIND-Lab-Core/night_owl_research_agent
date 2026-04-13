@@ -16,7 +16,7 @@ End-to-end research pipeline for $ARGUMENTS. You are the pipeline conductor — 
 ## Constants
 
 - **AUTO_PROCEED = true** — When `true`, Gate 1 auto-selects the top-ranked idea (highest pilot signal + novelty confirmed) and continues to implementation. When `false`, always waits for explicit user confirmation before proceeding.
-- **ARXIV_DOWNLOAD = false** — When `true`, `/research-lit` downloads the top relevant arXiv PDFs during literature survey. When `false` (default), only fetches metadata via arXiv API. Passed through to `/idea-discovery` → `/lit-review`.
+- **ARXIV_DOWNLOAD = false** — When `true`, `/lit-review` downloads the top relevant arXiv PDFs during literature survey. When `false` (default), only fetches metadata via arXiv API. Passed through to `/idea-discovery` → `/lit-review`.
 - **HUMAN_CHECKPOINT = false** — When `true`, the auto-review loops (Stage 4) pause after each round's review to let you see the score and provide custom modification instructions before fixes are implemented. When `false` (default), loops run fully autonomously. Passed through to `/auto-review-loop`.
 - **REVIEWER_DIFFICULTY = medium** — How adversarial the reviewer is. `medium` (default): standard MCP review. `hard`: adds reviewer memory + debate protocol. `nightmare`: GPT reads repo directly via `codex exec` + memory + debate. Passed through to `/auto-review-loop`.
 
@@ -27,7 +27,7 @@ End-to-end research pipeline for $ARGUMENTS. You are the pipeline conductor — 
 
 1. Read `memory/MEMORY.md` for current pipeline stage.
 2. Read `output/REVIEW_STATE.json` if it exists — resume from saved round.
-3. Read `research_plan.md` if it exists; otherwise read `program.md`.
+3. Read `RESEARCH_PLAN.md` if it exists; otherwise read `program.md`.
 4. Read `output/FINDINGS.md` (compact) if COMPACT_MODE is true; read full `output/EXPERIMENT_LOG.md` otherwise.
 5. Display current pipeline position and confirm with user before proceeding.
 
@@ -38,7 +38,7 @@ End-to-end research pipeline for $ARGUMENTS. You are the pipeline conductor — 
 **Goal**: Identify a tractable, novel research direction from the literature.
 
 **Steps**:
-If `research_plan.md` exists in the project root, it will be automatically loaded as detailed context (replaces one-line prompt). See `templates/RESEARCH_PLAN_TEMPLATE.md`.
+If `RESEARCH_PLAN.md` exists in the project root, it will be automatically loaded as detailed context (replaces one-line prompt). See `templates/RESEARCH_PLAN_TEMPLATE.md`.
 
 Invoke the idea discovery pipeline:
 
@@ -46,7 +46,7 @@ Invoke the idea discovery pipeline:
 /idea-discovery "$ARGUMENTS"
 ```
 
-This internally runs: `/lit-review` → `/generate-idea` → `/novelty-check` → `/research-review`
+This internally runs: `/lit-review` → `/generate-idea` → `/novelty-check` → `/idea-review`
 
 **Output:** `output/IDEA_REPORT.md` with ranked, validated, pilot-tested ideas. (see template at `templates/IDEA_CANDIDATES_TEMPLATE.md`).
 
@@ -73,7 +73,7 @@ Recommended: Idea 1. Shall I proceed with implementation?
 
 > ⚠️ **This gate waits for user confirmation when AUTO_PROCEED=false.** When `true`, it auto-selects the top idea after presenting results. The rest of the pipeline (Stages 2-4) is expensive, so set `AUTO_PROCEED=false` if you want to manually choose which idea to pursue.
 
-After user response, or auto proceed. write the selected idea and relevant information to `research_plan.md` (template: `templates/RESEARCH_PLAN_TEMPLATE.md`).
+After user response, or auto proceed. write the selected idea and relevant information to `RESEARCH_PLAN.md` (template: `templates/RESEARCH_PLAN_TEMPLATE.md`).
 
 Update `memory/MEMORY.md`
 
@@ -84,7 +84,7 @@ Update `memory/MEMORY.md`
 **Goal**: Turn approved idea into a concrete, runnable experiment plan.
 
 **Steps**:
-1. Read `research_plan.md` for problem, method, experiment design, pilot code, success criteria.
+1. Read `RESEARCH_PLAN.md` for problem, method, experiment design, pilot code, success criteria.
 2. Design the full experiment: 
    - Dataset(s) and preprocessing steps
    - Extend pilot code to full scale (multi-seed, full dataset, proper baselines)

@@ -43,7 +43,7 @@ For EACH core claim, search using ALL available sources:
    - Recent arXiv preprints (2025-2026)
 
 3. **Local Papers**
-   - Also directly fetch relevant abstracts from `memory/paper-cache/` or `paper/` if they already exist.
+   - Also directly fetch relevant abstracts from `output/paper-cache/` or `paper/` if they already exist.
 
 4. **Read abstracts**: For each potentially overlapping paper, WebFetch its abstract and related work section
 

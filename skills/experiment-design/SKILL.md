@@ -123,7 +123,7 @@ Separate **must-run** from **nice-to-have** experiments.
 
 ### Phase 5: Write the Outputs
 
-#### Step 5.1: Write `output/refine-logs/output/EXPERIMENT_PLAN.md`
+#### Step 5.1: Write `output/refine-logs/EXPERIMENT_PLAN.md`
 
 Use this structure:
 
@@ -215,7 +215,7 @@ First three runs to launch:
 2. [run]
 3. [run]
 
-Plan file: output/refine-logs/output/EXPERIMENT_PLAN.md
+Plan file: output/refine-logs/EXPERIMENT_PLAN.md
 Tracker file: output/refine-logs/EXPERIMENT_TRACKER.md
 ```
 

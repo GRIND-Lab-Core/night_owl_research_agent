@@ -21,7 +21,7 @@ Given a broad research direction from the user, systematically generate, validat
 - **MAX_TOTAL_GPU_HOURS = 8** — Total GPU budget for all pilots combined.
 - **REVIEWER_MODEL = `gpt-5.4`** — Model used via Codex MCP for brainstorming and review. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`).
 
-> 💡 Override via argument, e.g., `/idea-creator "topic" — pilot budget: 4h per idea, 20h total`.
+> 💡 Override via argument, e.g., `/generate-idea "topic" — pilot budget: 4h per idea, 20h total`.
 
 ## Workflow
 
@@ -30,9 +30,9 @@ Given a broad research direction from the user, systematically generate, validat
 
 Map the research area to understand what exists and where the gaps are.
 
-If `memory/GAP_ANALYSIS.md` and `memory/SYNTHESIS_YYYY-MM-DD.md` exist, read files and skip Phase 1 silently. If not, do the following:
+If `output/GAP_ANALYSIS.md` and `output/SYNTHESIS_YYYY-MM-DD.md` exist, read files and skip Phase 1 silently. If not, do the following:
 
-1. **Scan local paper library first**: Check `papers/` and `literature/` in the project directory for existing PDFs. Read first 3 pages of relevant papers to build a baseline understanding before searching online. This avoids re-discovering what the user already knows.
+1. **Scan local paper library first**: Check `papers/` in the project directory for existing PDFs. Read first 3 pages of relevant papers to build a baseline understanding before searching online. This avoids re-discovering what the user already knows.
 
 2. **Search recent literature** using WebSearch:
    - Top venues in the last 2 years
@@ -140,7 +140,7 @@ Before committing to a full research effort, run cheap pilot experiments to get 
    - **Estimate GPU-hours BEFORE launching.** If estimated time > PILOT_MAX_HOURS, reduce scale (fewer epochs, smaller subset) or flag as "needs manual pilot"
    - Clear success metric defined upfront (e.g., "if metric improves by > 1%, signal is positive")
 
-2. **Deploy in parallel**: Use `/run-experiment` to launch pilots on different GPUs simultaneously:
+2. **Deploy in parallel**: Use `/deploy-experiment` to launch pilots on different GPUs simultaneously:
    ```
    GPU 0: Pilot for Idea 1
    GPU 1: Pilot for Idea 2

@@ -27,6 +27,10 @@ COMPACT_MODE: false       # true = use output/FINDINGS.md instead of full logs (
 EXTERNAL_REVIEW: false    # true = use claude subagent or external reviewer LLM for adversarial review
 ```
 
+## Constants
+**PAPER_LIBRARY**: `papers/`
+
+
 ---
 
 ## Session Start Checklist

@@ -37,7 +37,7 @@ Do not plan a large experiment suite on top of an unstable method. First stabili
 - `output/refine-logs/FINAL_PROPOSAL.md`
 - `output/refine-logs/REVIEW_SUMMARY.md`
 - `output/refine-logs/REFINE_REPORT.md`
-- `output/refine-logs/output/EXPERIMENT_PLAN.md`
+- `output/refine-logs/EXPERIMENT_PLAN.md`
 - `output/refine-logs/EXPERIMENT_TRACKER.md`
 - `output/refine-logs/PIPELINE_SUMMARY.md`
 
@@ -47,13 +47,13 @@ Do not plan a large experiment suite on top of an unstable method. First stabili
 
 - Extract the problem, rough approach, constraints, resources, and target venue.
 - Check whether `output/refine-logs/FINAL_PROPOSAL.md` already exists and still matches the current request.
-- If the proposal is missing, stale, or materially different from the current request, run the full `research-refine` stage.
+- If the proposal is missing, stale, or materially different from the current request, run the full `refine-research` stage.
 - If the proposal is already strong and aligned, reuse it and jump to experiment planning.
-- If in doubt, prefer re-running `research-refine` rather than planning experiments for the wrong method.
+- If in doubt, prefer re-running `refine-research` rather than planning experiments for the wrong method.
 
 ### Phase 1: Method Refinement Stage
 
-Run the `research-refine` workflow and keep its V3 philosophy intact:
+Run the `refine-research` workflow and keep its V3 philosophy intact:
 
 - preserve the Problem Anchor
 - prefer the smallest adequate mechanism
@@ -113,7 +113,7 @@ Write `output/refine-logs/PIPELINE_SUMMARY.md`:
 ## Final Deliverables
 - Proposal: `output/refine-logs/FINAL_PROPOSAL.md`
 - Review summary: `output/refine-logs/REVIEW_SUMMARY.md`
-- Experiment plan: `output/refine-logs/output/EXPERIMENT_PLAN.md`
+- Experiment plan: `output/refine-logs/EXPERIMENT_PLAN.md`
 - Experiment tracker: `output/refine-logs/EXPERIMENT_TRACKER.md`
 
 ## Contribution Snapshot
@@ -147,7 +147,7 @@ Method output:
 - output/refine-logs/FINAL_PROPOSAL.md
 
 Experiment output:
-- output/refine-logs/output/EXPERIMENT_PLAN.md
+- output/refine-logs/EXPERIMENT_PLAN.md
 - output/refine-logs/EXPERIMENT_TRACKER.md
 
 Pipeline summary:
@@ -163,7 +163,7 @@ Best next step:
 
 - Do not let the experiment plan override the Problem Anchor.
 - Do not widen the paper story after method refinement unless a missing validation block is truly necessary.
-- Reuse the same claims across `final_proposal.md`, `output/EXPERIMENT_PLAN.md`, and `pipeline_summary.md`.
+- Reuse the same claims across `FINAL_PROPOSAL.md`, `EXPERIMENT_PLAN.md`, and `PIPELINE_SUMMARY.md`.
 - Keep the main paper story compact.
 - If the method is intentionally simple, defend that simplicity in the experiment plan rather than adding new components.
 - If the method uses a modern LLM / VLM / Diffusion / RL primitive, make its necessity test explicit.

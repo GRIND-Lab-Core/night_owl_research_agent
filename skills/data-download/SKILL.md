@@ -33,7 +33,7 @@ Before searching for data, classify what is actually needed.
 
 ### Step 0.1: Infer Data Requirements
 
-Extract from the user's request, the research question, or existing project files (`research_contract.md`, `output/EXPERIMENT_PLAN.md`, `research_plan.md`):
+Extract from the user's request, the research question, or existing project files (`research_contract.md`, `output/EXPERIMENT_PLAN.md`, `RESEARCH_PLAN.md`):
 
 | Dimension | Question to answer |
 |---|---|

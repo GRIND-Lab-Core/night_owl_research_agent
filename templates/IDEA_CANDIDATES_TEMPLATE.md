@@ -68,6 +68,6 @@
 
 ## Recommendation
 
-**Top idea for research_plan.md**: Idea [N] — [title]
+**Top idea for RESEARCH_PLAN.md**: Idea [N] — [title]
 **Rationale**: [2-3 sentences]
-**Next step**: Copy to `research_plan.md` using template.
+**Next step**: Copy to `RESEARCH_PLAN.md` using template.

@@ -16,7 +16,7 @@ You are the orchestrator for a compete idea discovery workflow for: **$ARGUMENTS
 This skill chains sub-skills into a single automated pipeline:
 
 ```
-/lit-review → /generate-idea → /novelty-check → /research-review → /experiment-design-pipeline 
+/lit-review → /generate-idea → /novelty-check → /idea-review → /experiment-design-pipeline 
 ```
 
 Each phase builds on the previous one's output. The final deliverables are a validated `output/IDEA_REPORT.md` with ranked ideas, plus a refined proposal (`final_proposal.md`) and experiment plan (`output/EXPERIMENT_PLAN.md`) for the top idea.
@@ -31,7 +31,7 @@ Each phase builds on the previous one's output. The final deliverables are a val
 - **REVIEWER_MODEL = `gpt-5.4`** — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`). Passed to sub-skills. If not configured properly, use Claude code subagent.
 - **ARXIV_DOWNLOAD = false** — When `true`, `/lit-review` downloads the top relevant arXiv PDFs during Phase 1. When `false` (default), only fetches metadata. Passed through to `/lit-review`.
 - **COMPACT = false** — When `true`, generate compact summary files for short-context models and session recovery. Writes `output/IDEA_CANDIDATES.md` (top 3-5 ideas only) at the end of this workflow. Downstream skills read this instead of the full `output/IDEA_REPORT.md`.
-- **REF_PAPER = false** — Reference paper to base ideas on. Accepts: local PDF path, arXiv URL, or any paper URL. When set, the paper is summarized first (`memory/REF_PAPER_SUMMARY.md`), then idea generation uses it as context. Combine with `base repo` for "improve this paper with this codebase" workflows.
+- **REF_PAPER = false** — Reference paper to base ideas on. Accepts: local PDF path, arXiv URL, or any paper URL. When set, the paper is summarized first (`output/REF_PAPER_SUMMARY.md`), then idea generation uses it as context. Combine with `base repo` for "improve this paper with this codebase" workflows.
 
 > 💡 These are defaults. Override by telling the skill, e.g., `/idea-discovery "topic" — ref paper: https://arxiv.org/abs/2406.04329` or `/idea-discovery "topic" — compact: true`.
 
@@ -41,7 +41,7 @@ Each phase builds on the previous one's output. The final deliverables are a val
 
 Before starting any other phase, check for a detailed research plan in the project:
 
-1. Look for `research_plan.md` in the project root (or path passed as `$ARGUMENTS`)
+1. Look for `RESEARCH_PLAN.md` in the project root (or path passed as `$ARGUMENTS`)
 2. If found, read it and extract:
    - Problem statement and context
    - Constraints (compute, data, timeline, venue)
@@ -49,11 +49,11 @@ Before starting any other phase, check for a detailed research plan in the proje
    - Domain knowledge and non-goals
    - Existing results (if any)
 3. Use this as the primary context for all subsequent phases — it replaces the one-line prompt
-4. If both `research_plan.md` and a one-line `$ARGUMENTS` exist, merge them (brief takes priority for details, argument sets the direction)
+4. If both `RESEARCH_PLAN.md` and a one-line `$ARGUMENTS` exist, merge them (brief takes priority for details, argument sets the direction)
 
-If no brief exists, proceed normally with `$ARGUMENTS` as the research direction.
+If no plan exists, proceed normally with `$ARGUMENTS` as the research direction.
 
-> 💡 Create a brief from the template: `cp templates/RESEARCH_BRIEF_TEMPLATE.md research_plan.md`
+> 💡 Create a plan from the template: `cp templates/RESEARCH_PLAN_TEMPLATE.md RESEARCH_PLAN.md`
 
 ### Phase 0.5: Reference Paper Summary (when REF_PAPER is set)
 
@@ -107,7 +107,7 @@ Summarize the reference paper before searching the literature:
 Proceeding to literature survey with this as context.
 ```
 
-Phase 1 and Phase 2 will use `memory/REF_PAPER_SUMMARY.md` as additional context — `/lit-review` searches for related and competing work, `/generate-idea` generates ideas that build on or improve the reference paper.
+Phase 1 and Phase 2 will use `output/REF_PAPER_SUMMARY.md` as additional context — `/lit-review` searches for related and competing work, `/generate-idea` generates ideas that build on or improve the reference paper.
 
 ### Phase 1: Literature Review
 
@@ -214,7 +214,7 @@ After review, refine the top idea into a concrete proposal and plan experiments:
 - Freeze a **Problem Anchor** to prevent scope drift
 - Iteratively refine the method via GPT-5.4 review (up to 5 rounds, until score ≥ 9)
 - Generate a claim-driven experiment roadmap with ablations, budgets, and run order
-- Output: `final_proposal.md`, `output/EXPERIMENT_PLAN.md`, `experiment_tracker.md`
+- Output: `output/refine-logs/FINAL_PROPOSAL.md`, `output/refine-logs/EXPERIMENT_PLAN.md`, `output/refine-logs/EXPERIMENT_TRACKER.md`
 
 **🚦 Checkpoint:** Present the refined proposal summary:
 
@@ -267,7 +267,7 @@ Finalize `output/IDEA_REPORT.md` with all accumulated information:
 
 ## Refined Proposal
 - Proposal: `output/refine-logs/FINAL_PROPOSAL.md`
-- Experiment plan: `output/refine-logs/output/EXPERIMENT_PLAN.md`
+- Experiment plan: `output/refine-logs/EXPERIMENT_PLAN.md`
 - Tracker: `output/refine-logs/EXPERIMENT_TRACKER.md`
 
 ## Next Steps
@@ -309,7 +309,6 @@ This file is intentionally small (~30 lines) so downstream skills and session re
 - **Empirical signal > theoretical appeal.** An idea with a positive pilot outranks a "sounds great" idea without evidence.
 - **Document everything.** Dead ends are just as valuable as successes for future reference.
 - **Be honest with the reviewer.** Include negative results and failed pilots in the review prompt.
-- **Feishu notifications are optional.** If `~/.claude/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final report. If absent/off, skip silently.
 
 
 ## Composing with Workflow 2

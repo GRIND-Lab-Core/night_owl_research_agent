@@ -27,7 +27,7 @@ You run adversarial review cycles to iteratively improve research work. The arch
 - REVIEW_DOC: `output/AUTO_REVIEW.md` in project root (cumulative log)
 - REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`)
 - **HUMAN_CHECKPOINT = false** — When `true`, pause after each round's review (Phase B) and present the score + weaknesses to the user. Wait for user input before proceeding to Phase C. The user can: approve the suggested fixes, provide custom modification instructions, skip specific fixes, or stop the loop early. When `false` (default), the loop runs fully autonomously.
-- **COMPACT = false** — When `true`, (1) read `output/EXPERIMENT_LOG.md` and `output/FINDINGS.md` instead of parsing full logs on session recovery, (2) append key findings to `output/FINDINGS.md` after each round.
+- **COMPACT = false** — When `true`, (1) read `output/refine-logs/EXPERIMENT_LOG.md` and `output/refine-logs/FINDINGS.md` instead of parsing full logs on session recovery, (2) append key findings to `output/refine-logs/FINDINGS.md` after each round.
 - **REVIEWER_DIFFICULTY = medium** — Controls how adversarial the reviewer is. Three levels:
   - `medium` (default): Current behavior — MCP-based review, Claude controls what context GPT sees.
   - `hard`: Adds **Reviewer Memory** (GPT tracks its own suspicions across rounds) + **Debate Protocol** (Claude can rebut, GPT rules).

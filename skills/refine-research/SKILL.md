@@ -651,10 +651,10 @@ If the final verdict is not READY, still write the best current final version he
 ## Next Steps
 - If READY: proceed to `/experiment-design` for a full experiment roadmap, then `/deploy-experiment`
 - If REVISE: manually address the remaining mechanism weaknesses, then re-run `/refine-research`
-- If RETHINK: revisit the core mechanism, possibly with `/idea-creator`
+- If RETHINK: revisit the core mechanism, possibly with `/generate-idea`
 ```
 
-#### Step 5.4: Finalize `score-history.md`
+#### Step 5.4: Finalize `output/refine-logs/SCORE_HISTORY.md`
 
 Ensure it contains the complete score evolution table using the new dimensions.
 
@@ -714,7 +714,7 @@ This skill sits between idea discovery and execution:
 ```
 /experiment-design-pipeline              -> one-shot refine + experiment planning
 /generate-idea "direction/topic"       -> candidate ideas
-/research-refine "PROBLEM: ... | APPROACH: ..."  <- you are here
+/refine-research "PROBLEM: ... | APPROACH: ..."  <- you are here
 /experiment-design                -> detailed experiment roadmap
 /deploy-experiment                 -> execute the chosen method
 /auto-review-loop               -> iterate on results and paper

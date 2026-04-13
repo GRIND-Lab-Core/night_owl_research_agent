@@ -17,8 +17,7 @@ Research topic: $ARGUMENTS
 
 - **PAPER_LIBRARY** — Local directory containing user's paper collection (PDFs). Check these paths in order:
   1. `papers/` in the current project directory
-  2. `literature/` in the current project directory
-  3. Custom path specified by user in `CLAUDE.md` under `## Paper Library`
+  2. Custom path specified by user in `CLAUDE.md` under `## Constants`
 - **MAX_LOCAL_PAPERS = 30** — Maximum number of local PDFs to scan (read first 3 pages each). If more are found, prioritize by filename relevance to the topic.
 - **ARXIV_DOWNLOAD = false** — When `true`, download top 3-5 most relevant arXiv PDFs to PAPER_LIBRARY after search. When `false` (default), only fetch metadata (title, abstract, authors) via arXiv API — no files are downloaded.
 - **ARXIV_MAX_DOWNLOAD = 5** — Maximum number of PDFs to download when `ARXIV_DOWNLOAD = true`.
@@ -195,12 +194,12 @@ then:
 1. Group papers by theme (not chronology).
 2. Build a synthesis matrix: paper × (method, dataset, key metric, finding, limitation).
 3. Identify consensus views, contradictions, and geographic biases.
-4. Write synthesis to `memory/SYNTHESIS_YYYY-MM-DD.md`.
+4. Write synthesis to `output/SYNTHESIS_YYYY-MM-DD.md`.
 
 Find gaps that our work can fill. For each gap dimension (Methodological, Geographic, Temporal, Data, Equity, Validation):
 - Score gap: Novelty × 0.4 + Feasibility × 0.35 + Impact × 0.25
 - Rank top 5 gaps
-- Write to `memory/GAP_ANALYSIS.md`
+- Write to `output/GAP_ANALYSIS.md`
 
 ### Step 4: Output
 Present as a structured literature table:
@@ -215,16 +214,16 @@ Plus a narrative summary of the landscape (3-5 paragraphs).
 If Zotero BibTeX was exported, include a `references.bib` snippet for direct use in paper writing.
 
 ### Step 5: Save (if requested)
-- Save paper PDFs to `literature/` or `papers/`
+- Save paper PDFs to `papers/`
 - Update related work notes in project memory
 - **Update** `memory/MEMORY.md` 
 - If Obsidian is available, optionally create a literature review note in the vault
 
 ## Outputs
-- `memory/paper-cache/` — JSON paper metadata files
-- `memory/SYNTHESIS_YYYY-MM-DD.md` — thematic synthesis
-- `memory/GAP_ANALYSIS.md` — ranked gaps
-- One-line summary appended to `output/FINDINGS.md`
+- `output/paper-cache/` — JSON paper metadata files
+- `output/SYNTHESIS_YYYY-MM-DD.md` — thematic synthesis
+- `output/GAP_ANALYSIS.md` — ranked gaps
+- One-line summary appended to `output/LIT_FINDINGS.md`
 
 
 ## Key Rules
