@@ -1,6 +1,125 @@
 # NORA (Night Owl Research Agent)
 
-> A fully automatic, domain-aware AI research agent for Geoscientists, Remote Sensing researchers, and GIScientists.
+> A fully automatic, domain-aware AI research agent for Geoscientists, Remote Sensing researchers, and GIScientists — powered entirely by Claude Code skills.
+
+---
+
+## Quick Start
+
+NORA runs inside **Claude Code**. There is no Python entry point, no server to spin up, and no build step — you just drop the skills into Claude Code's skill directory and invoke the launcher.
+
+### Step 1 — Install Claude Code
+
+Install Claude Code first. Any of the official distributions works:
+
+- **CLI** (recommended):
+  ```bash
+  npm install -g @anthropic-ai/claude-code
+  claude --version
+  ```
+- **Desktop app** (macOS / Windows): download from <https://claude.com/claude-code>
+- **VS Code extension**: install "Claude Code" from the Marketplace
+- **Web**: <https://claude.ai/code>
+
+Sign in once with your Anthropic account so Claude Code can reach the API.
+
+### Step 2 — Get NORA onto your machine
+
+```bash
+git clone https://github.com/GRIND-Lab-Core/night_owl_research_agent.git
+cd night_owl_research_agent
+```
+
+### Step 3 — Install the skills into Claude Code
+
+Claude Code looks for skills under `~/.claude/skills/` (user-level, available in every project) or `<project>/.claude/skills/` (project-local). **Copy the entire `skills/` folder from this repo into one of those locations.**
+
+**macOS / Linux (user-level — recommended):**
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/* ~/.claude/skills/
+```
+
+**Windows PowerShell (user-level):**
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
+Copy-Item -Recurse -Force .\skills\* "$env:USERPROFILE\.claude\skills\"
+```
+
+**Windows bash / Git Bash:**
+```bash
+mkdir -p "$USERPROFILE/.claude/skills"
+cp -R skills/* "$USERPROFILE/.claude/skills/"
+```
+
+**Project-local alternative** (skills only visible when Claude Code is opened in this folder):
+```bash
+mkdir -p .claude/skills
+cp -R skills/* .claude/skills/
+```
+
+Also copy the launcher slash command so `/launcher` is available:
+
+```bash
+# macOS / Linux
+mkdir -p ~/.claude/commands
+cp .claude/commands/launcher.md ~/.claude/commands/
+```
+```powershell
+# Windows PowerShell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\commands" | Out-Null
+Copy-Item -Force .\.claude\commands\launcher.md "$env:USERPROFILE\.claude\commands\"
+```
+
+Verify the install — open Claude Code and run:
+
+```
+/skills
+```
+
+You should see the NORA skills (`full-pipeline`, `lit-review`, `idea-discovery-pipeline`, `deploy-experiment`, `paper-draft`, …) listed.
+
+### Step 4 — Start a research session
+
+Open the `night_owl_research_agent` folder in Claude Code (this gives NORA access to `CLAUDE.md`, `RESEARCH_PLAN.md`, `output/`, `memory/`, and `tools/`), then pick one of the two entry points:
+
+**Option A — interactive launcher** (best for first-time users):
+```
+/launcher
+```
+The launcher walks you through a short questionnaire — research topic, stage to start from, control flags (`AUTO_PROCEED`, `HUMAN_CHECKPOINT`, `COMPACT_MODE`, `REVIEWER_DIFFICULTY`) — and routes to the correct skill.
+
+**Option B — end-to-end pipeline** (best when you already know what you want to run):
+```
+Skill: full-pipeline
+"Your research direction here, e.g. 'urban soundscape inequality via street-view + audio foundation models'"
+```
+or, if you prefer a slash-style invocation:
+```
+/full-pipeline "your research direction"
+```
+`full-pipeline` chains all four stages:
+`idea-discovery-pipeline → deploy-experiment → auto-review-loop → generate-report`
+and then hands off to `paper-writing-pipeline` for the manuscript.
+
+**Tip:** for reproducibility, fill in `RESEARCH_PLAN.md` (or `BRIEF.md`) in the project root before launching. When either file is present, skills read it as the authoritative brief and ignore conflicting `$ARGUMENTS`.
+
+### Step 5 — (Optional) Enable extras
+
+- **MCP servers** — edit `.mcp.json` and register with Claude Code (`/mcp` inside the chat) to enable `filesystem`, `fetch`, `arxiv_mcp`, `geo_mcp`, `github`, and `brave_search`. See `mcp/README_MCP.md`.
+- **Hooks** — `settings.json` wires `harness/hooks/*.sh` into Claude Code's lifecycle (writes `handoff.json` on session end, validates tool use, sends desktop notifications). On Windows, run the hook scripts via Git Bash or WSL.
+- **W&B** — if your experiments use Weights & Biases, run `wandb login` once on the host where `deploy-experiment` will launch training.
+- **API keys** — set `ANTHROPIC_API_KEY` (for Claude Code), plus any optional keys you want to use (`SEMANTIC_SCHOLAR_API_KEY`, `GITHUB_TOKEN`, `BRAVE_API_KEY`).
+
+### Prerequisites summary
+
+| Requirement | Why |
+|---|---|
+| Claude Code (CLI / desktop / web / VS Code) | Runtime for skills |
+| Anthropic account + API credit | Powers the agent |
+| Python 3.10+ with `pip install arxiv requests` | `tools/arxiv_fetch.py`, `tools/semantic_scholar_fetch.py` |
+| Conda env with `geopandas, pysal, libpysal, esda, spreg, mgwr, rasterio, xarray` | Track B (spatial) experiments |
+| CUDA GPU (local / remote SSH / Modal) | Track A (deep-learning) experiments — optional |
 
 ---
 
@@ -8,49 +127,14 @@
 
 NORA automates the complete academic research lifecycle using **Claude Code skills** — Markdown-defined workflows that Claude reads and executes, selecting appropriate tools and methods based on context.
 
-1. **Literature review** — searches ArXiv, Semantic Scholar, Google Scholar, Zotero, and Obsidian for relevant papers; synthesizes findings and identifies research gaps
-2. **Idea discovery** — generates 8-12 research ideas from literature gaps, validates novelty via multi-source search, and pilot-tests top candidates
-3. **Method refinement** — iteratively refines vague research directions into problem-anchored, implementation-ready proposals via adversarial review
-4. **Experiment design & execution** — produces claim-driven experiment roadmaps and deploys to local, remote SSH, or Modal serverless GPU
-5. **Data acquisition** — discovers, evaluates, downloads, validates, and documents datasets from government portals, APIs, cloud archives, and open repositories
-6. **Spatial analysis** — guideline-driven spatial analysis: classifies analytical objectives, provides decision frameworks for method selection, and adapts to available data
-7. **Paper writing** — drafts full academic papers using journal-specific templates (IJGIS, IEEE TGRS, GRL, RSE, and more) with iterative scoring loops
-8. **Adversarial review** — up to 4 rounds of generator-evaluator-separated review with per-criterion hard floors
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`) or Claude Code desktop/web app
-- Anthropic API key (for API-based tools like ArXiv/Semantic Scholar search)
-
-### Getting Started
-
-Open this folder in Claude Code and use the interactive launcher:
-
-```
-/launcher
-```
-
-The launcher walks you through choosing a task and routes to the correct skill automatically.
-
-Or invoke skills directly:
-
-```
-/full-pipeline "topic"                      — end-to-end: idea discovery → experiments → review → paper
-/find-gaps "soundscape urban imagery"       — discover and score research ideas
-/lit-review "GWR urban heat island"         — full literature review pipeline
-/geo-search "spatial heterogeneity"         — targeted literature search
-/refine-research "problem | approach"       — iterative method refinement
-/data-download "US census tracts 2020"      — discover, download, validate, and document datasets
-/spatial-analysis "research question"       — guideline-driven spatial analysis
-/deploy-experiment                          — deploy experiments to local/remote/Modal GPU
-/review-draft output/papers/methodology.md — adversarial peer-review loop
-/write-section results                      — write one paper section
-/submit-check IJGIS                         — validate manuscript against journal requirements
-```
+1. **Literature review** — searches ArXiv, Semantic Scholar, local papers, Zotero, and Obsidian; synthesizes findings and identifies ranked research gaps.
+2. **Idea discovery** — generates 8–12 research ideas from literature gaps, validates novelty via multi-source search + external reviewer, and pilot-tests the top candidates.
+3. **Method refinement** — iteratively refines vague research directions into problem-anchored, implementation-ready proposals via adversarial review (up to 5 rounds, score ≥ 9 target).
+4. **Experiment design & execution** — produces claim-driven experiment roadmaps and deploys to local, remote SSH, or Modal serverless GPU (Track A), or runs spatial/GIScience methods on CPU (Track B), or both for mixed GeoAI.
+5. **Data acquisition** — discovers, evaluates, downloads, validates, and documents datasets from government portals, APIs, cloud archives, and open repositories with full provenance.
+6. **Spatial analysis** — guideline-driven: classifies the analytical objective, runs ESDA, selects the right model (OLS / spatial lag / error / GWR / MGWR), validates with diagnostics, and interprets.
+7. **Adversarial review** — up to 4 rounds of generator–evaluator-separated review with per-criterion hard floors; `medium` / `hard` / `nightmare` reviewer modes via Codex MCP, `codex exec`, or a Claude subagent.
+8. **Report + paper writing** — consolidates every pipeline artifact into `output/NARRATIVE_REPORT.md`, then runs `paper-writing-pipeline` to produce a journal-ready manuscript (Markdown → LaTeX → PDF/DOCX) with journal-specific profiles for IJGIS, IEEE TGRS, ISPRS JPRS, RSE, AAG, TGIS, and more.
 
 ---
 
@@ -62,39 +146,54 @@ NORA is a **skills-first** system. All research logic lives in Markdown skill fi
 
 Skills describe workflow logic in Markdown. Claude reads a skill to understand the workflow, then decides the exact sequence of actions based on context — the skill provides guidelines and decision frameworks, not rigid procedures.
 
+```
+You (or /launcher)
+    ↓ invokes
+Skill SKILL.md  ←─── reads domain knowledge from skills/knowledge/
+    ↓ Claude decides what to do
+CLI tools (tools/arxiv_fetch.py, etc.) + inline Python + MCP servers as needed
+    ↓ produce
+Output files (reports, paper-cache, figures, manuscript)
+    ↓ read by
+Next skill in pipeline
+```
+
+The single installed slash command is **`/launcher`**. Every other skill is invoked by name (Claude Code's native Skill tool) or by being called internally from another skill.
+
 ---
 
 ## Skills
 
-**19 skills** in `skills/`. Each skill is a self-contained Markdown workflow file.
+**22 workflow skills** in `skills/` plus domain knowledge in `skills/knowledge/`. Each skill is a self-contained Markdown workflow file.
 
 ### Workflow Skills
 
-| Skill | Invoke | What it does |
-|---|---|---|
-| `full-pipeline` | `/full-pipeline` | 5-stage master pipeline: idea discovery → experiment design → execution → review → report |
-| `lit-review` | `/lit-review <topic>` | Search + synthesize + gap analysis (ArXiv, Semantic Scholar, Zotero, Obsidian) |
-| `idea-discovery-pipeline` | `/find-gaps <topic>` | Full idea pipeline: lit-review → generate-idea → novelty-check → research-review → experiment-design |
-| `generate-idea` | (called by idea-discovery-pipeline) | Brainstorm 8-12 ideas, filter, pilot-test top 3, rank |
-| `novelty-check` | (called by idea-discovery-pipeline) | Verify idea is genuinely new via multi-source search |
-| `idea-review` | (called by idea-discovery-pipeline) | External critical review of research ideas |
-| `refine-research` | `/refine-research` | Iterative method refinement (up to 5 rounds, score ≥ 9 target) |
-| `experiment-design` | `/experiment-design` | Claim-driven experiment roadmap with run order, budget, decision gates |
-| `experiment-design-pipeline` | (called by idea-discovery-pipeline) | One-shot wrapper: refine-research → experiment-design |
-| `deploy-experiment` | `/deploy-experiment` | Deploy experiments to local/remote/Modal GPU |
-| `data-download` | `/data-download` | Discover, evaluate, download datasets with provenance tracking |
-| `spatial-analysis` | `/spatial-analysis` | Guideline-driven spatial analysis: question classification → method selection → diagnostics → interpretation |
-| `result-to-claim` | (called before paper-write) | Verify claims against actual results (safety gate) |
-| `auto-review-loop` | `/review-draft <file>` | Up to 4 adversarial review rounds with per-criterion floors |
-| `paper-plan` | (called before paper-write) | Build section outline + figure plan |
-| `paper-write` | `/write-section <name>` | Write section with iterative scoring loop |
-| `paper-figure` | `/geo-plot` | Generate spatial figures and captions with cartographic conventions |
-| `submit-check` | `/submit-check` | Validate manuscript against journal requirements |
-| `training-check` | (called by full-pipeline Stage 3) | Monitor running experiments for stalls/failures |
+| Skill | What it does |
+|---|---|
+| `full-pipeline` | Master pipeline: idea discovery → experiment → review → report → paper |
+| `lit-review` | Search + synthesize + gap analysis (ArXiv, Semantic Scholar, local papers, Zotero, Obsidian) |
+| `idea-discovery-pipeline` | Full idea pipeline: lit-review → generate-idea → novelty-check → idea-review → experiment-design-pipeline |
+| `generate-idea` | Brainstorm 8–12 ideas, filter, pilot-test top 3, rank (called by idea-discovery-pipeline) |
+| `novelty-check` | Verify idea novelty via multi-source search + external reviewer |
+| `idea-review` | External critical review of research ideas (Codex MCP) |
+| `refine-research` | Iterative method refinement via external review (up to 5 rounds, score ≥ 9) |
+| `experiment-design` | Claim-driven experiment roadmap with run order, budget, decision gates |
+| `experiment-design-pipeline` | One-shot wrapper: refine-research → experiment-design |
+| `deploy-experiment` | Deploy experiments — Track A (GPU ML) and/or Track B (CPU spatial) |
+| `data-download` | Discover, evaluate, download datasets with provenance tracking |
+| `spatial-analysis` | Research-question-driven spatial analysis: classification → ESDA → method → diagnostics → interpretation |
+| `auto-review-loop` | Up to 4 adversarial review rounds with per-criterion floors |
+| `generate-report` | Consolidate lit-review + idea + experiment + review artifacts into `output/NARRATIVE_REPORT.md` |
+| `paper-writing-pipeline` | Orchestrates paper-plan → paper-figure-generate → paper-draft → paper-review-loop → paper-covert |
+| `paper-plan` | Build section outline + figure plan (`output/PAPER_PLAN.md`) |
+| `paper-figure-generate` | Generate publication-quality figures, maps, diagrams, and captions |
+| `paper-draft` | Turn `output/PAPER_PLAN.md` into a journal-quality Markdown manuscript |
+| `paper-review-loop` | Reviewer-editor review of the draft manuscript and iterative revision |
+| `paper-covert` | Convert final manuscript into venue submission package (modular LaTeX, PDF, DOCX) |
+| `submit-check` | Validate manuscript against target-journal requirements |
+| `training-check` | Monitor running experiments for stalls/failures |
 
 ### Domain Knowledge
-
-Skills read from `skills/knowledge/` for reference material:
 
 | File | Domain |
 |---|---|
@@ -109,38 +208,51 @@ Skills read from `skills/knowledge/` for reference material:
 
 ---
 
+## Control Flags
+
+Edit `CLAUDE.md` before starting a long run:
+
+```yaml
+AUTO_PROCEED: false       # true = auto-select top idea after discovery; false = wait for approval
+HUMAN_CHECKPOINT: true    # true = pause after each review round; false = run autonomously
+COMPACT_MODE: false       # true = use output/PROJ_NOTES.md instead of full logs (saves context)
+EXTERNAL_REVIEW: false    # true = use Claude subagent / external reviewer LLM
+```
+
+`full-pipeline` also accepts `REVIEWER_DIFFICULTY = medium | hard | nightmare` and `ARXIV_DOWNLOAD = true | false`. Overrides can be passed inline, e.g.:
+
+```
+/full-pipeline "topic — AUTO_PROCEED: false, difficulty: nightmare"
+```
+
+---
+
 ## Harness Engineering
 
-The agent uses **Claude Code's hook system** for automated lifecycle management. Hooks are configured in `settings.json`.
+Claude Code's hook system automates lifecycle management (configured in `settings.json`):
 
-### Active Hooks
-
-| Hook | When | What It Does |
-|------|------|--------------|
+| Hook | When | What it does |
+|---|---|---|
 | `PreToolUse` | Before Bash/Write | Validates paths, blocks dangerous commands, logs intent |
 | `PostToolUse` | After tool execution | Updates state, caches results |
-| `Stop` | Agent session ends | Saves checkpoint, generates summary, sends notification |
-| `Notification` | Long tasks finish | Desktop alert via `notify-send` or macOS `osascript` |
+| `Stop` | Agent session ends | Writes `handoff.json`, updates `memory/MEMORY.md`, sends notification |
+| `Notification` | Long tasks finish | Desktop alert via `notify-send` / `osascript` |
 
 ---
 
 ## Autoresearch Scoring Loop
 
-Every paper section uses this loop:
-
 ```
-paper-writer writes draft
+paper-draft writes draft
     ↓
-peer-reviewer scores it (separate context — generator-evaluator separation)
+paper-review-loop scores it (separate context — generator–evaluator separation)
     ↓
 All 5 dimension floors met AND weighted avg ≥ 7.5? → ACCEPT
     ↓ (else)
-paper-writer revises (max 3 attempts total)
+paper-draft revises (max 3 attempts total)
     ↓
-If still not accepted after 3 attempts → flag for human review
+If still not accepted → flag for human review
 ```
-
-**The writer does NOT score its own work.** Always uses `peer-reviewer` as evaluator.
 
 | Dimension | Weight | Hard floor |
 |---|---|---|
@@ -150,74 +262,64 @@ If still not accepted after 3 attempts → flag for human review
 | Clarity | 15% | ≥ 6.0 |
 | Impact | 10% | ≥ 6.0 |
 
-Accept requires: weighted avg ≥ 7.5 AND all five floors met.
+Accept requires weighted avg ≥ 7.5 **and** all five floors met.
 
 ---
 
-## Journal Templates
+## Journal Templates & Profiles
 
-Templates enforce correct structure, section ordering, word limits, and formatting for each target journal.
+Templates enforce correct structure, section ordering, word limits, and formatting. `paper-covert` additionally loads a YAML **profile** that drives LaTeX conversion.
 
-### Geoscience
+### Markdown templates (`templates/`)
 
-| Journal | Template |
-|---------|----------|
-| Nature Geoscience | `templates/geoscience/nature_geoscience.md` |
-| JGR: Solid Earth | `templates/geoscience/jgr_solid_earth.md` |
-| Geophysical Research Letters | `templates/geoscience/grl_template.md` |
-| Earth System Science Data | `templates/geoscience/earth_system_sci.md` |
+| Category | Journals |
+|---|---|
+| `geoscience/` | Nature Geoscience, Geophysical Research Letters |
+| `remote_sensing/` | Remote Sensing of Environment, IEEE TGRS, ISPRS JPRS |
+| `giscience/` | IJGIS, Transactions in GIS, Annals of AAG |
 
-### Remote Sensing
+### Submission profiles (`skills/paper-covert/profiles/`)
 
-| Journal | Template |
-|---------|----------|
-| Remote Sensing of Environment | `templates/remote_sensing/remote_sensing_env.md` |
-| IEEE TGRS | `templates/remote_sensing/ieee_tgrs.md` |
-| ISPRS JPRS | `templates/remote_sensing/isprs_jprs.md` |
-| Remote Sensing (MDPI) | `templates/remote_sensing/rs_mdpi.md` |
-
-### GIScience
-
-| Journal | Template |
-|---------|----------|
-| IJGIS | `templates/giscience/ijgis.md` |
-| Transactions in GIS | `templates/giscience/transactions_gis.md` |
-| Annals of AAG | `templates/giscience/annals_aag.md` |
-| Cartography & GIS | `templates/giscience/cagis.md` |
-| Environment & Planning B | `templates/giscience/epb_template.md` |
+`aag_annals.yaml`, `generic.yaml`, `ieee_tgrs.yaml`, `ijgis.yaml`, `isprs_jprs.yaml`, `rse.yaml`, `tgis.yaml`.
 
 ---
 
 ## MCP Servers
 
-MCP (Model Context Protocol) servers extend the agent's capabilities. Configured in `.mcp.json`.
+Declared in `.mcp.json`. Setup notes in `mcp/README_MCP.md`.
 
 | Server | Purpose |
-|--------|---------|
+|---|---|
 | `filesystem` | Read/write local files and datasets |
-| `fetch` | Fetch web content (papers, data portals) |
-| `geo_mcp_server` | Spatial data access: GADM, OSM, Census |
+| `fetch` | Fetch web content (papers, data portals, journal pages) |
+| `geo_mcp` | Spatial data: GADM, OSM Overpass, Census ACS, GEE (`mcp/geo_mcp_server.py`) |
 | `arxiv_mcp` | ArXiv search, paper fetch, abstract parsing |
+| `github` | GitHub repo reading and code management |
+| `brave_search` | Web search for literature, datasets, documentation |
 
 ---
 
 ## Key Output Files
 
-| File | Location | Written by |
-|---|---|---|
-| Review loop history | `output/AUTO_REVIEW.md` | `auto-review-loop` skill |
-| Review loop state | `output/REVIEW_STATE.json` | `auto-review-loop` skill |
-| Paper sections | `output/papers/<slug>/` | `paper-write` skill |
-| Figures | `output/figures/` | `paper-figure` skill |
-| Session handoff | `handoff.json` | Stop hook (on session end) |
-| Experiment record | `output/EXPERIMENT_LOG.md` | `deploy-experiment` skill |
-| Discovery log | `output/FINDINGS.md` | All skills (append-only) |
-| Approved claims | `memory/APPROVED_CLAIMS.md` | `result-to-claim` skill |
-| Ranked idea candidates | `output/IDEA_REPORT.md` | `idea-discovery-pipeline` skill |
-| Experiment plan | `output/EXPERIMENT_PLAN.md` | `experiment-design` skill |
-| Data provenance log | `data/DATA_MANIFEST.md` | `data-download` skill |
-| Spatial analysis report | `output/spatial-analysis/analysis_report.md` | `spatial-analysis` skill |
-| Submission check report | `output/reports/submit_check_*.md` | `submit-check` skill |
+| File | Written by |
+|---|---|
+| `output/LIT_REVIEW_REPORT.md` | `lit-review` |
+| `output/IDEA_REPORT.md` / `NOVELTY_REPORT.md` / `IDEA_REVIEW_REPORT.md` | `idea-discovery-pipeline` |
+| `output/refine-logs/FINAL_PROPOSAL.md` / `REFINE_REPORT.md` | `refine-research` |
+| `output/refine-logs/EXPERIMENT_PLAN.md` / `output/EXPERIMENT_TRACKER.md` | `experiment-design` |
+| `output/experiment/EXPERIMENT_RESULT.md` / `EXPERIMENT_LOG.md` | `deploy-experiment` |
+| `output/experiment/data/` / `figures/` / `scripts/` | `deploy-experiment`, `spatial-analysis` |
+| `output/AUTO_REVIEW_REPORT.md` / `REVIEW_STATE.json` / `review-rounds/` | `auto-review-loop` |
+| `output/METHOD_DESCRIPTION.md` | `auto-review-loop` |
+| `output/NARRATIVE_REPORT.md` | `generate-report` |
+| `output/PAPER_PLAN.md` | `paper-plan` |
+| `output/figures/` | `paper-figure-generate` |
+| `output/manuscript/` | `paper-draft`, `paper-review-loop` |
+| `output/papers/` | `paper-covert` |
+| `output/reports/submit_check_*.md` | `submit-check` |
+| `data/DATA_MANIFEST.md`, `data/raw/` | `data-download` |
+| `output/PROJ_NOTES.md` | all skills (append-only, compact log) |
+| `memory/MEMORY.md`, `handoff.json` | Stop hook |
 
 ---
 
@@ -227,20 +329,13 @@ MCP (Model Context Protocol) servers extend the agent's capabilities. Configured
 night_owl_research_agent/
 ├── CLAUDE.md                        ← Dashboard and project conventions
 ├── README.md                        ← This file
-├── settings.json                    ← Claude Code hooks and permissions
+├── settings.json                    ← Claude Code hooks, permissions, env vars
+├── .mcp.json                        ← MCP server declarations
 │
 ├── .claude/
-│   ├── commands/                    ← Slash commands
-│   │   ├── launcher.md              ← /launcher (interactive entry point)
-│   │   ├── orchestrate.md           ← /orchestrate
-│   │   ├── full-pipeline.md         ← /full-pipeline
-│   │   ├── find-gaps.md             ← /find-gaps
-│   │   ├── lit-review.md            ← /lit-review
-│   │   ├── geo-search.md            ← /geo-search
-│   │   ├── write-section.md         ← /write-section
-│   │   └── review-draft.md          ← /review-draft
-│   │
-│   └── agents/                      ← Specialist sub-agent definitions
+│   ├── commands/
+│   │   └── launcher.md              ← /launcher (only installed slash command)
+│   └── agents/                      ← Specialist sub-agent definitions (9 total)
 │       ├── orchestrator.md
 │       ├── literature-scout.md
 │       ├── synthesis-analyst.md
@@ -251,7 +346,7 @@ night_owl_research_agent/
 │       ├── peer-reviewer.md
 │       └── citation-manager.md
 │
-├── skills/                          ← Skill logic: Markdown workflow files (19 skills)
+├── skills/                          ← 22 workflow skills + knowledge/
 │   ├── full-pipeline/SKILL.md
 │   ├── lit-review/SKILL.md
 │   ├── idea-discovery-pipeline/SKILL.md
@@ -264,72 +359,71 @@ night_owl_research_agent/
 │   ├── deploy-experiment/SKILL.md
 │   ├── data-download/SKILL.md
 │   ├── spatial-analysis/SKILL.md
-│   ├── result-to-claim/SKILL.md
 │   ├── auto-review-loop/SKILL.md
+│   ├── generate-report/{SKILL.md, templates/}
+│   ├── paper-writing-pipeline/SKILL.md
 │   ├── paper-plan/SKILL.md
-│   ├── paper-write/SKILL.md
-│   ├── paper-figure/SKILL.md
+│   ├── paper-figure-generate/{SKILL.md, templates/}
+│   ├── paper-draft/{SKILL.md, templates/}
+│   ├── paper-review-loop/{SKILL.md, templates/}
+│   ├── paper-covert/{SKILL.md, profiles/, templates/}
 │   ├── submit-check/SKILL.md
 │   ├── training-check/SKILL.md
 │   └── knowledge/                   ← Domain reference files
-│       ├── academic-writing.md
-│       ├── apa-citations.md
-│       ├── spatial-methods.md
-│       ├── geoai-domain.md
-│       ├── disaster-resilience.md
-│       ├── environmental-health.md
-│       ├── literature-mining.md
-│       └── research-iteration.md
 │
 ├── tools/                           ← CLI utilities (called by skills)
-│   ├── arxiv_fetch.py               ← ArXiv Atom API search
-│   ├── semantic_scholar_fetch.py    ← Semantic Scholar API search
-│   └── convert_skills_to_llm_chat.py ← Skill-to-chat format converter
+│   ├── arxiv_fetch.py
+│   ├── semantic_scholar_fetch.py
+│   └── convert_skills_to_llm_chat.py
 │
 ├── configs/
-│   └── default.yaml                 ← Scoring weights, domain keywords, literature settings
+│   └── default.yaml                 ← Scoring weights, domain keywords
 │
-├── templates/                       ← Journal-specific paper templates
-│   ├── geoscience/                  ← Nature Geoscience, JGR, GRL, ESSD
-│   ├── remote_sensing/              ← RSE, IEEE TGRS, ISPRS, RS-MDPI
-│   └── giscience/                   ← IJGIS, TGIS, AAG, CAGIS
+├── templates/                       ← Project + paper templates
+│   ├── EXPERIMENT_LOG_TEMPLATE.md
+│   ├── EXPERIMENT_PLAN_TEMPLATE.md
+│   ├── FINDINGS_TEMPLATE.md
+│   ├── HANDOFF_TEMPLATE.json
+│   ├── IDEA_CANDIDATES_TEMPLATE.md
+│   ├── PAPER_PLAN_TEMPLATE.md
+│   ├── RESEARCH_CONTRACT_TEMPLATE.md
+│   ├── RESEARCH_PLAN_TEMPLATE.md
+│   ├── REVIEW_STATE_TEMPLATE.json
+│   ├── geoscience/ (nature_geoscience, grl_template)
+│   ├── remote_sensing/ (ieee_tgrs, isprs_jprs, remote_sensing_env)
+│   └── giscience/ (ijgis, transactions_gis, annals_aag)
 │
 ├── harness/
-│   ├── hooks/                       ← Claude Code lifecycle hooks (shell scripts)
-│   │   ├── pre_tool_use.sh
-│   │   ├── post_tool_use.sh
-│   │   ├── stop_hook.sh
-│   │   └── notification.sh
-│   └── prompts/
-│       └── system_geo.md            ← System prompt template
+│   ├── hooks/ (pre_tool_use, post_tool_use, stop_hook, notification)
+│   └── prompts/system_geo.md
 │
 ├── mcp/                             ← MCP server implementations
-│   └── geo_mcp_server.py
+│   ├── geo_mcp_server.py
+│   └── README_MCP.md
 │
-├── memory/                          ← Persistent session memory
-│   └── MEMORY.md
+├── memory/MEMORY.md                 ← Persistent session memory
 │
 ├── output/                          ← All generated outputs
 │   ├── AUTO_REVIEW.md
 │   ├── REVIEW_STATE.json
+│   ├── ARCHITECTURE_DIAGRAM_PROMPTS.md
 │   ├── papers/
 │   ├── figures/
-│   ├── reports/
-│   ├── refine-logs/
-│   └── spatial-analysis/
+│   └── reports/
 │
-├── archived/                        ← Archived earlier versions
-└── res/                             ← Resources
+├── res/nora_architecture.png        ← Architecture diagram
+│
+└── archived/                        ← Retired skills and pre-skill Python modules
 ```
 
 ---
 
 ## Contributing
 
-1. Fork this repository
-2. Add skills in `skills/<name>/SKILL.md`
-3. Add journal templates in `templates/`
-4. Add domain knowledge in `skills/knowledge/`
+1. Fork this repository.
+2. Add skills in `skills/<name>/SKILL.md`.
+3. Add journal templates in `templates/` (plus a YAML profile in `skills/paper-covert/profiles/` if needed).
+4. Add domain knowledge in `skills/knowledge/`.
 
 ---
 
@@ -345,8 +439,8 @@ If you use NORA in your research, please cite:
 
 ```bibtex
 @software{nora,
-  title  = {NORA: Autonomous AI Research Agent for Geoscientists},
+  title  = {NORA: Night Owl Research Agent — Autonomous AI Research for Geoscience, Remote Sensing, and GIScience},
   year   = {2026},
-  url    = {https://github.com/your-org/nora}
+  url    = {https://github.com/GRIND-Lab-Core/night_owl_research_agent}
 }
 ```
