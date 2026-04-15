@@ -88,7 +88,6 @@ output/refine-logs/
 ├── round-2-review.md
 ├── round-2-refinement.md
 ├── ...
-├── review_summary.md
 ├── final_proposal.md
 ├── refine_report.md
 └── score-history.md
@@ -126,6 +125,20 @@ Before starting any phase, check whether a previous run left a checkpoint:
 
 ### Phase 0: Freeze the Problem Anchor
 
+#### Step 0.1: Source the Input
+
+Before extracting the anchor, decide what material is available:
+
+- **Read `output/IDEA_REPORT.md`** (produced by `generate-idea`) if it exists.
+- **Read `output/LIT_REVIEW_REPORT.md`** (produced by `lit-review`) if it exists.
+- **If both exist**: use them as the primary source for problem framing, technical gap, and grounding literature. `$ARGUMENTS` is treated as an optional filter / pointer to which candidate idea to refine (if `IDEA_REPORT.md` contains multiple). **Steps 1.1 and 1.2 are skipped** — the gap and grounding material are already captured.
+- **If only one exists**: read it and still skip the step it covers (IDEA_REPORT → covers Step 1.2; LIT_REVIEW_REPORT → covers Step 1.1). Perform the other step.
+- **If neither exists**: focus on `$ARGUMENTS` as the sole input and run Phase 1 in full.
+
+Record which source was used at the top of `ROUND_0_INITIAL_PROPOSAL.md`.
+
+#### Step 0.2: Extract the Anchor
+
 Before proposing anything, extract the user's immutable bottom-line problem. This anchor must be copied verbatim into every proposal and every refinement round.
 
 Write:
@@ -144,7 +157,9 @@ If later reviewer feedback would change the problem being solved, mark that as *
 
 #### Step 1.1: Scan Grounding Material
 
-Check `papers/` and `literature/` first. Read only the relevant parts needed to answer:
+**Skip this step if `output/LIT_REVIEW_REPORT.md` was read in Step 0.1** — its Synthesis section already provides grounding. Pull any additional details only if the review report is silent on a specific mechanism.
+
+Check `papers/` first. Read only the relevant parts needed to answer:
 
 - What mechanism do current methods use?
 - Where exactly do they fail for this problem?
@@ -154,6 +169,8 @@ Check `papers/` and `literature/` first. Read only the relevant parts needed to 
 If local material is insufficient, search recent top-venue/arXiv work online. Focus on **method sections, training setup, and failure modes**, not just abstracts.
 
 #### Step 1.2: Identify the Technical Gap
+
+**Skip this step if `output/IDEA_REPORT.md` was read in Step 0.1** — the selected idea already names the technical gap, bottleneck, and core claim. Lift them directly into the proposal (Method Thesis, Contribution Focus, Core Mechanism) and proceed to Step 1.3.
 
 Do not stop at generic research questions. Make the gap operational:
 
@@ -203,19 +220,27 @@ If the method is still only described as "add a module" or "use a planner," it i
 
 Experiments exist to validate the method, not to dominate the document.
 
-For each core claim, define the **smallest strong experiment** that can validate it:
+For each core claim, define the **smallest strong experiment** that can validate it. Every claim must be specified concretely enough that `/experiment-design` can turn it into a run plan without re-deriving scope.
 
-- the claim being tested
-- the necessary baseline or ablation
-- the decisive metric
-- the expected directional outcome
+Required fields per claim:
+
+- **Claim statement** — the exact mechanism-level assertion
+- **Anti-claim to rule out** — the alternative explanation a skeptical reviewer would reach for (e.g. "gain only comes from more parameters," "works only because of data leakage," "modern primitive is decorative")
+- **Dataset / split / task** — named benchmark(s), splits, and the task formulation
+- **Baseline family** — the single strongest comparison, plus the one ablation that isolates the contribution (avoid padded baseline lists)
+- **Decisive metric** — the one metric that decides the claim; secondary metrics are optional
+- **Success criterion** — the directional + magnitude outcome that would make the claim believable (e.g. "≥ 2 points on metric X under matched compute")
+- **Failure interpretation** — what a negative result would mean for the paper
+- **Stochastic variance handling** — seeds or confidence protocol if randomness matters
+- **Compute envelope** — order-of-magnitude GPU-hours so the handoff is realistic
 
 Additional rules:
 
-- Ensure one experiment block directly supports the **Problem Anchor**.
-- If complexity risk exists, include one **simplification or deletion check**.
-- If a frontier primitive is central, include one **necessity check** showing why that choice matters.
-- Default to **1-3 core experiment blocks** and leave the full execution roadmap to `/experiment-design`.
+- **Every claim must have an anti-claim.** Claims without an anti-claim cannot be experimentally isolated.
+- Ensure one experiment block directly supports the **Problem Anchor** — mark it as the **anchor block**.
+- If complexity risk exists, include one **simplification or deletion check** (compare final method against an overbuilt variant the paper intentionally rejects).
+- If a frontier primitive is central, include one **necessity check** (compare the chosen primitive against the strongest plausible simpler or older alternative).
+- Default to **1-3 core claims** and leave the full execution roadmap to `/experiment-design`.
 
 #### Step 1.6: Write the Initial Proposal
 
@@ -282,23 +307,50 @@ Use this structure:
 [Closest work, exact difference, why this is a focused mechanism-level contribution rather than a module pile-up]
 
 ## Claim-Driven Validation Sketch
-### Claim 1: [Main claim]
-- Minimal experiment:
-- Baselines / ablations:
-- Metric:
-- Expected evidence:
 
-### Claim 2: [Optional]
-- Minimal experiment:
-- Baselines / ablations:
-- Metric:
-- Expected evidence:
+### Claim 1 (ANCHOR): [Main claim statement]
+- Anti-claim to rule out:
+- Dataset / split / task:
+- Baseline family (1 strongest) + isolating ablation:
+- Decisive metric:
+- Success criterion (direction + magnitude):
+- Failure interpretation:
+- Seeds / variance protocol:
+- Compute envelope (order-of-magnitude GPU-hours):
 
-## Experiment Handoff Inputs
-- Must-prove claims:
-- Must-run ablations:
-- Critical datasets / metrics:
-- Highest-risk assumptions:
+### Claim 2: [Optional supporting claim]
+- Anti-claim to rule out:
+- Dataset / split / task:
+- Baseline family (1 strongest) + isolating ablation:
+- Decisive metric:
+- Success criterion (direction + magnitude):
+- Failure interpretation:
+- Seeds / variance protocol:
+- Compute envelope:
+
+### Simplicity / Deletion Check (required if complexity risk exists)
+- Overbuilt variant being ruled out:
+- Comparison setup:
+- Decisive metric and success criterion:
+
+### Frontier Necessity Check (required if a frontier primitive is central)
+- Simpler / older alternative being compared:
+- Comparison setup:
+- Decisive metric and success criterion:
+
+## Experiment Design Handoff
+
+Everything `/experiment-design` needs to build the roadmap without re-deriving scope:
+
+- **Anchor claim ID:**
+- **Must-prove claims (ordered):**
+- **Must-run ablations:**
+- **Critical datasets / splits / metrics:**
+- **Strongest baseline family per claim:**
+- **Central frontier primitive (or "none"):**
+- **Highest-risk assumptions:**
+- **Hard constraints** (compute cap, data access, annotation limits, deadlines):
+- **Nice-to-have vs must-run boundary:**
 
 ## Compute & Timeline Estimate
 - Estimated GPU-hours:
@@ -484,7 +536,7 @@ Save to `output/refine-logs/ROUND_N_REFINEMENT.md`:
 - Impact on core method:
 
 ## Revised Proposal
-[Full updated proposal from Problem Anchor through Claim-Driven Validation Sketch]
+[Full updated proposal from Problem Anchor through Claim-Driven Validation Sketch **and** the Experiment Design Handoff block. Every claim must still carry: anti-claim, dataset/split/task, baseline family, decisive metric, success criterion, failure interpretation. Do not drop these fields when revising.]
 ```
 
 **Checkpoint:** Update `output/refine-logs/REFINE_STATE.json` with `{"phase": "refine", "round": N, ...}`.
@@ -537,15 +589,143 @@ Then return to Phase 3 until:
 
 ### Phase 5: Final Report and Logs
 
-#### Step 5.1: Write `output/refine-logs/REVIEW_SUMMARY.md`
+#### Step 5.1: Write `output/refine-logs/FINAL_PROPOSAL.md`
 
-This file is the high-level round-by-round review record. It should answer: each round was trying to solve what, what changed, what got resolved, and what remained.
+This file is the clean, experiment-design-ready version of the proposal. It should contain **no review chatter, no round history, no raw reviewer output** — only the final method and the information `/experiment-design` needs to build a claim-driven roadmap.
+
+**Readiness gate**: before saving, verify every section below has content. If any of these are blank, the handoff will fail:
+- Problem Anchor (bottleneck + success condition)
+- Method thesis + dominant contribution
+- System overview + core mechanism + training/inference recipe
+- Each claim has: anti-claim, dataset, baseline family, decisive metric, success criterion, failure interpretation
+- At least one anchor claim is tagged
+- Experiment Design Handoff section is fully populated
+
+Use this structure:
 
 ```markdown
-# Review Summary
+# Research Proposal: [Title]
+
+**Status**: [READY / REVISE / RETHINK]
+**Final Score**: X / 10
+**Anchor Preserved**: [yes / corrected / unresolved]
+
+## Problem Anchor
+- Bottom-line problem:
+- Must-solve bottleneck:
+- Non-goals:
+- Constraints:
+- Success condition:
+
+## Method Thesis
+- One-sentence thesis:
+- Dominant contribution:
+- Optional supporting contribution:
+- Explicit non-contributions:
+- Why this is the smallest adequate intervention:
+
+## Proposed Method
+### Complexity Budget
+[What is frozen/reused, what is new, what was intentionally rejected]
+
+### System Overview
+[Step-by-step pipeline or ASCII graph; named modules]
+
+### Core Mechanism
+- Input / output:
+- Architecture or policy:
+- Representation / interface design:
+- Why this is the main novelty:
+
+### Modern Primitive Usage
+- Which LLM / VLM / Diffusion / RL-era primitive (or "none"):
+- Exact role (planner / teacher / critic / reward model / generator prior / search controller / distillation source):
+- Why it is more natural than the strongest simpler alternative:
+
+### Integration Point
+- Where the new method attaches:
+- Frozen vs trainable components:
+- Inference order:
+
+### Training Recipe
+- Data source + supervision signal:
+- Pseudo-labels / negatives / curriculum (if any):
+- Losses + weighting:
+- Stagewise vs joint training:
+- Key hyperparameters:
+
+### Failure Modes and Diagnostics
+- [Failure mode] → [Detection signal] → [Fallback or mitigation]
+
+### Novelty and Elegance Argument
+- Closest prior work:
+- Exact mechanism-level delta:
+- Why this remains a focused contribution rather than a module pile-up:
+
+## Claim-Driven Validation
+
+### Claim C1 (ANCHOR): [Main claim]
+- Anti-claim to rule out:
+- Dataset / split / task:
+- Baseline family (1 strongest) + isolating ablation:
+- Decisive metric:
+- Success criterion (direction + magnitude):
+- Failure interpretation:
+- Seeds / variance protocol:
+- Compute envelope (GPU-hours order):
+
+### Claim C2 (optional supporting): [Claim]
+- [Same fields]
+
+### Simplicity / Deletion Check (if applicable)
+- Overbuilt variant ruled out:
+- Comparison setup + decisive metric + success criterion:
+
+### Frontier Necessity Check (if applicable)
+- Simpler / older alternative compared:
+- Comparison setup + decisive metric + success criterion:
+
+## Experiment Design Handoff
+
+This section is the contract `/experiment-design` will consume. Keep it self-contained.
+
+- **Anchor claim ID:** C1
+- **Must-prove claims (ordered by priority):**
+- **Must-run ablations:**
+- **Critical datasets / splits / metrics:**
+- **Strongest baseline family per claim:**
+- **Central frontier primitive (or "none"):**
+- **Highest-risk assumptions (things that could invalidate the plan):**
+- **Hard constraints:**
+  - Compute cap:
+  - Data access / licensing:
+  - Annotation or human-eval limits:
+  - Deadlines / venue targets:
+- **Must-run vs nice-to-have boundary:**
+- **Known evaluation pitfalls to avoid** (leakage, metric mismatch, unmatched compute, train-test overlap):
+
+## Compute & Timeline Estimate
+- Estimated total GPU-hours (main method + baselines + ablations):
+- Data / annotation cost:
+- Timeline (weeks to each milestone):
+- Biggest bottleneck:
+
+## Open Weaknesses
+[Honest list of unresolved concerns the downstream experiment plan should explicitly address or accept.]
+```
+
+If the final verdict is not READY, still write the best current final version here and leave `Open Weaknesses` frank — `/experiment-design` needs to know what is shaky.
+
+#### Step 5.2: Write `output/refine-logs/REFINE_REPORT.md`
+
+This is the single consolidated report. It merges the round-by-round review record, the refinement summary, and the drift/pushback log that previously lived in a separate `REVIEW_SUMMARY.md`.
+
+```markdown
+# Refinement Report
 
 **Problem**: [user's problem]
 **Initial Approach**: [user's vague approach]
+**Input Source**: [IDEA_REPORT.md + LIT_REVIEW_REPORT.md / IDEA_REPORT.md only / LIT_REVIEW_REPORT.md only / $ARGUMENTS]
 **Date**: [today]
 **Rounds**: N / MAX_ROUNDS
 **Final Score**: X / 10
@@ -553,6 +733,16 @@ This file is the high-level round-by-round review record. It should answer: each
 
 ## Problem Anchor
 [Verbatim anchor used across all rounds]
+
+## Output Files
+- Final proposal: `output/refine-logs/FINAL_PROPOSAL.md`
+- Score history: `output/refine-logs/SCORE_HISTORY.md`
+
+## Score Evolution
+
+| Round | Problem Fidelity | Method Specificity | Contribution Quality | Frontier Leverage | Feasibility | Validation Focus | Venue Readiness | Overall | Verdict |
+|-------|------------------|--------------------|----------------------|-------------------|-------------|------------------|-----------------|---------|---------|
+| 1     | ...              | ...                | ...                  | ...               | ...         | ...              | ...             | ...     | ...     |
 
 ## Round-by-Round Resolution Log
 
@@ -574,51 +764,6 @@ This file is the high-level round-by-round review record. It should answer: each
 - Modernity status: [appropriately frontier-aware / intentionally conservative / still old-school]
 - Strongest parts of final method:
 - Remaining weaknesses:
-```
-
-#### Step 5.2: Write `output/refine-logs/FINAL_PROPOSAL.md`
-
-This file is the clean final version document. It should contain only the final proposal itself, without review chatter, round history, or raw reviewer output.
-
-```markdown
-# Research Proposal: [Title]
-
-[Paste the final refined proposal only]
-```
-
-If the final verdict is not READY, still write the best current final version here.
-
-#### Step 5.3: Write `output/refine-logs/REFINE_REPORT.md`
-
-```markdown
-# Refinement Report
-
-**Problem**: [user's problem]
-**Initial Approach**: [user's vague approach]
-**Date**: [today]
-**Rounds**: N / MAX_ROUNDS
-**Final Score**: X / 10
-**Final Verdict**: [READY / REVISE / RETHINK]
-
-## Problem Anchor
-[Verbatim anchor used across all rounds]
-
-## Output Files
-- Review summary: `output/refine-logs/REVIEW_SUMMARY.md`
-- Final proposal: `output/refine-logs/FINAL_PROPOSAL.md`
-
-## Score Evolution
-
-| Round | Problem Fidelity | Method Specificity | Contribution Quality | Frontier Leverage | Feasibility | Validation Focus | Venue Readiness | Overall | Verdict |
-|-------|------------------|--------------------|----------------------|-------------------|-------------|------------------|-----------------|---------|---------|
-| 1     | ...              | ...                | ...                  | ...               | ...         | ...              | ...             | ...     | ...     |
-
-## Round-by-Round Review Record
-
-| Round | Main Reviewer Concerns | What Was Changed | Result |
-|-------|-------------------------|------------------|--------|
-| 1     | [top issues]            | [main fixes]     | [resolved / partial / unresolved] |
-| 2     | ...                     | ...              | ...    |
 
 ## Final Proposal Snapshot
 - Canonical clean version lives in `output/refine-logs/FINAL_PROPOSAL.md`
@@ -654,11 +799,11 @@ If the final verdict is not READY, still write the best current final version he
 - If RETHINK: revisit the core mechanism, possibly with `/generate-idea`
 ```
 
-#### Step 5.4: Finalize `output/refine-logs/SCORE_HISTORY.md`
+#### Step 5.3: Finalize `output/refine-logs/SCORE_HISTORY.md`
 
 Ensure it contains the complete score evolution table using the new dimensions.
 
-#### Step 5.5: Present a Brief Summary to the User
+#### Step 5.4: Present a Brief Summary to the User
 
 ```
 Refinement complete after N rounds.
@@ -681,8 +826,7 @@ Key method upgrades:
 Remaining concerns:
 - [if any]
 
-Review summary: output/refine-logs/REVIEW_SUMMARY.md
-Full report: output/refine-logs/REFINEMENT_REPORT.md
+Full report: output/refine-logs/REFINE_REPORT.md
 Final proposal: output/refine-logs/FINAL_PROPOSAL.md
 Suggested next step: /experiment-plan
 ```
@@ -698,7 +842,8 @@ Suggested next step: /experiment-plan
 - **The smallest adequate mechanism wins.** Bigger is not automatically better.
 - **Prefer reuse over invention.** Start from strong existing backbones and add only what the bottleneck requires.
 - **Modern techniques are a prior, not a decoration.** Use LLM / VLM / Diffusion / RL-era components when they sharpen the method, not when they only make the proposal sound trendy.
-- **Minimal experiments.** Inside this skill, experiments only need to prove the core claims.
+- **Minimal experiments, maximal specificity.** Inside this skill, experiments only need to prove the core claims — but each claim must carry anti-claim, dataset, baseline family, decisive metric, success criterion, and failure interpretation so `/experiment-design` can build the roadmap without re-deriving scope.
+- **Handoff is a hard gate.** `FINAL_PROPOSAL.md` must include a fully populated Experiment Design Handoff section. A proposal that cannot be handed off has not actually been refined.
 - **Review the mechanism, not the parts count.** A long module list is not novelty.
 - **Pushback is encouraged.** If reviewer feedback causes drift or unnecessary complexity, argue back with evidence.
 - **ALWAYS use `config: {"model_reasoning_effort": "xhigh"}`** for all Codex review calls.

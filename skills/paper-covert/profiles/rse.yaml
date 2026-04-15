@@ -1,0 +1,23 @@
+venue: RSE
+publisher: Elsevier
+documentclass: article
+class_options: [11pt, a4paper]
+bib_style: elsarticle-harv
+bib_engine: bibtex
+main_text_word_limit: 10000
+abstract_word_limit: 300
+keywords_count: [5, 8]
+figure_count_limit: 12
+requires_highlights: true
+requires_author_contributions: true
+requires_data_availability: true
+ethics_statement: true
+title_page: inline
+section_headings: numbered
+math_engine: pdflatex
+build: latexmk
+notes: |
+  Elsevier venue. Highlights (3–5 bullets, each ≤ 85 chars) are mandatory.
+  RSE prefers validation against independent ground truth; ensure data
+  availability statement points to a citable source. Re-wrap with
+  `elsarticle` + `elsarticle-harv` before final submission.

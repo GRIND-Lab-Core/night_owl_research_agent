@@ -1,11 +1,11 @@
 ---
-name: experiment-plan
-description: 'Turn a refined research proposal or method idea into a detailed, claim-driven experiment roadmap. Use after `refine-research`, or when the user asks for a detailed experiment plan, ablation matrix, evaluation protocol, run order, compute budget, or paper-ready validation that supports the core problem, novelty, simplicity, and contribution.'
+name: experiment-design
+description: 'Turn a refined GIScience / remote sensing / spatial data science proposal into a detailed, claim-driven experiment roadmap. Use after `refine-research`, or when the user asks for a detailed experiment plan, ablation matrix, spatial evaluation protocol, run order, compute budget, or paper-ready validation that supports the core problem, novelty, simplicity, and contribution.'
 argument-hint: [topic-or-scope]
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Agent
 ---
 
-# Experiment Plan: Claim-Driven, Paper-Oriented Validation
+# Experiment Design: Claim-Driven, Paper-Oriented Validation
 
 Refine and concretize: **$ARGUMENTS**
 
@@ -13,16 +13,18 @@ Refine and concretize: **$ARGUMENTS**
 
 Use this skill after the method is stable enough that the next question becomes: **what exact experiments should we run, in what order, to defend the paper?** If the user wants the full chain in one request, prefer `/experiment-design-pipeline`.
 
+The skill is domain-general (AI / deep learning / ML research is fully supported) **and** must handle GIScience, remote sensing, and spatial data science research as a first-class case. When the proposal is spatial, add the spatial-specific validation layer described in *Spatial Research Addendum* below; otherwise skip it.
+
 The goal is not to generate a giant benchmark wishlist. The goal is to turn a proposal into a **claim -> evidence -> run order** roadmap that supports four things:
 
 1. the method actually solves the anchored problem
-2. the dominant contribution is real and focused
+2. the dominant contribution is real and focused (not a confound of scale, data source, or setup choice)
 3. the method is elegant enough that extra complexity is unnecessary
-4. any frontier-model-era component is genuinely useful, not decorative
+4. any frontier-model-era component (foundation model, VLM, diffusion, RL, geo/graph transformer, etc.) is genuinely useful, not decorative
 
 ## Constants
 
-- **OUTPUT_DIR = `output/refine-logs/`** — Default destination for experiment planning artifacts.
+- **OUTPUT_DIR = `output/`** — Default destination for experiment planning artifacts.
 - **MAX_PRIMARY_CLAIMS = 2** — Prefer one dominant claim plus one supporting claim.
 - **MAX_CORE_BLOCKS = 5** — Keep the must-run experimental story compact.
 - **MAX_BASELINE_FAMILIES = 3** — Prefer a few strong baselines over many weak ones.
@@ -32,22 +34,23 @@ The goal is not to generate a giant benchmark wishlist. The goal is to turn a pr
 
 ### Phase 0: Load the Proposal Context
 
-Read the most relevant existing files first if they exist:
+Read the most relevant existing files first if they exist (use `Read`; skip silently if missing):
 
-- `output/refine-logs/FINAL_PROPOSAL.md`
-- `output/refine-logs/REVIEW_SUMMARY.md`
-- `output/refine-logs/REFINE_REPORT.md`
+- `output/LIT_REVIEW_REPORT.md` — consolidated literature review, thematic synthesis, ranked gaps
+- `output/IDEA_REPORT.md` — ranked idea candidates with pilot scores
+- `output/refine-logs/FINAL_PROPOSAL.md` — refined proposal the experiments must defend
+- `output/refine-logs/REFINE_REPORT.md` — round-by-round resolution log and drift record
 
 Extract:
 
-- **Problem Anchor**
+- **Problem Anchor** (and, if spatial, the geographic / sensor / scale scope)
 - **Dominant contribution**
 - **Optional supporting contribution**
-- **Critical reviewer concerns**
-- **Data / compute / timeline constraints**
-- **Which frontier primitive is central, if any**
+- **Critical reviewer concerns** (including any spatial-validity concerns: autocorrelation, MAUP, transferability, geographic bias)
+- **Data / compute / timeline constraints** (including geospatial data licensing, AOI coverage, revisit cadence, compute for large rasters / graphs)
+- **Which frontier primitive is central, if any** (e.g., geo-foundation model, SAM-style segmenter, VLM, diffusion, GNN, transformer)
 
-If these files do not exist, derive the same information from the user's prompt.
+**If none of these files exist, focus on `$ARGUMENTS`** and derive the same information directly from the user's prompt. Do not block on missing files; do not fabricate content from files that are not present.
 
 ### Phase 1: Freeze the Paper Claims
 
@@ -123,7 +126,7 @@ Separate **must-run** from **nice-to-have** experiments.
 
 ### Phase 5: Write the Outputs
 
-#### Step 5.1: Write `output/refine-logs/EXPERIMENT_PLAN.md`
+#### Step 5.1: Write `output/EXPERIMENT_PLAN.md`
 
 Use this structure:
 
@@ -184,7 +187,7 @@ Use this structure:
 - [ ] Nice-to-have runs are separated from must-run runs
 ```
 
-#### Step 5.2: Write `output/refine-logs/EXPERIMENT_TRACKER.md`
+#### Step 5.2: Write `output/EXPERIMENT_TRACKER.md`
 
 Use this structure:
 
@@ -215,8 +218,8 @@ First three runs to launch:
 2. [run]
 3. [run]
 
-Plan file: output/refine-logs/EXPERIMENT_PLAN.md
-Tracker file: output/refine-logs/EXPERIMENT_TRACKER.md
+Plan file: output/EXPERIMENT_PLAN.md
+Tracker file: output/EXPERIMENT_TRACKER.md
 ```
 
 ## Key Rules

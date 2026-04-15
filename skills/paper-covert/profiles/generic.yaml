@@ -1,0 +1,23 @@
+venue: GENERIC
+publisher: unspecified
+documentclass: article
+class_options: [11pt, a4paper]
+bib_style: plainnat
+bib_engine: bibtex
+main_text_word_limit: null
+abstract_word_limit: 250
+keywords_count: [5, 8]
+figure_count_limit: null
+requires_highlights: false
+requires_author_contributions: true
+requires_data_availability: true
+ethics_statement: false
+title_page: inline
+section_headings: numbered
+math_engine: pdflatex
+build: latexmk
+notes: |
+  Fallback profile used when no venue-specific profile is found.
+  The output is not a publisher-official template. Document this
+  explicitly in FORMATTING_ASSUMPTIONS.md and plan to re-wrap with
+  the publisher's class at final submission time.

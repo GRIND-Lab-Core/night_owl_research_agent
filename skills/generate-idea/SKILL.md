@@ -30,7 +30,7 @@ Given a broad research direction from the user, systematically generate, validat
 
 Map the research area to understand what exists and where the gaps are.
 
-If `output/GAP_ANALYSIS.md` and `output/SYNTHESIS_YYYY-MM-DD.md` exist, read files and skip Phase 1 silently. If not, do the following:
+If `output/LIT_REVIEW_REPORT.md` exists (with Synthesis and Gap Analysis sections), read it and skip Phase 1 silently. If not, do the following:
 
 1. **Scan local paper library first**: Check `papers/` in the project directory for existing PDFs. Read first 3 pages of relevant papers to build a baseline understanding before searching online. This avoids re-discovering what the user already knows.
 
@@ -56,7 +56,7 @@ If `output/GAP_ANALYSIS.md` and `output/SYNTHESIS_YYYY-MM-DD.md` exist, read fil
 
 ### Phase 2: Idea Generation (brainstorm with external LLM)
 
-Use the external LLM via Codex MCP for divergent thinking. If external LLM is not configured properly, use subagent instead.
+Use the external LLM via Codex MCP for divergent thinking. If external LLM is not configured properly, use subagent with the most powerful model instead.
 
 ```
 mcp__codex__codex:

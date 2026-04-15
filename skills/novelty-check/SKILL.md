@@ -1,6 +1,6 @@
 ---
 name: novelty-check
-description: Validates that a research idea is genuinely novel vs. existing literature. Searches ArXiv, Semantic Scholar, and WebSearch for near-duplicate work. Produces a novelty verdict and evidence. Run on each idea from idea-discovery before investing in experiments.
+description: Validates that a research idea is genuinely novel vs. existing literature. Searches ArXiv, Semantic Scholar, and WebSearch for near-duplicate work. Produces a novelty verdict and evidence. Run on each idea from idea-discovery-pipeline before investing in experiments.
 argument-hint: [method-or-idea-description]
 tools: Bash, WebFetch, WebSearch, Read, Write, Grep, Glob
 ---
@@ -13,11 +13,14 @@ You verify that a research idea,**$ARGUMENTS** , has not already been published 
 
 ## Constants
 
-- REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`)
+- REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`). If external LLM is not configured properly, use subagent with the most powerful model instead.
 
 ## Phase 1: Identify Key Claims
 
-1. Read the user's method description
+1. **Source the idea description**:
+   - **If `output/IDEA_REPORT.md` exists** (produced by the `generate-idea` skill): read it and extract each candidate idea's method, problem, mechanism, baselines, dataset, and spatial/temporal granularity. Run the remaining phases **per idea** (typically the top-ranked candidates), and aggregate into the final report.
+   - **Otherwise**, use `$ARGUMENTS` as the method description.
+   - If both are present, prefer `output/IDEA_REPORT.md` and treat `$ARGUMENTS` as a topic filter (only check ideas matching it).
 2. Identify 3-5 core claims that would need to be novel:
    - What is the method?
    - What problem does it solve?

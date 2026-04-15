@@ -54,10 +54,10 @@ Track each stage's completion in memory/MEMORY.md.
 Delegate to **`literature-scout`** agent. Pass all keywords from program.md, geographic scope, and priority venues from configs/default.yaml. Wait for ≥ 20 papers before proceeding.
 
 ### Stage 2: Synthesis
-Delegate to **`synthesis-analyst`** agent. Pass paper cache and research questions. Output: memory/SYNTHESIS_YYYY-MM-DD.md
+Delegate to **`synthesis-analyst`** agent. Pass paper cache and research questions. Output: Synthesis section (dated) in output/LIT_REVIEW_REPORT.md
 
 ### Stage 3: Gap Analysis
-Delegate to **`gap-finder`** agent. Output: memory/GAP_ANALYSIS.md with ≥ 3 ranked gaps.
+Delegate to **`gap-finder`** agent. Output: Gap Analysis section in output/LIT_REVIEW_REPORT.md with ≥ 3 ranked gaps.
 
 ### Stage 4: Hypothesis Generation
 Delegate to **`hypothesis-generator`** agent. Output: memory/hypotheses.md with ≥ 2 hypotheses scored ≥ 5.0. Pass hypotheses to geo-specialist for feasibility review.

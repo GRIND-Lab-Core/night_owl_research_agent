@@ -1,0 +1,23 @@
+venue: IEEE_TGRS
+publisher: IEEE
+documentclass: IEEEtran
+class_options: [journal, 11pt]
+bib_style: IEEEtran
+bib_engine: bibtex
+main_text_word_limit: null
+abstract_word_limit: 250
+keywords_count: [5, 8]
+figure_count_limit: 8
+requires_highlights: false
+requires_author_contributions: false
+requires_data_availability: true
+ethics_statement: false
+title_page: inline
+section_headings: numbered
+math_engine: pdflatex
+build: latexmk
+notes: |
+  IEEE `IEEEtran` class is on CTAN and commonly pre-installed; the build
+  script will fall back to `article` only if IEEEtran is missing at compile
+  time. Page-count limits (typically 8 double-column pages for TGRS regular
+  papers) are enforced by submit-check, not here.

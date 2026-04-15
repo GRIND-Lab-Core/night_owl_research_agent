@@ -1,0 +1,22 @@
+venue: AAG_ANNALS
+publisher: Taylor & Francis
+documentclass: article
+class_options: [11pt, a4paper]
+bib_style: apacite
+bib_engine: bibtex
+main_text_word_limit: 10000
+abstract_word_limit: 200
+keywords_count: [5, 8]
+figure_count_limit: 10
+requires_highlights: false
+requires_author_contributions: true
+requires_data_availability: true
+ethics_statement: false
+title_page: inline
+section_headings: numbered
+math_engine: pdflatex
+build: latexmk
+notes: |
+  Annals of the American Association of Geographers — broad geography
+  audience. Prefer narrative-forward prose; methodological rigor still
+  required. Re-wrap with Taylor & Francis `interact` before final submission.

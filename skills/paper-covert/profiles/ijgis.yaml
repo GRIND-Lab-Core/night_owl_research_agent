@@ -1,0 +1,23 @@
+venue: IJGIS
+publisher: Taylor & Francis
+documentclass: article
+class_options: [11pt, a4paper]
+bib_style: apacite
+bib_engine: bibtex
+main_text_word_limit: 8000
+abstract_word_limit: 200
+keywords_count: [6, 8]
+figure_count_limit: 10
+requires_highlights: false
+requires_author_contributions: true
+requires_data_availability: true
+ethics_statement: false
+title_page: inline
+section_headings: numbered
+math_engine: pdflatex
+build: latexmk
+notes: |
+  Taylor & Francis ships the `interact` class via CTAN; this profile uses
+  the `article` fallback so builds work without publisher-private files.
+  Cross-check against templates/giscience/ijgis.md for venue prose rules.
+  Re-wrap with `interact` + `apacite` before final submission.

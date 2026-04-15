@@ -1,13 +1,13 @@
 ---
 name: lit-review
-description: Retrieves papers from local folder or ArXiv and Semantic Scholar using domain-aware keyword expansion, builds synthesis matrix, identifies gaps. Calls tools/arxiv_fetch.py and tools/semantic_scholar_fetch.py. Writes to memory/paper-cache/.
+description: Retrieves papers from local folder or ArXiv and Semantic Scholar using domain-aware keyword expansion, builds synthesis matrix, identifies gaps. Calls tools/arxiv_fetch.py and tools/semantic_scholar_fetch.py. Writes to output/paper-cache/ and output/LIT_REVIEW_REPORT.md.
 argument-hint: [paper-topic-or-url]
 tools: Bash, Read, Write, WebFetch, WebSearch, Agent, Glob, Grep,
 ---
 
 # Skill: lit-review
 
-You perform a targeted literature review for. Your outputs feed idea discovery and paper writing. This skill checks multiple sources **in priority order**. All are optional — if a source is not configured or not requested, skip it silently.
+You perform a targeted literature review for $ARGUMENTS. Your outputs feed idea discovery and paper writing. This skill checks multiple sources **in priority order**. All are optional — if a source is not configured or not requested, skip it silently.
 
 Research topic: $ARGUMENTS
 
@@ -23,7 +23,7 @@ Research topic: $ARGUMENTS
 - **ARXIV_MAX_DOWNLOAD = 5** — Maximum number of PDFs to download when `ARXIV_DOWNLOAD = true`.
 
 > 💡 Overrides:
-> - `/research-lit "topic" — paper library: ~/my_papers/` — custom local PDF path
+> - `/lit-review "topic" — paper library: ~/my_papers/` — custom local PDF path
 
 
 ### Source Selection
@@ -34,14 +34,14 @@ Parse `$ARGUMENTS` for a `— sources:` directive:
 
 Examples:
 ```
-/research-lit "diffusion models"                                    → all (default, no S2)
-/research-lit "diffusion models" — sources: all                     → all (default, no S2)
-/research-lit "diffusion models" — sources: zotero                  → Zotero only
-/research-lit "diffusion models" — sources: zotero, web             → Zotero + web
-/research-lit "diffusion models" — sources: local                   → local PDFs only
-/research-lit "topic" — sources: obsidian, local, web               → skip Zotero
-/research-lit "topic" — sources: web, semantic-scholar              → web + S2 API (IEEE/ACM venue papers)
-/research-lit "topic" — sources: all, semantic-scholar              → all + S2 API
+/lit-review "diffusion models"                                    → all (default, no S2)
+/lit-review "diffusion models" — sources: all                     → all (default, no S2)
+/lit-review "diffusion models" — sources: zotero                  → Zotero only
+/lit-review "diffusion models" — sources: zotero, web             → Zotero + web
+/lit-review "diffusion models" — sources: local                   → local PDFs only
+/lit-review "topic" — sources: obsidian, local, web               → skip Zotero
+/lit-review "topic" — sources: web, semantic-scholar              → web + S2 API (IEEE/ACM venue papers)
+/lit-review "topic" — sources: all, semantic-scholar              → all + S2 API
 ```
 
 ### Source Table
@@ -50,7 +50,7 @@ Examples:
 |----------|--------|----|---------------|-----------------|
 | 1 | **Zotero** (via MCP) | `zotero` | Try calling any `mcp__zotero__*` tool — if unavailable, skip | Collections, tags, annotations, PDF highlights, BibTeX, semantic search |
 | 2 | **Obsidian** (via MCP) | `obsidian` | Try calling any `mcp__obsidian-vault__*` tool — if unavailable, skip | Research notes, paper summaries, tagged references, wikilinks |
-| 3 | **Local PDFs** | `local` | `Glob: papers/**/*.pdf, literature/**/*.pdf` | Raw PDF content (first 3 pages) |
+| 3 | **Local PDFs** | `local` | `Glob: papers/**/*.pdf` | Raw PDF content (first 3 pages) |
 | 4 | **Web search** | `web` | Always available (WebSearch) | arXiv, Semantic Scholar, Google Scholar |
 | 5 | **Semantic Scholar API** | `semantic-scholar` | `tools/semantic_scholar_fetch.py` exists | Published venue papers (IEEE, ACM, Springer) with structured metadata: citation counts, venue info, TLDR. **Only runs when explicitly requested** via `— sources: semantic-scholar` or `— sources: web, semantic-scholar` |
 
@@ -68,7 +68,7 @@ Try calling a Zotero MCP tool (e.g., search). If it succeeds:
 1. **Search by topic**: Use the Zotero search tool to find papers matching the research topic
 2. **Read collections**: Check if the user has a relevant collection/folder for this topic
 3. **Extract annotations**: For highly relevant papers, pull PDF highlights and notes — these represent what the user found important
-4. **Export BibTeX**: Get citation data for relevant papers (useful for `/paper-write` later)
+4. **Export BibTeX**: Get citation data for relevant papers (useful for `/paper-draft` later)
 5. **Compile results**: For each relevant Zotero entry, extract:
    - Title, authors, year, venue
    - User's annotations/highlights (if any)
@@ -101,7 +101,7 @@ Before searching online, check if the user already has relevant papers locally:
 
 1. **Locate library**: Check **PAPER_LIBRARY** paths for PDF files
    ```
-   Glob: papers/**/*.pdf, literature/**/*.pdf
+   Glob: papers/**/*.pdf
    ```
 
 2. **De-duplicate against Zotero**: If Step 0a found papers, skip any local PDFs already covered by Zotero results (match by filename or title).
@@ -194,12 +194,12 @@ then:
 1. Group papers by theme (not chronology).
 2. Build a synthesis matrix: paper × (method, dataset, key metric, finding, limitation).
 3. Identify consensus views, contradictions, and geographic biases.
-4. Write synthesis to `output/SYNTHESIS_YYYY-MM-DD.md`.
+4. Write synthesis to the **Synthesis** section of `output/LIT_REVIEW_REPORT.md`.
 
 Find gaps that our work can fill. For each gap dimension (Methodological, Geographic, Temporal, Data, Equity, Validation):
 - Score gap: Novelty × 0.4 + Feasibility × 0.35 + Impact × 0.25
 - Rank top 5 gaps
-- Write to `output/GAP_ANALYSIS.md`
+- Write to the **Gap Analysis** section of `output/LIT_REVIEW_REPORT.md`
 
 ### Step 4: Output
 Present as a structured literature table:
@@ -221,9 +221,12 @@ If Zotero BibTeX was exported, include a `references.bib` snippet for direct use
 
 ## Outputs
 - `output/paper-cache/` — JSON paper metadata files
-- `output/SYNTHESIS_YYYY-MM-DD.md` — thematic synthesis
-- `output/GAP_ANALYSIS.md` — ranked gaps
-- One-line summary appended to `output/LIT_FINDINGS.md`
+- `output/LIT_REVIEW_REPORT.md` — single consolidated report containing:
+  1. **Findings** — one-line summaries of key discoveries (appended across runs; dated entries)
+  2. **Synthesis (YYYY-MM-DD)** — thematic synthesis with paper × (method, dataset, metric, finding, limitation) matrix
+  3. **Gap Analysis** — ranked top-5 gaps across Methodological, Geographic, Temporal, Data, Equity, Validation dimensions
+
+> When re-running the skill, **append** new dated Synthesis and Gap Analysis sections rather than overwriting — preserves history. Findings entries are always appended.
 
 
 ## Key Rules

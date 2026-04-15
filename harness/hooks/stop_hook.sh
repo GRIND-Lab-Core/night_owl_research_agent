@@ -348,8 +348,8 @@ if not handoff["pipeline"]["stage"]:
         handoff["recovery"]["resume_skill"] = "paper-plan"
     elif Path("memory/gap-analysis.md").exists():
         handoff["pipeline"]["stage"] = "Stage 3-4: Gap Analysis or Hypothesis Generation"
-        handoff["pipeline"]["next_step"] = "run idea-discovery or geo-experiment"
-        handoff["recovery"]["resume_skill"] = "idea-discovery"
+        handoff["pipeline"]["next_step"] = "run idea-discovery-pipeline or geo-experiment"
+        handoff["recovery"]["resume_skill"] = "idea-discovery-pipeline"
     else:
         handoff["pipeline"]["stage"] = "Stage 1-2: Literature Search or Synthesis"
         handoff["pipeline"]["next_step"] = "run geo-lit-review"

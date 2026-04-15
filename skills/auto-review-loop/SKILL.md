@@ -1,11 +1,11 @@
 ---
 name: auto-review-loop
-description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to output/REVIEW_STATE.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to output/AUTO_REVIEW.md.
+description: Adversarial iterative review loop with generator-evaluator separation. Up to 4 rounds of independent review, improvement, and re-evaluation. Persists state to output/REVIEW_STATE.json for recovery. Stop: score ≥ 7.5/10 on all dimensions, or 4 rounds. Writes full history to output/AUTO_REVIEW_REPORT.md.
 argument-hint: [topic-or-scope]
 tools: all
 flags:
   HUMAN_CHECKPOINT: true    # If true, pause after each round for user approval of fixes
-  COMPACT_MODE: false       # If true, use output/FINDINGS.md instead of full experiment logs
+  COMPACT_MODE: false       # If true, use output/EXPERIMENT_RESULT.md instead of full experiment logs
   EXTERNAL_REVIEW: false    # If true, use MCP claude-review or gemini-review server
 ---
 
@@ -24,10 +24,12 @@ You run adversarial review cycles to iteratively improve research work. The arch
 ## Constants
 - MAX_ROUNDS = 4
 - POSITIVE_THRESHOLD: score >= 6/10, or verdict contains "accept", "sufficient", "ready for submission"
-- REVIEW_DOC: `output/AUTO_REVIEW.md` in project root (cumulative log)
-- REVIEWER_MODEL = `gpt-5.4` — Model used via Codex MCP. Must be an OpenAI model (e.g., `gpt-5.4`, `o3`, `gpt-4o`)
+- REVIEW_DOC: `output/AUTO_REVIEW_REPORT.md` in project root (cumulative log)
+- REVIEWER_MODEL = `gpt-5.4` — Preferred external reviewer via Codex MCP (OpenAI models: `gpt-5.4`, `o3`, `gpt-4o`, etc.). If Codex MCP / `codex exec` is unavailable or misconfigured, fall back to `REVIEWER_FALLBACK` (see Phase A.0).
+- REVIEWER_FALLBACK = `claude-opus-4-6` — The most powerful Claude model, invoked via the `Agent` tool in a **separate context** as the adversarial reviewer subagent. Used automatically when the external LLM cannot be reached.
+- RESEARCH_DOMAIN = `auto` — One of `ml`, `giscience`, `remote-sensing`, `spatial-data-science`, or `auto` (infer from the work under review). Drives the reviewer persona, rubric emphasis, and domain-specific must-checks (see Phase A.5).
 - **HUMAN_CHECKPOINT = false** — When `true`, pause after each round's review (Phase B) and present the score + weaknesses to the user. Wait for user input before proceeding to Phase C. The user can: approve the suggested fixes, provide custom modification instructions, skip specific fixes, or stop the loop early. When `false` (default), the loop runs fully autonomously.
-- **COMPACT = false** — When `true`, (1) read `output/refine-logs/EXPERIMENT_LOG.md` and `output/refine-logs/FINDINGS.md` instead of parsing full logs on session recovery, (2) append key findings to `output/refine-logs/FINDINGS.md` after each round.
+- **COMPACT = false** — When `true`, (1) read `output/EXPERIMENT_LOG.md` and `output/PROJ_NOTES.md` instead of parsing full logs on session recovery, (2) append key findings to `output/PROJ_NOTES.md` after each round.
 - **REVIEWER_DIFFICULTY = medium** — Controls how adversarial the reviewer is. Three levels:
   - `medium` (default): Current behavior — MCP-based review, Claude controls what context GPT sees.
   - `hard`: Adds **Reviewer Memory** (GPT tracks its own suspicions across rounds) + **Debate Protocol** (Claude can rebut, GPT rules).
@@ -37,23 +39,48 @@ You run adversarial review cycles to iteratively improve research work. The arch
 
 ## State Persistence (Compact Recovery)
 
-Long-running loops may hit the context window limit, triggering automatic compaction. To survive this, persist state to `output/REVIEW_STATE.json` after each round:
+Long-running loops may hit the context window limit, triggering automatic compaction, or crash mid-round. To survive both, persist state to `output/REVIEW_STATE.json` **at every phase boundary** (not only end-of-round):
 
 ```json
 {
   "round": 2,
+  "phase": "C_implementing_fixes",
   "threadId": "019cd392-...",
   "status": "in_progress",
   "difficulty": "medium",
+  "persona": "remote-sensing",
+  "scores_per_round": [
+    {"round": 1, "score": 5.0, "verdict": "not ready"}
+  ],
   "last_score": 5.0,
   "last_verdict": "not ready",
+  "open_weaknesses": [
+    {"id": "W1", "title": "no spatial CV", "first_seen_round": 1, "status": "open"}
+  ],
   "pending_experiments": ["screen_name_1"],
-  "timestamp": "2026-03-13T21:00:00"
+  "round_started_at": "2026-03-13T21:00:00",
+  "loop_started_at": "2026-03-13T18:00:00",
+  "timestamp": "2026-03-13T21:14:03"
 }
 ```
-**Write this file at the end of every Phase E** (after documenting the round). Overwrite each time — only the latest state matters.
 
-**On completion** (positive assessment or max rounds), set `"status": "completed"` so future invocations don't accidentally resume a finished loop.
+**Write rules:**
+- Overwrite `output/REVIEW_STATE.json` at each phase transition (A → B → B.5 → B.6 → C → D → E). `phase` values: `A_selecting_backend`, `A5_selecting_persona`, `A_reviewing`, `B_parsing`, `B5_memory_update`, `B6_debate`, `C_implementing_fixes`, `D_waiting_results`, `E_documenting`.
+- `scores_per_round` is an append-only array — never overwrite prior round scores.
+- `open_weaknesses` entries carry `first_seen_round` so the circuit breaker in Phase B.7 can detect repeats.
+
+**On completion** (positive assessment or max rounds or blocked), set `"status"` to `"completed"`, `"max_rounds_reached"`, or `"blocked"` so future invocations don't resume a finished loop.
+
+## Budget Caps (safety valves)
+
+Hard caps that terminate the loop with `status: "blocked"` and a clear reason written to `output/AUTO_REVIEW_REPORT.md`:
+
+- **MAX_ROUNDS = 4** (as before)
+- **MAX_WALL_CLOCK_HOURS = 6** — total elapsed from `loop_started_at` to current time. Prevents runaway overnight loops. Override via argument (`max-hours: N`).
+- **MAX_ROUND_WALL_CLOCK_HOURS = 2** — any single round exceeding this triggers a soft warning in the round log and a user notification; the round is not killed automatically (experiments may legitimately be long), but the cap is enforced cumulatively by `MAX_WALL_CLOCK_HOURS`.
+- **MAX_STALLED_ROUNDS = 2** — see Phase B.7.
+
+Log `round_started_at` at the top of Phase A and compute elapsed at Phase E.
 
 
 ## Workflow
@@ -66,17 +93,63 @@ Long-running loops may hit the context window limit, triggering automatic compac
    - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **fresh start** (stale state from a killed/abandoned run — delete the file and start over)
    - If it exists AND `status` is `"in_progress"` AND `timestamp` is within 24 hours: **resume**
      - Read the state file to recover `round`, `threadId`, `last_score`, `pending_experiments`
-     - Read `output/AUTO_REVIEW.md` to restore full context of prior rounds
+     - Read `output/AUTO_REVIEW_REPORT.md` to restore full context of prior rounds
      - If `pending_experiments` is non-empty, check if they have completed (e.g., check screen sessions)
      - Resume from the next round (round = saved round + 1)
      - Log: "Recovered from context compaction. Resuming at Round N."
-2. Read project narrative documents, memory files, and any prior review documents. **When `COMPACT = true` and compact files exist**: read `output/FINDINGS.md` + `output/EXPERIMENT_LOG.md` instead of full `output/AUTO_REVIEW.md` and raw logs — saves context window.
+2. Read project narrative documents, memory files, and any prior review documents. **When `COMPACT = true` and compact files exist**: read `output/PROJ_NOTES.md` + `output/EXPERIMENT_LOG.md` instead of full `output/AUTO_REVIEW_REPORT.md` and raw logs — saves context window.
 3. Read recent experiment results (check output directories, logs)
 4. Identify current weaknesses and open TODOs from prior reviews
 5. Initialize round counter = 1 (unless recovered from state file)
-6. Create/update `output/AUTO_REVIEW.md` with header and timestamp
+6. Create/update `output/AUTO_REVIEW_REPORT.md` with header and timestamp
 
 ### Loop (repeat up to MAX_ROUNDS)
+
+#### Phase A.0: Select Reviewer Backend
+
+Before sending any review prompt, decide which backend will act as the reviewer. Probe in this order and stop at the first one that works:
+
+1. **Codex MCP (`mcp__codex__codex`)** — preferred. Check that the MCP server is registered (e.g., entry in `.mcp.json`) and that a cheap ping call returns without an auth/config error.
+2. **`codex exec` CLI** — required for `nightmare` difficulty. Check with `command -v codex` and a `--version` probe. If missing on `nightmare`, **downgrade to `hard`** and note this in `EXPERIMENT_LOG.md`.
+3. **Reviewer subagent fallback** — if neither of the above is usable, fall back to **`REVIEWER_FALLBACK`** (Claude Opus 4.6) invoked through the `Agent` tool in a fresh context. This preserves generator-evaluator separation because the subagent starts cold and sees only the review package we hand it — not this session's writer context.
+
+**How to invoke the subagent fallback:**
+
+```
+Agent({
+  description: "Adversarial reviewer — round N",
+  subagent_type: "general-purpose",
+  model: "opus",
+  prompt: "<persona from Phase A.5> + <context package> + <scoring rubric> + <difficulty-specific instructions: memory, debate, verification>"
+})
+```
+
+Rules for the fallback:
+
+- The subagent must receive the **same instructions** the external reviewer would have received (persona, rubric, output format). Only the transport changes.
+- For `hard` and `nightmare`: include the full contents of `memory/REVIEWER_MEMORY.md` in the prompt; the subagent returns an updated memory block we then persist.
+- For `nightmare`: grant the subagent read access to the repo (it already has file tools) and explicitly tell it to verify claims against code/results/logs itself, without trusting the author.
+- There is **no persistent `threadId`** across rounds. Simulate memory by re-pasting `memory/REVIEWER_MEMORY.md` + the last round's raw response on each invocation.
+- Record which backend was used (`mcp` / `codex_exec` / `subagent`) in the round entry of `output/AUTO_REVIEW_REPORT.md` so the audit trail is explicit.
+
+If **all three** backends fail, stop the loop and write a clear error to `output/AUTO_REVIEW_REPORT.md` + `output/REVIEW_STATE.json` (`status: "blocked"`, reason: "no reviewer backend available"). Do NOT silently self-review — that breaks generator-evaluator separation.
+
+#### Phase A.5: Select Domain Persona and Rubric Emphasis
+
+Pick the reviewer persona based on `RESEARCH_DOMAIN` (when `auto`, infer from the work: presence of spatial data, remote-sensing imagery, spatial statistics, GIScience theory, etc.). The persona string is injected into every Phase A prompt, whether MCP, `codex exec`, or subagent.
+
+**Persist the selected persona** in `REVIEW_STATE.json` (`persona` field) so a resumed loop does not reclassify the domain mid-run and flip personas between rounds. On resume, read `persona` from state rather than re-inferring.
+
+| Domain | Persona string | Target venues | Domain-specific must-checks |
+|---|---|---|---|
+| `ml` | "a senior ML reviewer (NeurIPS / ICML / ICLR level)" | NeurIPS, ICML, ICLR, CVPR | ablations, baselines, statistical significance, compute disclosure, seed variance |
+| `giscience` | "a senior GIScience reviewer (IJGIS / TGIS / AAG level)" | IJGIS, TGIS, Annals of the AAG, CaGIS | MAUP, spatial unit justification, CRS + projection, conceptualization of space, reproducibility of spatial workflow |
+| `remote-sensing` | "a senior remote-sensing reviewer (RSE / IEEE-TGRS / ISPRS level)" | RSE, IEEE TGRS, ISPRS J. of P&RS, Remote Sensing | sensor & preprocessing chain, radiometric/atmospheric correction, cloud masking, train/test geographic split, transferability across scenes, per-class metrics |
+| `spatial-data-science` | "a senior spatial data science reviewer" | EPB, CEUS, Geographical Analysis, IJGIS | spatial autocorrelation reported (Moran's I / Geary's C), spatial cross-validation (not random), OLS vs spatial lag / error / GWR / MGWR comparison, residual diagnostics, effect-size maps |
+
+**Mixed GeoAI (deep learning + spatial/RS data)**: combine the ML persona with the relevant geo persona; require BOTH sets of must-checks. Example preamble: "You are both a senior ML reviewer and a senior remote-sensing reviewer — hold this work to both bars."
+
+When constructing Phase A prompts below, replace the placeholder `<PERSONA>` with the persona string, and append the domain-specific must-checks as an explicit checklist the reviewer must address.
 
 #### Phase A: Review
 
@@ -95,7 +168,8 @@ mcp__codex__codex:
     [Full research context: claims, methods, results, known weaknesses]
     [Changes since last round, if any]
 
-    Please act as a senior ML reviewer (NeurIPS/ICML level).
+    Please act as <PERSONA> (see Phase A.5). Apply the domain-specific
+    must-checks listed there in addition to the general criteria below.
 
     1. Score this work 1-10 for a top venue
     2. List remaining critical weaknesses (ranked by severity)
@@ -127,7 +201,8 @@ mcp__codex__codex:
 
     [Full research context, changes since last round...]
 
-    Please act as a senior ML reviewer (NeurIPS/ICML level).
+    Please act as <PERSONA> (see Phase A.5). Apply the domain-specific
+    must-checks listed there in addition to the general criteria below.
     1. Score this work 1-10 for a top venue
     2. List remaining critical weaknesses (ranked by severity)
     3. For each weakness, specify the MINIMUM fix
@@ -144,8 +219,9 @@ mcp__codex__codex:
 
 ```bash
 codex exec "$(cat <<'PROMPT'
-You are an adversarial senior reviewer.
+You are <PERSONA> acting as an adversarial senior reviewer.
 This is Round N/MAX_ROUNDS of an autonomous review loop.
+Apply the domain-specific must-checks from Phase A.5 of the skill.
 
 ## Your Reviewer Memory (persistent across rounds)
 [Paste full contents of memory/REVIEWER_MEMORY.md]
@@ -160,7 +236,7 @@ DO THE FOLLOWING:
 2. Verify that reported numbers match what's actually in the output files
 3. Check if evaluation metrics are computed correctly (ground truth, not model output)
 4. Look for cherry-picked results, missing ablations, or suspicious hyperparameter choices
-5. Read output/NARRATIVE_REPORT.md or output/AUTO_REVIEW.md for the author's claims — then verify each against code
+5. Read output/AUTO_REVIEW_REPORT.md for the author's claims — then verify each against code
 
 OUTPUT FORMAT:
 - Score: X/10
@@ -179,14 +255,14 @@ PROMPT
 
 #### Phase B: Parse Assessment
 
-**CRITICAL: Save the FULL raw response** from the external reviewer verbatim (store in a variable for Phase E). Do NOT discard or summarize — the raw text is the primary record.
+**CRITICAL: Save the FULL raw response** from the external reviewer verbatim. Write it immediately to a **per-round raw file** `output/review-rounds/round_<N>_raw.md` (create the directory on first use). Do NOT paste the entire raw response into `output/AUTO_REVIEW_REPORT.md` — that file keeps a lean index + summary only (per Phase E). The per-round files are the authoritative record; the report is the navigable summary.
 
 Then extract structured fields:
 - **Score** (numeric 1-10)
 - **Verdict** ("ready" / "almost" / "not ready")
-- **Action items** (ranked list of fixes)
+- **Action items** (ranked list of fixes), each tagged with a stable `id` (W1, W2, …) so repeats across rounds can be detected by the Phase B.7 circuit breaker.
 
-**STOP CONDITION**: If score >= 6 AND verdict contains "ready" or "almost" → stop loop, document final state.
+**STOP CONDITION**: If score ≥ 6 AND verdict contains "ready" or "almost" → stop loop, document final state.
 
 #### Phase B.5: Reviewer Memory Update (hard + nightmare only)
 
@@ -283,7 +359,19 @@ PROMPT
 - OVERRULED: keep as-is
 - PARTIALLY SUSTAINED: revise scope
 
-Append the full debate transcript to `output/AUTO_REVIEW.md` under the round's entry.
+Append the full debate transcript to `output/AUTO_REVIEW_REPORT.md` under the round's entry.
+
+#### Phase B.7: Circuit Breakers (regression + stall detection)
+
+Before deciding to continue, check the `scores_per_round` and `open_weaknesses` arrays in `REVIEW_STATE.json`:
+
+1. **Score regression** — if `last_score` is **more than 0.5 points lower** than the previous round's score, write a `### Regression Warning` block to the current round's entry in `AUTO_REVIEW_REPORT.md` listing what changed since the previous round. Do NOT auto-terminate — a temporary dip is normal when addressing a real weakness — but if regression persists for two consecutive rounds, escalate: set `status: "blocked"`, reason: `"score regressed two rounds in a row"`, and stop the loop.
+
+2. **Stalled weakness** — a weakness whose `id` appears `open` in `open_weaknesses` for **two rounds in a row** (i.e., the fix attempted in round N did not close it by round N+1) counts as stalled. If `MAX_STALLED_ROUNDS` (= 2) stalled weaknesses accumulate, escalate: set `status: "blocked"`, reason: `"recurring unresolved weaknesses: [ids]"`, and stop the loop. A stalled weakness closed in a later round resets its counter.
+
+3. **Wall-clock cap** — if `now - loop_started_at > MAX_WALL_CLOCK_HOURS`, set `status: "blocked"`, reason: `"wall-clock budget exhausted"`, and stop.
+
+In every `blocked` case, the termination block in `AUTO_REVIEW_REPORT.md` must list: the trigger, the offending weaknesses / score history, and a recommended next step (user review, pivot, extend budget). Do NOT silently relax thresholds — see Key Rules on contract integrity.
 
 #### Human Checkpoint (if enabled)
 
@@ -334,16 +422,40 @@ Prioritization rules:
 - Prefer reframing/analysis over new experiments when both address the concern
 - Always implement metric additions (cheap, high impact)
 
+#### Phase C.5: Fix Verification (before re-review)
+
+Before moving on to Phase D / re-review, **verify each fix actually landed** — reviewers have caught "promised but not implemented" fixes in prior projects. For every action item marked as addressed this round:
+
+1. **File-level evidence** — record the file path + a 1-line diff summary (what changed) or the commit hash if committed. A fix with no file change is suspect: mark its weakness `status: "claimed_but_unverified"` in `open_weaknesses` rather than `closed`.
+2. **Executable evidence where applicable** —
+   - Code changes: ensure the file parses (`python -m py_compile <file>`) or the relevant test runs.
+   - Experiment fixes: confirm a new entry exists in `output/EXPERIMENT_LOG.md` **for this round** (not an old entry being re-cited).
+   - Analysis/metric additions: confirm the new metric appears in the results file the reviewer will see.
+3. **Claim-to-fix map** — append to the current round's entry in `AUTO_REVIEW_REPORT.md`:
+
+   ```markdown
+   ### Fix Verification (Round N)
+   | Weakness | Fix claimed | Evidence | Verified |
+   |---|---|---|---|
+   | W1 | Added spatial CV | spatial_cv.py (new, 42 lines) + run log round_N_spatial_cv.log | ✅ |
+   | W2 | Reframed scope | paper-plan.md §1.2 rewritten | ✅ |
+   | W3 | Added ablation | — no new experiment log entry found | ❌ claimed_but_unverified |
+   ```
+
+4. **Unverified fixes are NOT re-presented as "done"** in the next round's Phase A prompt — they are sent back as still-open weaknesses. This prevents the loop from gaming its own score by claiming phantom fixes.
+
+Update `REVIEW_STATE.json` with `phase: "C5_verifying_fixes"` before this step and `phase: "D_waiting_results"` after.
+
 #### Phase D: Wait for Results
 
 If experiments were launched:
 - Monitor remote sessions for completion
 - Collect results from output files and logs
-- **Training quality check** — if W&B is configured, invoke `/training-check` to verify training was healthy (no NaN, no divergence, no plateau). If W&B not available, skip silently. Flag any quality issues in the next review round.
+- **Training quality check** — if W&B is configured, invoke skill `training-check` to verify training was healthy (no NaN, no divergence, no plateau). If W&B not available, skip silently. Flag any quality issues in the next review round.
 
 #### Phase E: Document Round
 
-Append to `output/AUTO_REVIEW.md`:
+Append to `output/AUTO_REVIEW_REPORT.md`:
 
 ```markdown
 ## Round N (timestamp)
@@ -355,13 +467,7 @@ Append to `output/AUTO_REVIEW.md`:
 
 ### Reviewer Raw Response
 
-<details>
-<summary>Click to expand full reviewer response</summary>
-
-[Paste the COMPLETE raw response from the external reviewer here — verbatim, unedited.
-This is the authoritative record. Do NOT truncate or paraphrase.]
-
-</details>
+Full raw response stored at `output/review-rounds/round_<N>_raw.md` (authoritative record — verbatim, unedited). Do NOT paste it here; this report stays navigable even after many rounds. Link, don't duplicate.
 
 ### Debate Transcript (hard + nightmare only)
 
@@ -389,9 +495,9 @@ This is the authoritative record. Do NOT truncate or paraphrase.]
 - Difficulty: [medium/hard/nightmare]
 ```
 
-**Write `output/REVIEW_STATE.json`** with current round, threadId, score, verdict, and any pending experiments.
+**Write `output/REVIEW_STATE.json`** with current round, `phase: "E_documenting"`, threadId, score history (append this round's entry to `scores_per_round`), verdict, `open_weaknesses` (updated — close fixed ones, add new ones), and any pending experiments. Log `round_elapsed_hours = now - round_started_at` and surface a warning if it exceeds `MAX_ROUND_WALL_CLOCK_HOURS`.
 
-**Append to `output/FINDINGS.md`** (when `COMPACT = true`): one-line entry per key finding this round:
+**Append to `output/PROJ_NOTES.md`** (when `COMPACT = true`): one-line entry per key finding this round:
 
 ```markdown
 - [Round N] [positive/negative/unexpected]: [one-sentence finding] (metric: X.XX → Y.YY)
@@ -401,17 +507,26 @@ Increment round counter → back to Phase A.
 
 ### Termination
 
-When loop ends (positive assessment or max rounds):
+When loop ends (positive assessment, max rounds, or `blocked` from Phase B.7 / contract violation):
 
-1. Update `output/REVIEW_STATE.json` with `"status": "completed"`
-2. Write final summary to `output/AUTO_REVIEW.md`
-3. Update project notes with conclusions
-4. **Write method/pipeline description** to `output/AUTO_REVIEW.md` under a `## Method Description` section — a concise 1-2 paragraph description of the final method, its architecture, and data flow. This serves as input for `/paper-illustration` in Workflow 3 (so it can generate architecture diagrams automatically).
-5. **Generate claims from results** — invoke `/result-to-claim` to convert experiment results from `output/AUTO_REVIEW.md` into structured paper claims. Output: `output/CLAIMS_FROM_RESULTS.md`. This bridges Workflow 2 → Workflow 3 so `/paper-plan` can directly use validated claims instead of extracting them from scratch. If `/result-to-claim` is not available, skip silently.
+1. Update `output/REVIEW_STATE.json` with terminal `status`:
+   - `"completed"` — POSITIVE_THRESHOLD met
+   - `"max_rounds_reached"` — hit MAX_ROUNDS without passing
+   - `"blocked"` — Phase B.7 circuit breaker or contract violation
+2. Write final summary to `output/AUTO_REVIEW_REPORT.md` including the score history table (from `scores_per_round`) and the final `open_weaknesses` list.
+3. Update project notes (`output/PROJ_NOTES.md` when `COMPACT = true`) with conclusions.
+4. **Write method/pipeline description** to a standalone file `output/METHOD_DESCRIPTION.md` — a concise 1–2 paragraph description of the final method, its architecture, and data flow. Cross-link it from `AUTO_REVIEW_REPORT.md` under a `## Method Description` section. Standalone form is required so skill `paper-figure-generate` (architecture diagrams) and skill `paper-draft` (methods section) can read it cleanly without parsing the review report.
+5. **Update `handoff.json`** so the next session / next pipeline stage knows what to do:
+   - `pipeline.stage` = `"review_complete"` / `"review_blocked"` / `"review_maxed"` (match terminal status)
+   - `pipeline.next_step` = on success: `"invoke generate-report to consolidate into NARRATIVE_REPORT.md"`; on blocked: `"resolve blockers listed in AUTO_REVIEW_REPORT.md before resuming"`; on max rounds: `"user decides: manual revision or pivot"`
+   - `recovery.resume_skill` = `"generate-report"` on success, else `"auto-review-loop"`
+   - `recovery.human_checkpoint_needed` = `true` on `blocked` / `max_rounds_reached`
+   - `recovery.read_first` = `["output/AUTO_REVIEW_REPORT.md", "output/METHOD_DESCRIPTION.md", "output/REVIEW_STATE.json"]`
 6. If stopped at max rounds without positive assessment:
-   - List remaining blockers
+   - List remaining blockers (from `open_weaknesses`)
    - Estimate effort needed for each
    - Suggest whether to continue manually or pivot
+7. If stopped `blocked`: ensure `output/CONTRACT_VIOLATION.md` (if any) is referenced in the termination block, and do NOT proceed to downstream skills (`generate-report`, `paper-writing-pipeline`) until a human resolves the blocker.
 
 
 ## Key Rules
@@ -420,268 +535,15 @@ When loop ends (positive assessment or max rounds):
 
 - ALWAYS use `config: {"model_reasoning_effort": "xhigh"}` for maximum reasoning depth
 - Save threadId from first call, use `mcp__codex__codex-reply` for subsequent rounds
-- **Anti-hallucination citations**: When adding references during fixes, NEVER fabricate BibTeX. Use the same DBLP → CrossRef → `[VERIFY]` chain as `/paper-write`: (1) `curl -s "https://dblp.org/search/publ/api?q=TITLE&format=json"` → get key → `curl -s "https://dblp.org/rec/{key}.bib"`, (2) if not found, `curl -sLH "Accept: application/x-bibtex" "https://doi.org/{doi}"`, (3) if both fail, mark with `% [VERIFY]`. Do NOT generate BibTeX from memory.
+- **Anti-hallucination citations**: When adding references during fixes, NEVER fabricate BibTeX. Use the same DBLP → CrossRef → `[VERIFY]` chain as skill `paper-draft`: (1) `curl -s "https://dblp.org/search/publ/api?q=TITLE&format=json"` → get key → `curl -s "https://dblp.org/rec/{key}.bib"`, (2) if not found, `curl -sLH "Accept: application/x-bibtex" "https://doi.org/{doi}"`, (3) if both fail, mark with `% [VERIFY]`. Do NOT generate BibTeX from memory.
 - Be honest — include negative results and failed experiments
 - Do NOT hide weaknesses to game a positive score
 - Implement fixes BEFORE re-reviewing (don't just promise to fix)
 - **Exhaust before surrendering** — before marking any reviewer concern as "cannot address": (1) try at least 2 different solution paths, (2) for experiment issues, adjust hyperparameters or try an alternative baseline, (3) for theory issues, provide a weaker version of the result or an alternative argument, (4) only then concede narrowly and bound the damage. Never give up on the first attempt.
+- **Contract integrity — never silently relax thresholds.** `POSITIVE_THRESHOLD`, `MAX_ROUNDS`, and all budget caps are fixed once the loop has started. If mid-loop you find yourself tempted to lower the passing score, redefine the verdict, mark a stalled weakness as "out of scope" to unblock the circuit breaker, or otherwise weaken the acceptance criteria to force a positive outcome — **stop and write `output/CONTRACT_VIOLATION.md`** instead. The file must record: (1) the original constraint, (2) the proposed relaxation, (3) why the loop is stuck, (4) what would legitimately resolve it. Then set `REVIEW_STATE.json` `status: "blocked"`, surface to the user, and wait for explicit approval before any threshold changes. Per CLAUDE.md Prohibited Behaviors, silently lowering experiment pass/fail criteria is forbidden; the same rule applies to review thresholds here.
+- **No phantom fixes** — a weakness may only be closed in `open_weaknesses` when Phase C.5 verification succeeds. Claimed-but-unverified fixes stay open and are re-surfaced to the reviewer next round. Never mark a fix "done" based on intent alone.
 - If an experiment takes > 30 minutes, launch it and continue with other fixes while waiting
 - Document EVERYTHING — the review log should be self-contained
 - Update project notes after each round, not just at the end
 
-## Prompt Template for Round 2+
-
-```
-mcp__codex__codex-reply:
-  threadId: [saved from round 1]
-  config: {"model_reasoning_effort": "xhigh"}
-  prompt: |
-    [Round N update]
-
-    Since your last review, we have:
-    1. [Action 1]: [result]
-    2. [Action 2]: [result]
-    3. [Action 3]: [result]
-
-    Updated results table:
-    [paste metrics]
-
-    Please re-score and re-assess. Are the remaining concerns addressed?
-    Same format: Score, Verdict, Remaining Weaknesses, Minimum Fixes.
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-- Generator: `paper-writer` agent writes content
-- Evaluator: `peer-reviewer` agent scores it — invoked independently with **no shared context** with the writer
-- This is enforced in Step 2 below: always route evaluation to `peer-reviewer`, never ask `paper-writer` to self-assess
-
-If you are currently acting as a writer and are asked to evaluate, refuse and re-invoke the skill as evaluator mode.
-
----
-
-## Startup: Initialize or Resume
-
-1. Check if `handoff.json` exists — read it first for pipeline state (fast context recovery)
-2. Check if `output/REVIEW_STATE.json` exists:
-   - If yes: read current round number, score, per-criterion scores, and pending_fixes. Resume from next phase.
-   - If no: initialize `output/REVIEW_STATE.json` with round=0, per_criterion={}, status="in_progress"
-3. Check if `output/AUTO_REVIEW.md` exists; if not, create it with header
-4. Identify what to review: read `output/papers/` for sections, or `output/EXPERIMENT_LOG.md` for experiment results
-
----
-
-## Hard Per-Criterion Thresholds
-
-**Accept only if ALL dimensions meet their floor.** A 9.5 in novelty does not compensate for a 4.0 in rigor.
-
-| Dimension | Weight | Floor (hard threshold) | What "floor" means |
-|---|---|---|---|
-| Novelty | 30% | ≥ 6.5 | Contribution clearly distinguished from prior work |
-| Rigor | 25% | ≥ 7.0 | OLS+GWR+MGWR compared; Moran's I reported; reproducible |
-| Literature coverage | 20% | ≥ 6.5 | ≥ 15 citations, majority ≥ 2020, key GeoAI/soundscape papers cited |
-| Clarity | 15% | ≥ 6.0 | Active voice; specific numbers; no "may", "could", "might" claims |
-| Impact | 10% | ≥ 6.0 | Practical application or scientific significance stated |
-
-**Weighted average threshold:** ≥ 7.5 overall AND all floors met.
-
-If any single floor is missed, the verdict is **not acceptable** regardless of weighted average.
-
----
-
-## Few-Shot Score Calibration
-
-Use these anchors to calibrate scores consistently. Read them before scoring.
-
-### Score 6.0 / 10 (Needs Work)
-> Methodology section describes GWR but does not report MGWR or compare the two. Moran's I of residuals is mentioned but the value is not given. Seven of 12 citations are older than 2019. The problem statement uses passive voice throughout and does not specify which cities are studied. Generation fidelity metrics (FID, SSIM) are mentioned but their values are not reported numerically.
-- Rigor floor MISSED (no MGWR, no Moran's I value)
-- Literature floor MISSED (too many old citations)
-- Would score: Novelty 7.0, Rigor 4.5, Literature 5.5, Clarity 5.0, Impact 6.5 → average ~5.7
-
-### Score 7.5 / 10 (Acceptable — Minimum Bar)
-> Methodology section runs OLS, GWR, and MGWR on NYC, London, Singapore data. Reports R² (OLS 0.43, GWR 0.61, MGWR 0.67) and Moran's I of MGWR residuals (0.08, p=0.12, not significant — spatial autocorrelation removed). Cites 16 papers, 13 from 2020–2025 including ControlNet (Zhang 2023), ImageBind (Girdhar 2023), CLAP (LAION 2022). Uses active voice. FID = 42.3 reported. One limitation: GWI (Green View Index) is described but its contribution to FID is not ablated.
-- All floors met (barely)
-- Weighted average ≈ 7.5
-
-### Score 9.0 / 10 (Strong — Target Quality)
-> Methodology clearly positions contribution against three prior systems (sound2sight, UrbanCLIP, GeoGen) with head-to-head FID/SSIM/LPIPS table. OLS R²=0.43, GWR R²=0.61, MGWR R²=0.67 across all three cities; Moran's I = 0.08 (p=0.12). MGWR local coefficient maps reveal that sky-view factor matters more in Singapore (β̄=0.41) than London (β̄=0.19). All 22 citations ≥ 2019; 7 from ISPRS/IEEE-TGRS/CEUS venues. Ablation: removing soundscape conditioning drops FID by 18.3 points. Each figure has scale bar, north arrow, CRS label, inset locator.
-- All floors exceeded
-- Novelty 9.5, Rigor 9.0, Literature 9.0, Clarity 8.5, Impact 8.5 → average ~9.0
-
----
-
-## Loop: Up to 4 Rounds
-
-For each round (while round < 4 AND NOT all_floors_met AND weighted_avg < 7.5):
-
-### Round Step 1: Prepare Review Context
-
-Build the review context (**evaluator does NOT read generator's working notes**):
-- Current work: the specific section file(s) being reviewed
-- Previous round scores: last entry from `output/AUTO_REVIEW.md` (scores only, not writer's reasoning)
-- Research contract: `research_contract.md` (ground truth for what was promised)
-- Approved claims: `memory/APPROVED_CLAIMS.md` (to check if claims are grounded)
-
-COMPACT_MODE: use `output/FINDINGS.md` + latest section files only (not full EXPERIMENT_LOG).
-Full context: read section files + `memory/APPROVED_CLAIMS.md`.
-
-**Do NOT include**: writer's draft notes, prior writer context, or any information that blurs generator/evaluator separation.
-
-### Round Step 2: Evaluate (Independent Evaluator)
-
-**Always use peer-reviewer agent as evaluator — never self-review.**
-
-Invoke `.claude/agents/peer-reviewer.md` with this exact instruction:
-```
-Score each dimension independently using the calibration anchors in auto-review-loop/SKILL.md.
-For each dimension, state: score (0–10), floor (from skill), pass/fail, and one specific improvement required.
-Report: weighted average, whether all floors are met, and verdict (accept/revise/reject).
-```
-
-The peer-reviewer MUST return a structured response:
-```
-Novelty:             X.X / 10 (floor 6.5) — PASS/FAIL — [specific improvement]
-Rigor:               X.X / 10 (floor 7.0) — PASS/FAIL — [specific improvement]
-Literature coverage: X.X / 10 (floor 6.5) — PASS/FAIL — [specific improvement]
-Clarity:             X.X / 10 (floor 6.0) — PASS/FAIL — [specific improvement]
-Impact:              X.X / 10 (floor 6.0) — PASS/FAIL — [specific improvement]
-Weighted average:    X.X / 10
-All floors met:      YES / NO
-Verdict:             ACCEPT / NEEDS REVISION / REJECT
-Top 3 must-fix items:
-1. [specific, actionable fix with target dimension]
-2. [specific, actionable fix with target dimension]
-3. [specific, actionable fix with target dimension]
-```
-
-If EXTERNAL_REVIEW is true and MCP server is available: call `claude-review` or `gemini-review` with the same instruction; parse the structured response.
-
-### Round Step 3: Evaluate Stop Condition
-
-Parse the reviewer response to extract per-criterion scores and floors.
-
-**ACCEPT if:**
-- Weighted average ≥ 7.5 AND
-- All five dimension floors are met
-
-**CONTINUE if:**
-- Any floor is missed OR weighted average < 7.5
-- AND round < 4
-
-**FORCE STOP if:**
-- round == 4 (max rounds reached, even if not accepted)
-
-On ACCEPT: write to `output/AUTO_REVIEW.md`: `STOP — accepted at round N, score X.X/10, all floors met`
-Update `output/REVIEW_STATE.json`: `{"status": "complete", "final_score": X.X, "all_floors_met": true}`
-
-On FORCE STOP: write to `output/AUTO_REVIEW.md`: `STOP — max rounds reached, score X.X/10 — human review required`
-Update `output/REVIEW_STATE.json`: `{"status": "max_rounds", "final_score": X.X}`
-
-### Round Step 4: Implement Fixes (Generator)
-
-Focus only on dimensions that failed their floor or are below 7.5.
-
-For each must-fix item, route to the appropriate generator:
-- **Write more content / restructure**: call `.claude/agents/paper-writer.md` with section + specific reviewer feedback + calibration target
-- **Run new experiment or ablation**: add to `output/EXPERIMENT_PLAN.md` and run skill `geo-experiment` EXECUTE mode
-- **Fix spatial analysis**: run skill `spatial-analysis` for re-interpretation and Moran's I
-- **Add or fix citations**: call `.claude/agents/citation-manager.md` with APA 7th edition format
-- **Fix figures**: run skill `paper-figure` with corrected cartographic conventions
-
-If HUMAN_CHECKPOINT is true: show action plan (what will be fixed, by which agent) and await user confirmation before executing.
-
-After implementing fixes, re-evaluate only the fixed dimensions (not all five) to verify improvement.
-
-### Round Step 5: Persist State
-
-Write to `output/REVIEW_STATE.json`:
-```json
-{
-  "round": <N>,
-  "score": <weighted_average>,
-  "per_criterion": {
-    "novelty": {"score": X.X, "floor": 6.5, "pass": true|false},
-    "rigor": {"score": X.X, "floor": 7.0, "pass": true|false},
-    "literature": {"score": X.X, "floor": 6.5, "pass": true|false},
-    "clarity": {"score": X.X, "floor": 6.0, "pass": true|false},
-    "impact": {"score": X.X, "floor": 6.0, "pass": true|false}
-  },
-  "all_floors_met": true|false,
-  "verdict": "<verdict>",
-  "completed_fixes": ["<fix1>", "<fix2>"],
-  "pending_fixes": [],
-  "timestamp": "<ISO datetime>",
-  "status": "in_progress"
-}
-```
-
-Append to `output/AUTO_REVIEW.md`:
-```markdown
-## Round N — Weighted avg: X.X/10 — <timestamp>
-
-### Per-Criterion Scores
-| Dimension | Score | Floor | Status |
-|---|---|---|---|
-| Novelty | X.X | 6.5 | PASS/FAIL |
-| Rigor | X.X | 7.0 | PASS/FAIL |
-| Literature | X.X | 6.5 | PASS/FAIL |
-| Clarity | X.X | 6.0 | PASS/FAIL |
-| Impact | X.X | 6.0 | PASS/FAIL |
-
-### Must-Fix Items
-1. [fix 1]
-2. [fix 2]
-
-### Fixes Implemented
-1. [what was done]
-2. [what was done]
-
-### Post-fix Re-score (dimensions that changed)
-- Rigor: 5.5 → 7.2 (PASS)
-```
-
-Increment round counter. Continue to next round.
-
----
-
-## Exit Report
-
-When loop exits, output:
-```
-Auto-review loop complete.
-Rounds run: N/4
-Weighted average: X.X/10
-Floors met: [list which passed/failed]
-All floors met: YES/NO
-Verdict: ACCEPTED / NOT ACCEPTED — human review required
-
-Key improvements made:
-- [improvement 1]
-- [improvement 2]
-
-Full history: output/AUTO_REVIEW.md
-State file: output/REVIEW_STATE.json
-
-[If not accepted]: The following dimensions are below floor — do not proceed to final submission:
-  - [Dimension]: X.X (floor Y.Y) — [specific remaining issue]
-
-[If accepted]: Ready for references compilation. Run /write-section references.
-```
+For Round 2+ prompts, use `mcp__codex__codex-reply` with the saved `threadId` (medium/hard) or re-invoke `codex exec` with reviewer memory pasted in (nightmare) — see Phase A. The prompt includes: actions taken since last round, updated results, and a request to re-score using the same format. A standalone template block is intentionally omitted to keep Phase A as the single source of truth.

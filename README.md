@@ -74,13 +74,13 @@ Skills describe workflow logic in Markdown. Claude reads a skill to understand t
 |---|---|---|
 | `full-pipeline` | `/full-pipeline` | 5-stage master pipeline: idea discovery → experiment design → execution → review → report |
 | `lit-review` | `/lit-review <topic>` | Search + synthesize + gap analysis (ArXiv, Semantic Scholar, Zotero, Obsidian) |
-| `idea-discovery` | `/find-gaps <topic>` | Full idea pipeline: lit-review → generate-idea → novelty-check → research-review → experiment-design |
-| `generate-idea` | (called by idea-discovery) | Brainstorm 8-12 ideas, filter, pilot-test top 3, rank |
-| `novelty-check` | (called by idea-discovery) | Verify idea is genuinely new via multi-source search |
-| `idea-review` | (called by idea-discovery) | External critical review of research ideas |
+| `idea-discovery-pipeline` | `/find-gaps <topic>` | Full idea pipeline: lit-review → generate-idea → novelty-check → research-review → experiment-design |
+| `generate-idea` | (called by idea-discovery-pipeline) | Brainstorm 8-12 ideas, filter, pilot-test top 3, rank |
+| `novelty-check` | (called by idea-discovery-pipeline) | Verify idea is genuinely new via multi-source search |
+| `idea-review` | (called by idea-discovery-pipeline) | External critical review of research ideas |
 | `refine-research` | `/refine-research` | Iterative method refinement (up to 5 rounds, score ≥ 9 target) |
 | `experiment-design` | `/experiment-design` | Claim-driven experiment roadmap with run order, budget, decision gates |
-| `experiment-design-pipeline` | (called by idea-discovery) | One-shot wrapper: refine-research → experiment-design |
+| `experiment-design-pipeline` | (called by idea-discovery-pipeline) | One-shot wrapper: refine-research → experiment-design |
 | `deploy-experiment` | `/deploy-experiment` | Deploy experiments to local/remote/Modal GPU |
 | `data-download` | `/data-download` | Discover, evaluate, download datasets with provenance tracking |
 | `spatial-analysis` | `/spatial-analysis` | Guideline-driven spatial analysis: question classification → method selection → diagnostics → interpretation |
@@ -213,7 +213,7 @@ MCP (Model Context Protocol) servers extend the agent's capabilities. Configured
 | Experiment record | `output/EXPERIMENT_LOG.md` | `deploy-experiment` skill |
 | Discovery log | `output/FINDINGS.md` | All skills (append-only) |
 | Approved claims | `memory/APPROVED_CLAIMS.md` | `result-to-claim` skill |
-| Ranked idea candidates | `output/IDEA_REPORT.md` | `idea-discovery` skill |
+| Ranked idea candidates | `output/IDEA_REPORT.md` | `idea-discovery-pipeline` skill |
 | Experiment plan | `output/EXPERIMENT_PLAN.md` | `experiment-design` skill |
 | Data provenance log | `data/DATA_MANIFEST.md` | `data-download` skill |
 | Spatial analysis report | `output/spatial-analysis/analysis_report.md` | `spatial-analysis` skill |
@@ -254,7 +254,7 @@ night_owl_research_agent/
 ├── skills/                          ← Skill logic: Markdown workflow files (19 skills)
 │   ├── full-pipeline/SKILL.md
 │   ├── lit-review/SKILL.md
-│   ├── idea-discovery/SKILL.md
+│   ├── idea-discovery-pipeline/SKILL.md
 │   ├── generate-idea/SKILL.md
 │   ├── novelty-check/SKILL.md
 │   ├── idea-review/SKILL.md

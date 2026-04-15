@@ -1,8 +1,8 @@
 # Idea Candidates Report
 
 **Generated**: [YYYY-MM-DD]
-**Literature basis**: [memory/SYNTHESIS_YYYY-MM-DD.md]
-**Gaps addressed**: [N] from memory/GAP_ANALYSIS.md
+**Literature basis**: output/LIT_REVIEW_REPORT.md → Synthesis (YYYY-MM-DD)
+**Gaps addressed**: [N] from output/LIT_REVIEW_REPORT.md → Gap Analysis
 
 ---
 

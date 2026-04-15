@@ -1,0 +1,22 @@
+venue: TGIS
+publisher: Wiley
+documentclass: article
+class_options: [11pt, a4paper]
+bib_style: apacite
+bib_engine: bibtex
+main_text_word_limit: 8000
+abstract_word_limit: 200
+keywords_count: [5, 8]
+figure_count_limit: 10
+requires_highlights: false
+requires_author_contributions: true
+requires_data_availability: true
+ethics_statement: false
+title_page: inline
+section_headings: numbered
+math_engine: pdflatex
+build: latexmk
+notes: |
+  Wiley `wlscirep` / `wileyNJD` classes exist but are not bundled; use the
+  `article` fallback. Transactions in GIS targets a GIScience audience
+  broader than IJGIS — keep methodological prose accessible.
