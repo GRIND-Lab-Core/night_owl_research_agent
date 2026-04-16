@@ -69,6 +69,9 @@ EXTERNAL_REVIEW: false    # true = use claude subagent or external reviewer LLM 
 | `output/PAPER_PLAN.md` | Section outline + figure plan | skill `paper-plan` |
 | `data/DATA_MANIFEST.md` | Downloaded dataset provenance log | skill `data-download` |
 | `data/raw/` | Raw downloaded datasets (never modified) | skill `data-download` |
+| `data/processed/` | Transformed/cleaned datasets | skill `geodata-operation` |
+| `output/metadata-inspect/` | Metadata reports (Markdown + JSON) per inspected dataset | skill `metadata-inspect` |
+| `output/geodata-operation/` | Operation logs, scripts, preview maps | skill `geodata-operation` |
 | `output/spatial-analysis/` | Spatial analysis reports, figures, scripts | skill `spatial-analysis` |
 | `output/manuscript/` | Draft + reviewed manuscript files | skills `paper-draft`, `paper-review-loop` |
 | `output/papers/` | Final/submission-ready paper files | skill `paper-covert` |
@@ -119,6 +122,8 @@ Slash commands: the only installed slash command is **`/launcher`** (see `.claud
 | `experiment-design-pipeline` | One-shot wrapper: refine-research → experiment-design |
 | `deploy-experiment` | Deploy experiments to local / remote / Modal GPU and record results |
 | `data-download` | Discover, evaluate, download datasets from the internet with provenance tracking |
+| `metadata-inspect` | Full geodata inspection: format detection, CRS assessment, schema, quality flags, suitability report for vector/raster/tabular data |
+| `geodata-operation` | Geodata manipulation: spatial join, overlay, buffer, dissolve, reproject, format conversion, raster indices (NDVI/NDWI), zonal stats, mosaic, geocoding |
 | `spatial-analysis` | Research-question-driven spatial analysis: question classification → ESDA → method selection → diagnostics → interpretation |
 | `auto-review-loop` | Up to 4 adversarial review rounds with per-criterion floors (generic drafts) |
 | `generate-report` | Consolidate lit-review + idea + experiment + review artifacts into `output/NARRATIVE_REPORT.md` |
@@ -318,6 +323,8 @@ night_owl_research_agent/
 │   ├── experiment-design-pipeline/SKILL.md
 │   ├── deploy-experiment/SKILL.md
 │   ├── data-download/SKILL.md
+│   ├── metadata-inspect/SKILL.md
+│   ├── geodata-operation/SKILL.md
 │   ├── spatial-analysis/SKILL.md
 │   ├── auto-review-loop/SKILL.md
 │   ├── generate-report/SKILL.md
