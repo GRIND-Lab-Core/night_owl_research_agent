@@ -460,6 +460,24 @@ Write to `output/spatial-analysis/analysis_report.md`:
 
 ---
 
+## 7.5 Human Checkpoint — Data Synthesis
+
+Honor the `HUMAN_CHECKPOINT` flag in `CLAUDE.md` (default: `true`). Spatial analysis frequently *creates* derived layers (interpolated surfaces, predicted maps, simulated permutations, areal-interpolated reaggregations) that downstream skills may treat as observations. When `HUMAN_CHECKPOINT` is `true`, **PAUSE** and request explicit user approval before any of the following; when `false`, log the decision to `output/PROJ_NOTES.md` and the analysis report's **Diagnostics and Robustness** section, and proceed.
+
+| Trigger | Show before pausing |
+|---|---|
+| Producing an **interpolated surface** (Kriging, IDW, regression-Kriging) that will be saved to `output/spatial-analysis/` and may be reused as input by another skill | Method, variogram model, search neighborhood, CV error, and whether downstream skills should treat outputs as observations or as model predictions |
+| Producing **GWR/MGWR coefficient surfaces or local R² maps** that will be exported as data (not just figures) | Bandwidth choice, standardization, and a warning that local estimates are not independent observations |
+| **Areal interpolation** between non-aligned boundaries (e.g., reallocating block-group counts to a custom grid) | Source / target geometries, the weighting variable (population, area, dasymetric), and the MAUP risk introduced |
+| **Imputing missing values** for any variable that enters a regression or clustering result reported in `analysis_report.md` | Imputation method, share of values imputed, and a sensitivity analysis plan (or explicit decision to skip it) |
+| **Permutation / Monte Carlo** runs whose realizations will be persisted (not just summarized) | N permutations, seed, what each realization represents, and how it will be cited in downstream artifacts |
+| **Pseudo-absences / random-background points** generated for a presence-only model | Sampling region, density, exclusion rules, seed, and circularity risk if presence and pseudo-absence share predictors |
+| Any number entering the report that was not produced by an executed code cell logged in `output/spatial-analysis/scripts/` | The exact source and why it is acceptable evidence |
+
+Synthesized layers must be saved with a `.meta.json` sidecar marking `synthetic_or_derived: true`, recording the recipe, and noting `Synthesis approved by user: YYYY-MM-DD`.
+
+---
+
 ## 8. Guardrails Summary
 
 These are mistakes this skill is designed to prevent. Claude Code should internalize these as hard constraints:
@@ -488,7 +506,7 @@ These are mistakes this skill is designed to prevent. Claude Code should interna
 - `output/spatial-analysis/model_comparison.md` — Model comparison table (if regression)
 - `output/spatial-analysis/scripts/` — Python scripts used (for reproducibility)
 - `output/spatial-analysis/figures/` — Maps and diagnostic plots
-- `output/FINDINGS.md` — One-line findings appended
+- `output/PROJ_NOTES.md` — One-line findings appended
 - `output/results/` — JSON results (if feeding into geo-experiment pipeline)
 
 ---

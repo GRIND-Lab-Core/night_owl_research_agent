@@ -64,7 +64,7 @@ Override inline: `/paper-draft all — venue: ISPRS, mode: partial`.
 - `memory/paper-cache/*.json` — per-paper bibliographic + finding records.
 - `output/EXPERIMENT_LOG.md` — full experiment record.
 - `output/EXPERIMENT_PLAN.md` — experiment roadmap, baselines, metrics.
-- `output/FINDINGS.md` — compact one-line discovery log.
+- `output/PROJ_NOTES.md` — compact one-line discovery log.
 - `output/spatial-analysis/` — ESDA outputs, diagnostics, interpretation notes.
 - `output/figures/FIGURE_MANIFEST.md`, `output/figures/FIGURE_CAPTIONS.md` — which figures exist, with captions.
 - `output/AUTO_REVIEW.md` — prior reviewer feedback to incorporate.
@@ -151,7 +151,7 @@ For each plan section that will be drafted, pull ground truth from the reference
 - **Introduction / Related Work** → `output/LIT_REVIEW_REPORT.md` (Synthesis and Gap Analysis sections), plan §15 and §22.
 - **Data / Study Area** → plan §7–§8, `data/DATA_MANIFEST.md` if present.
 - **Methods** → plan §9, `output/EXPERIMENT_PLAN.md`, `skills/knowledge/spatial-methods.md`.
-- **Experiments / Results** → `output/EXPERIMENT_LOG.md`, `memory/APPROVED_CLAIMS.md`, `output/spatial-analysis/` reports, `output/FINDINGS.md`.
+- **Experiments / Results** → `output/EXPERIMENT_LOG.md`, `memory/APPROVED_CLAIMS.md`, `output/spatial-analysis/` reports, `output/PROJ_NOTES.md`.
 - **Figures / Tables** → `output/figures/FIGURE_MANIFEST.md`, `output/figures/FIGURE_CAPTIONS.md`. Never reference a figure ID that is not in the manifest.
 - **Discussion / Limitations** → plan §16–§17, `AUTO_REVIEW.md`.
 
@@ -240,7 +240,7 @@ Emit, in order:
 8. `REVISION_NOTES.md` — prioritized next-pass actions.
 9. `DRAFT_README.md` — mode, venue, readiness, word counts, deliverable index.
 
-Append a one-line entry to `output/FINDINGS.md`:
+Append a one-line entry to `output/PROJ_NOTES.md`:
 
 ```
 YYYY-MM-DD paper-draft  mode=<full|partial|skeleton>  venue=<...>  words=<N>  gaps=<K>  next=<...>

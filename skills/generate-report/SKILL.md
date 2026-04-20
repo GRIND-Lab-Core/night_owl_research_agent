@@ -37,7 +37,7 @@ Primary inputs (MUST read):
 Supporting inputs (read if referenced or needed for gap-filling):
 - `research_contract.md`, `program.md` — active idea, venue, success criteria
 - `memory/APPROVED_CLAIMS.md` — verified claims only
-- `output/FINDINGS.md` — compact discovery log
+- `output/PROJ_NOTES.md` — compact discovery log
 - `output/EXPERIMENT_LOG.md` — full experiment record
 - `data/DATA_MANIFEST.md` — dataset provenance
 - `output/spatial-analysis/` — spatial diagnostics and maps
@@ -121,7 +121,7 @@ If external LLM is not configured, spawn a subagent review instead. Apply feedba
 
 ## Phase 6: Output
 
-Write the final narrative to `output/NARRATIVE_REPORT.md`. Append a one-line entry to `output/FINDINGS.md`:
+Write the final narrative to `output/NARRATIVE_REPORT.md`. Append a one-line entry to `output/PROJ_NOTES.md`:
 
 ```
 [YYYY-MM-DD] generate-report: NARRATIVE_REPORT.md built from LIT_REVIEW / IDEA_REPORT / FINAL_PROPOSAL / EXPERIMENT_PLAN / EXPERIMENT_RESULT / AUTO_REVIEW._REPORT — [N] claims, [M] figures, venue=[VENUE]

@@ -124,6 +124,22 @@ For each milestone, estimate:
 
 Separate **must-run** from **nice-to-have** experiments.
 
+### Phase 4.5: Human Checkpoint — Data Synthesis
+
+Honor the `HUMAN_CHECKPOINT` flag in `CLAUDE.md` (default: `true`). This skill is a planning skill, but the plan it writes commits the executor (`/deploy-experiment`) to specific data — and a few choices in this phase silently authorize *generation* of that data. When `HUMAN_CHECKPOINT` is `true`, **PAUSE** and request explicit user approval before writing any of the following into `EXPERIMENT_PLAN.md`; when `false`, log the choice to `output/PROJ_NOTES.md` and proceed.
+
+| Trigger | Show before pausing |
+|---|---|
+| A block's **Dataset / split / task** entry would commit the executor to *generate* synthetic data (simulated points, bootstrapped resamples treated as new observations, GAN/LLM-generated samples, synthetic minorities) | Generator recipe, intended N, what claim it supports, and the alternative of using a real dataset |
+| A block requires data that is not in `data/DATA_MANIFEST.md` and not on a public source you can name | Proposed acquisition path, fallback if acquisition fails, and whether the plan should be rewritten around available data instead |
+| A claim's **Minimum convincing evidence** would be satisfied by *imputed* values (filling missing labels, pseudo-labels from a teacher model, weak supervision) | Imputation source, expected coverage, and the leakage / circularity risk if the same model produces both pseudo-labels and predictions |
+| A **Spatial split** is being defined by the planner (block boundaries, buffer radius, k-means folds) rather than taken from the proposal | Why this split, sensitivity expected if it changes, and confirmation that it is not chosen to favor a particular system |
+| A **Success criterion** is a number you set yourself (threshold, p-value cutoff, effect-size floor) that is not in `FINAL_PROPOSAL.md` | The number, where it came from (literature norm, defensible default, guess), and whether the user wants to fix it before runs start |
+
+Record approved synthesis decisions in the **Risks and Mitigations** section of `EXPERIMENT_PLAN.md` so the executor inherits the rationale.
+
+---
+
 ### Phase 5: Write the Outputs
 
 #### Step 5.1: Write `output/EXPERIMENT_PLAN.md`

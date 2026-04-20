@@ -320,7 +320,7 @@ Log any inconsistencies at the top of the manifest under `## Consistency Issues`
 - `output/figures/FIGURE_MANIFEST.md` — master index + consistency log.
 - `output/figures/FIGURE_CAPTIONS.md` — manuscript-ready captions.
 - Update `memory/OUTLINE.md` Figures section with paths and `status`.
-- Append a one-line entry per generated figure to `output/FINDINGS.md` (e.g., `Fig03 stub — waiting on mgwr_results.json`).
+- Append a one-line entry per generated figure to `output/PROJ_NOTES.md` (e.g., `Fig03 stub — waiting on mgwr_results.json`).
 
 ---
 

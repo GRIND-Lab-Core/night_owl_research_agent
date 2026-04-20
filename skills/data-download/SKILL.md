@@ -464,6 +464,22 @@ def download_with_retry(url, dest_path, max_retries=2):
 
 ---
 
+## Phase 3.5: Human Checkpoint — Data Synthesis
+
+Honor the `HUMAN_CHECKPOINT` flag in `CLAUDE.md` (default: `true`). This skill *downloads* — it does not generate data — but a few code paths still create derived or synthetic artifacts. When `HUMAN_CHECKPOINT` is `true`, **PAUSE** and request explicit user approval before any of the following; when `false`, log the decision to `output/PROJ_NOTES.md` and proceed.
+
+| Trigger | Show before pausing |
+|---|---|
+| The requested dataset does not exist in any authoritative source and you are about to construct a substitute by combining other sources (e.g., synthesizing a "population × land cover" raster from two unaligned products) | Component sources, alignment / resampling / reprojection recipe, target schema, and the analytical risk if the synthesis is later treated as primary data |
+| You are about to generate a *simulated* dataset (random points, synthetic boundaries, climate scenario realizations, demonstration data) for an experiment | Generator (function + parameters + seed), N, spatial extent, intended use, and explicit confirmation that it will be tagged `synthetic: true` in the manifest |
+| You are about to call a parametric API (Open-Meteo, Census ACS, Overpass) with parameters you inferred — not parameters the user gave — that materially shape the result (bbox larger than asked, time range padded, variable list expanded) | Inferred vs requested parameters side-by-side and how they change the resulting dataset |
+| You are about to spatially subset, temporally aggregate, or otherwise transform a raw download before placing it in `data/raw/` | The transform, why it is being done before raw storage (default: it shouldn't be — raw must stay raw) |
+| A download failed and you are about to substitute an alternative source whose schema differs (different variable names, units, resolution) | Original vs substitute schema diff, unit / projection conversions implied, and downstream claims that depend on field equivalence |
+
+Synthetic and substitute datasets must be recorded in `data/DATA_MANIFEST.md` with `Source: SYNTHESIZED` (or `SUBSTITUTED`), the recipe, and a `Synthesis approved by user: YYYY-MM-DD` line. Do not list a synthesized dataset under the same heading as authoritative downloads.
+
+---
+
 ## Phase 4: Validate Downloads
 
 **Every download must be validated.** Never assume a download succeeded just because no exception was raised.

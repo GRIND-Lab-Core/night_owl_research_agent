@@ -56,7 +56,7 @@
 - [ ] `READINESS_NOTES.md` states honest readiness per format.
 - [ ] `CONVERSION_GAPS.md` lists placeholders, broken refs, missing assets.
 - [ ] `ASSET_STATUS.md` lists copied / missing figures and tables.
-- [ ] One line appended to `output/FINDINGS.md`.
+- [ ] One line appended to `output/PROJ_NOTES.md`.
 
 ## Do-not ship flags
 

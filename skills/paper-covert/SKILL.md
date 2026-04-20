@@ -115,7 +115,7 @@ Write `SUBMISSION_MANIFEST.md` from `./templates/SUBMISSION_MANIFEST_TEMPLATE.md
 - **Build** — PDF engine, pass/fail, warning counts; DOCX pathway, pass/fail.
 - **Readiness** — honest per-format statement. Do not mark "submission-ready" while any gap above is open or a build failed.
 
-Append one line to `output/FINDINGS.md`:
+Append one line to `output/PROJ_NOTES.md`:
 ```
 YYYY-MM-DD paper-covert venue=<V> source=<revised|draft> pdf=<ok|fail> docx=<ok|fail> gaps=<K>
 ```

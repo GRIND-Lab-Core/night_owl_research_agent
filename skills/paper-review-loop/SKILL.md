@@ -86,7 +86,7 @@ Argument forms:
 - `research_contract.md`, `program.md` — active idea and constraints.
 - `memory/APPROVED_CLAIMS.md`, `output/LIT_REVIEW_REPORT.md` (Gap Analysis + Synthesis sections).
 - `memory/paper-cache/*.json` — bibliographic + finding records.
-- `output/EXPERIMENT_LOG.md`, `output/EXPERIMENT_PLAN.md`, `output/FINDINGS.md`.
+- `output/EXPERIMENT_LOG.md`, `output/EXPERIMENT_PLAN.md`, `output/PROJ_NOTES.md`.
 - `output/spatial-analysis/` — ESDA and diagnostic reports.
 - `output/figures/FIGURE_MANIFEST.md`, `output/figures/FIGURE_CAPTIONS.md`.
 - `output/AUTO_REVIEW.md` — prior adversarial-review scores and pending fixes.
@@ -367,7 +367,7 @@ Write all output artifacts (see **Outputs** table). Update `REVIEW_LOOP_STATE.js
 
 On the final round of this invocation, set `status: completed` *only if* no unresolved majors remain; otherwise leave `in_progress` so the next invocation resumes cleanly.
 
-Append a one-line entry to `output/FINDINGS.md`:
+Append a one-line entry to `output/PROJ_NOTES.md`:
 
 ```
 YYYY-MM-DD paper-review-loop round=N mode=<...> revision=<...> majors=<open/total> verdict=<ready|almost|not-ready>

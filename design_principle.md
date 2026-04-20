@@ -106,9 +106,9 @@ A list of every file the skill writes, with fixed paths relative to the project 
 **Why required.** Skills are chained: `refine-research` writes `output/refine-logs/FINAL_PROPOSAL.md`, which `experiment-design` reads. If output paths are ad-hoc or user-chosen:
 - Downstream skills cannot find upstream artifacts.
 - The `generate-report` skill (which consolidates all outputs into `NARRATIVE_REPORT.md`) cannot locate its sources.
-- `FINDINGS.md` entries become meaningless without stable path references.
+- `PROJ_NOTES.md` entries become meaningless without stable path references.
 
-The canonical path convention also enables the memory/audit system: `APPROVED_CLAIMS.md`, `DATA_MANIFEST.md`, and `FINDINGS.md` are always in known locations.
+The canonical path convention also enables the memory/audit system: `APPROVED_CLAIMS.md`, `DATA_MANIFEST.md`, and `PROJ_NOTES.md` are always in known locations.
 
 **Design failure without it.** Every pipeline run requires manual path wiring, breaking automation and introducing silent failures when a downstream skill reads a stale file from a previous run.
 
@@ -204,9 +204,9 @@ A bullet-point summary of the most critical rules, always including the large-fi
 
 ---
 
-### 13. Audit Trail (FINDINGS.md Logging)
+### 13. Audit Trail (PROJ_NOTES.md Logging)
 
-Every skill must append a one-line entry to `output/FINDINGS.md`:
+Every skill must append a one-line entry to `output/PROJ_NOTES.md`:
 
 ```
 [YYYY-MM-DD] <skill-name>: <summary of what was produced>
@@ -215,7 +215,7 @@ Every skill must append a one-line entry to `output/FINDINGS.md`:
 **Why required.** The audit trail provides:
 - **Provenance**: which skill produced which artifact, and when.
 - **Pipeline debugging**: if the final paper has a weak section, trace it back through the FINDINGS log to the skill that generated the source material.
-- **Progress tracking**: for multi-day research campaigns, FINDINGS.md is the changelog.
+- **Progress tracking**: for multi-day research campaigns, PROJ_NOTES.md is the changelog.
 
 **Design failure without it.** Artifacts accumulate in `output/` with no record of which skill produced them, when, or in what order. Debugging becomes archaeological.
 
@@ -242,7 +242,7 @@ phase_3_scoring:
   postconditions:
     - file_exists: output/refine-logs/round_${N}_score.json
     - state.last_score is numeric
-    - FINDINGS.md has new entry
+    - PROJ_NOTES.md has new entry
   on_failure: halt_with_diagnostic
 ```
 
@@ -331,7 +331,7 @@ refine-research:
 
 ### F. Skill Telemetry and Cost Accounting
 
-**Current state.** FINDINGS.md logs what was produced but not the cost of producing it.
+**Current state.** PROJ_NOTES.md logs what was produced but not the cost of producing it.
 
 **Optimization.** Add a telemetry block to each skill's output:
 

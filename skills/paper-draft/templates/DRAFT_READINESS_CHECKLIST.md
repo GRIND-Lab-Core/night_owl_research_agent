@@ -16,7 +16,7 @@
 
 - [ ] `memory/APPROVED_CLAIMS.md` contains ≥1 claim per core contribution
 - [ ] `output/EXPERIMENT_LOG.md` has no `FAILED` entry for an experiment feeding a core claim
-- [ ] `output/FINDINGS.md` covers the main findings at a one-line level
+- [ ] `output/PROJ_NOTES.md` covers the main findings at a one-line level
 - [ ] `output/LIT_REVIEW_REPORT.md` exists with Synthesis and Gap Analysis sections recent enough to ground Related Work
 
 ## C. Figures and tables

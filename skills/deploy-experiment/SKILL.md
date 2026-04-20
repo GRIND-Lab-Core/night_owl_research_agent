@@ -226,6 +226,23 @@ If the plan couples deep learning with spatial evaluation:
 
 ---
 
+## Human Checkpoint: Data Synthesis
+
+Honor the `HUMAN_CHECKPOINT` flag in `CLAUDE.md` (default: `true`). When set, **PAUSE** and request explicit user approval before performing any of the synthesis actions below; resume only after the user replies. When `false`, append a one-line rationale to `output/PROJ_NOTES.md` and proceed. **Never** silently fabricate or substitute experiment data.
+
+| Trigger | Show before pausing |
+|---|---|
+| A required dataset is missing and the plan would be satisfied by simulated, imputed, or synthetically generated input data | Source(s) considered, exact synthesis recipe (sampler / generator / random seed), and which claims would rely on it |
+| A run FAILED but the plan needs a value for that claim | The failure mode, the proposed substitute (e.g., last-checkpoint metric, k-fold mean, prior run, hand-set placeholder), and the impact on downstream claims |
+| Metrics, predictions, or diagnostics need to be aggregated / re-weighted / re-scaled before being written to `data/` | Aggregation function, weights, denominator choice, and which raw artifacts are being collapsed |
+| A Track B sidecar (`*.meta.json`) is being authored from inferred (not directly observed) schema, CRS, or units | Per-field provenance: observed vs inferred, source of inference |
+| Mixed GeoAI Step B5 will join model predictions to spatial IDs via a key the plan does not specify | The join key proposed, fallback if matches < 100%, and risk of silent label leakage |
+| `EXPERIMENT_RESULT.md` would mark a claim **Pass** using values that were not produced by an executed run in `EXPERIMENT_LOG.md` | The exact source of each number and why it is acceptable evidence |
+
+If the user declines a synthesis action, record the decision in `EXPERIMENT_LOG.md` under the affected run as `Synthesis declined: <action> — <user reason>` and either re-plan, mark the claim **Blocked**, or stop.
+
+---
+
 ## Step 5 (Both Tracks): Verify & Record
 
 **Remote verify:**
