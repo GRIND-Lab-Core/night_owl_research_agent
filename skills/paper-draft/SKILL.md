@@ -31,12 +31,11 @@ The skill supports the full GIScience / GeoAI / remote sensing manuscript spectr
 - **SECTIONS_DIR = `output/manuscript/sections/`** — per-section drafts.
 - **TARGET_VENUE** — read from `PAPER_PLAN.md` header, else `research_contract.md`, else default `IJGIS`.
 - **PAPER_TYPE** — read from `PAPER_PLAN.md` §21 framing, else infer from contributions in §5.
-- **APPROVED_CLAIMS = `memory/APPROVED_CLAIMS.md`** — only verified claims may be asserted.
 - **LIT_REVIEW_REPORT = `output/LIT_REVIEW_REPORT.md`** — consolidated literature review; Synthesis and Gap Analysis sections ground Related Work and gap framing.
 - **FIGURE_MANIFEST = `output/figures/FIGURE_MANIFEST.md`** — figures that actually exist.
 - **FIGURE_CAPTIONS = `output/figures/FIGURE_CAPTIONS.md`** — manuscript-ready captions.
 - **REVIEWER_MODEL = `gpt-5.4`** — used via Codex MCP for section-level critique (optional).
-- **DRAFT_MODE** — one of `full`, `partial`, `skeleton`. Decided in Phase 2 from readiness signals; may be forced by argument.
+- **DRAFT_MODE** — one of `full`, `partial`, `skeleton`. Decided in Phase 2 from readiness signals; may be forced by argument. Default option is `full`.
 
 Override inline: `/paper-draft all — venue: ISPRS, mode: partial`.
 
