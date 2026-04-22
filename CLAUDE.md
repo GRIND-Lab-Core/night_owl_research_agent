@@ -24,7 +24,7 @@ Edit these before starting a long run:
 AUTO_PROCEED: false       # true = auto-select top idea after discovery; false = wait for user approval
 HUMAN_CHECKPOINT: true    # true = pause after each review round; false = run all 4 rounds autonomously
 COMPACT_MODE: false       # true = use output/PROJ_NOTES.md instead of full logs (saves context in long runs)
-EXTERNAL_REVIEW: false    # true = use claude subagent or external reviewer LLM for adversarial review
+EXTERNAL_REVIEW: true    # true = use claude subagent or external reviewer LLM for adversarial review
 ```
 
 ## Constants
@@ -57,7 +57,7 @@ EXTERNAL_REVIEW: false    # true = use claude subagent or external reviewer LLM 
 | `BRIEF.md` | Full research brief (12 sections), override skill arguments | Researcher |
 | `output/PROJ_NOTES.md` | Compact one-line discoveries log | All skills (append) |
 | `output/EXPERIMENT_LOG.md` | Complete experiment record | skill `deploy-experiment` |
-| `output/AUTO_REVIEW._REPORT.md` | All review rounds with scores | skill `auto-review-loop` / `paper-review-loop` |
+| `output/AUTO_REVIEW_REPORT.md` | All review rounds with scores | skill `auto-review-loop` / `paper-review-loop` |
 | `output/REVIEW_STATE.json` | Review loop state (per-criterion scores) | skill `auto-review-loop` / `paper-review-loop` |
 | `handoff.json` | Structured context-reset handoff (written on Stop) | stop hook |
 | `memory/MEMORY.md` | Session state, scores, token usage | Stop hook |
