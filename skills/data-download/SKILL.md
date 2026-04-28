@@ -412,32 +412,86 @@ ds_clipped = ds.rio.clip_box(minx=-122.5, miny=37.5, maxx=-122.0, maxy=38.0)
 
 #### Method F: OpenStreetMap via Overpass API
 
+**Single administrative boundary** — use OSMnx (fast, recommended):
 ```python
-import requests
+import osmnx as ox
+# Get boundary polygon for a named place
+gdf = ox.geocode_to_gdf("Atlanta, Georgia, USA")
+gdf.to_file("data/raw/atlanta_boundary.gpkg", driver="GPKG")
+```
 
-# Query Overpass API for specific features
-overpass_query = """
+**Street networks** — use OSMnx:
+```python
+import osmnx as ox
+G = ox.graph_from_place("Manhattan, New York", network_type='drive')
+gdf_nodes, gdf_edges = ox.graph_to_gdfs(G)
+```
+
+**POIs and features within a boundary** — use Overpass API (faster than OSMnx for large queries):
+```python
+import requests, geopandas as gpd
+from shapely.geometry import Point
+
+# Step 1: Get osm_id from OSMnx
+gdf_place = ox.geocode_to_gdf("Atlanta, Georgia, USA")
+osm_id = gdf_place.iloc[0]['osm_id']
+
+# Step 2: CRITICAL — ALWAYS use this pattern for area queries:
+# NEVER use: area(osm_id)->.rel  ← this silently returns empty results
+#   (raw osm_id is not an area_id; for relations the area_id is osm_id + 3_600_000_000)
+# ALWAYS use: relation({osm_id}); map_to_area->.searchArea;
+overpass_query = f"""
 [out:json][timeout:60];
-area["ISO3166-1"="US"]["admin_level"="2"]->.searchArea;
+relation({osm_id}); map_to_area->.searchArea;
 (
   node["amenity"="hospital"](area.searchArea);
   way["amenity"="hospital"](area.searchArea);
 );
 out center;
 """
-response = requests.get(
-    'https://overpass-api.de/api/interpreter',
-    params={'data': overpass_query}
-)
+# IMPORTANT: Overpass rejects the default `python-requests/x.y.z` User-Agent with
+# HTTP 406. Always send a descriptive User-Agent. POST is preferred for large queries.
+headers = {'User-Agent': 'NORA-research-agent/1.0 (contact: your-email@example.com)'}
+response = requests.post('https://overpass-api.de/api/interpreter',
+                         data={'data': overpass_query},
+                         headers=headers, timeout=90)
+response.raise_for_status()
 data = response.json()
+
+# Parse to GeoDataFrame
+features = []
+for el in data.get('elements', []):
+    lat = el.get('lat') or el.get('center', {}).get('lat')
+    lon = el.get('lon') or el.get('center', {}).get('lon')
+    if lat and lon:
+        row = {'osm_id': el['id'], 'geometry': Point(lon, lat)}
+        row.update({k: str(v) for k, v in el.get('tags', {}).items()})
+        features.append(row)
+result_gdf = gpd.GeoDataFrame(features, crs='EPSG:4326')
+result_gdf.to_file("data/raw/hospitals.gpkg", driver="GPKG")
 ```
 
-Or use `osmnx` for network data:
+**Multi-boundary queries** (e.g., all states of a country) — use Overpass with admin_level:
 ```python
-import osmnx as ox
-G = ox.graph_from_place("Manhattan, New York", network_type='drive')
-gdf_nodes, gdf_edges = ox.graph_to_gdfs(G)
+overpass_query = """
+[out:json][timeout:90];
+area['ISO3166-1'='US']['admin_level'='2']->.us;
+(relation(area.us)['admin_level'='4'];);
+out geom;
+"""
+# Send the same way as above (POST + User-Agent):
+response = requests.post('https://overpass-api.de/api/interpreter',
+                         data={'data': overpass_query},
+                         headers={'User-Agent': 'NORA-research-agent/1.0'},
+                         timeout=180)
 ```
+
+Note: `relation(area.us)['admin_level'='4']` matches relations whose member nodes
+fall inside the US area. For US states this returns ~75 elements (50 states + DC +
+territories + bordering Canadian provinces / Mexican states sharing nodes). Filter
+on `tags.ISO3166-2` starting with `'US-'` if you want exactly the 50 states + DC.
+
+**Always use `out geom;`** — this includes geometry in the response. Without it, you only get metadata.
 
 ### Step 3.3: Rate Limiting and Courtesy
 
@@ -461,22 +515,6 @@ def download_with_retry(url, dest_path, max_retries=2):
             else:
                 raise RuntimeError(f"Download failed after {max_retries + 1} attempts: {e}")
 ```
-
----
-
-## Phase 3.5: Human Checkpoint — Data Synthesis
-
-Honor the `HUMAN_CHECKPOINT` flag in `CLAUDE.md` (default: `true`). This skill *downloads* — it does not generate data — but a few code paths still create derived or synthetic artifacts. When `HUMAN_CHECKPOINT` is `true`, **PAUSE** and request explicit user approval before any of the following; when `false`, log the decision to `output/PROJ_NOTES.md` and proceed.
-
-| Trigger | Show before pausing |
-|---|---|
-| The requested dataset does not exist in any authoritative source and you are about to construct a substitute by combining other sources (e.g., synthesizing a "population × land cover" raster from two unaligned products) | Component sources, alignment / resampling / reprojection recipe, target schema, and the analytical risk if the synthesis is later treated as primary data |
-| You are about to generate a *simulated* dataset (random points, synthetic boundaries, climate scenario realizations, demonstration data) for an experiment | Generator (function + parameters + seed), N, spatial extent, intended use, and explicit confirmation that it will be tagged `synthetic: true` in the manifest |
-| You are about to call a parametric API (Open-Meteo, Census ACS, Overpass) with parameters you inferred — not parameters the user gave — that materially shape the result (bbox larger than asked, time range padded, variable list expanded) | Inferred vs requested parameters side-by-side and how they change the resulting dataset |
-| You are about to spatially subset, temporally aggregate, or otherwise transform a raw download before placing it in `data/raw/` | The transform, why it is being done before raw storage (default: it shouldn't be — raw must stay raw) |
-| A download failed and you are about to substitute an alternative source whose schema differs (different variable names, units, resolution) | Original vs substitute schema diff, unit / projection conversions implied, and downstream claims that depend on field equivalence |
-
-Synthetic and substitute datasets must be recorded in `data/DATA_MANIFEST.md` with `Source: SYNTHESIZED` (or `SUBSTITUTED`), the recipe, and a `Synthesis approved by user: YYYY-MM-DD` line. Do not list a synthesized dataset under the same heading as authoritative downloads.
 
 ---
 
@@ -701,6 +739,191 @@ This section provides starting points. Always verify URLs are current before dow
 
 ---
 
+---
+
+## Source-Specific Download Handbooks
+
+The following handbooks encode expert knowledge for the most common geospatial data sources. Apply these rules whenever downloading from these sources. (Derived from LLM-Find experience.)
+
+---
+
+### OpenStreetMap (OSM)
+
+**Use for:** Administrative boundaries, street networks, POIs (hospitals, schools, restaurants), buildings, land use polygons.
+
+**Critical Overpass rule (repeated — this breaks silently if wrong):**
+- ✓ CORRECT: `relation({osm_id}); map_to_area->.rel;`
+- ✗ WRONG: `area(osm_id)->.rel` — returns empty results with no error
+
+**Source selection logic:**
+- Single boundary → `ox.geocode_to_gdf(place_name)` (fastest)
+- Network (roads, transit) → `ox.graph_from_place(place_name, network_type='drive')`
+- POIs / features within boundary → Overpass API with `map_to_area` pipeline
+- Multiple boundaries at same admin_level → Overpass with `admin_level` filter
+
+**Field value notes:**
+- `admin_level` values vary by country. Do not assume `admin_level=4` means "state" everywhere.
+- For small cities, avoid admin_level < 4 (often returns nothing).
+- Always keep attributes — do not discard tags unless specifically not needed.
+- Use `out geom;` in all Overpass queries (includes geometry coordinates).
+
+**Output format:** Save as GeoPackage (`.gpkg`) — preserves all attribute names without the 10-char Shapefile limit.
+
+---
+
+### US Census Boundary (TIGER/Line)
+
+**Use for:** US administrative boundaries — state, county, census tract, block group, ZIP Code Tabulation Areas (ZCTAs), congressional districts, metropolitan areas.
+
+**URL template:**
+```
+https://www2.census.gov/geo/tiger/GENZ{year}/shp/cb_{year}_{extent}_{level}_{scale}.zip
+```
+
+**Parameter rules:**
+- `extent` = `'us'` for national coverage (state, county only at national level)
+- `extent` = 2-digit state FIPS (e.g., `'06'` for California) for sub-state levels
+- `level` = `state`, `county`, `tract`, `bg` (block group), `zcta520` (ZIP), `cbsa` (metro)
+- `scale` = `500k` (default, best for most uses) or `5m` (simplified, faster)
+- **Counties must use `extent='us'`** — there is no state-level county file.
+
+**Download pattern:**
+```python
+import geopandas as gpd
+
+year = 2021
+extent = 'us'       # or '06' for California tracts
+level = 'county'    # or 'tract', 'bg', 'state'
+scale = '500k'
+url = f"https://www2.census.gov/geo/tiger/GENZ{year}/shp/cb_{year}_{extent}_{level}_{scale}.zip"
+
+# Load directly from URL (Census allows direct zip read)
+gdf = gpd.read_file(url)
+gdf.to_file(f"data/raw/census_{level}_{year}.gpkg", driver="GPKG")
+```
+
+**FIPS/GEOID:** The `GEOID` column is the primary join key. It is always a string with leading zeros. Widths: state=2, county=5, tract=11, block group=12. Never read as float.
+
+---
+
+### US Census Demography (ACS)
+
+**Use for:** Population, race, income, education, employment, housing — at tract, county, or state level.
+
+**API endpoint:**
+```
+https://api.census.gov/data/{year}/acs/acs5?get={variables}&for={geography}:{fips}&in=state:{state_fips}
+```
+
+**Rules:**
+- Use the official Census API directly — do NOT use the `census` Python package (unreliable variable mapping).
+- Data has a 2–3 year lag (as of 2026, most recent ACS 5-year is 2022).
+- Get variable labels from the variables endpoint: `https://api.census.gov/data/{year}/acs/acs5/variables.json`
+- Strip `"Estimate!!"` prefix from label strings for clean column names.
+- **Always include total population** alongside subgroup variables to compute rates/percentages.
+- Fine-grained variables require combining multiple codes (e.g., "senior population 65+" spans 10+ age/sex variables across B01001).
+- Geography hierarchy cannot skip levels: tract queries require both `state` and `county` parameters.
+
+**Common variable ranges:**
+| Variable Group | Topic |
+|---|---|
+| B01001 | Age by sex (population breakdown) |
+| B02001 | Race |
+| B15003 | Educational attainment (25+) |
+| B19013 | Median household income |
+| B17026 | Poverty (income-to-poverty ratio) |
+| B23025 | Employment status |
+| B27001 | Health insurance coverage |
+| B25091 | Mortgage status |
+
+**Download pattern:**
+```python
+import requests, pandas as pd
+
+year = 2022
+state_fips = '13'   # Georgia
+variables = 'NAME,B01003_001E,B19013_001E'   # Total pop + median income
+url = (f"https://api.census.gov/data/{year}/acs/acs5"
+       f"?get={variables}&for=county:*&in=state:{state_fips}")
+r = requests.get(url)
+data = r.json()
+df = pd.DataFrame(data[1:], columns=data[0])
+
+# Combine FIPS to 5-digit county GEOID
+df['GEOID'] = df['state'].str.zfill(2) + df['county'].str.zfill(3)
+df.to_csv("data/raw/census_acs_income_georgia.csv", index=False)
+```
+
+---
+
+### ESRI World Imagery
+
+**Use for:** Satellite imagery tiles for visualization or background context. **Not suitable for quantitative analysis** — tiles are rendered visuals, not calibrated reflectance.
+
+**Tile endpoint:** `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{row}/{col}`
+**Projection:** EPSG:3857 (Web Mercator)
+
+```python
+import io, math, requests, numpy as np
+from PIL import Image
+import rasterio
+from rasterio.transform import from_bounds
+from pyproj import Transformer
+import osmnx as ox
+
+def latlon_to_tile(lat, lon, zoom):
+    lat_r = math.radians(lat)
+    x = int((lon + 180) / 360 * 2**zoom)
+    y = int((1 - math.log(math.tan(lat_r) + 1/math.cos(lat_r)) / math.pi) / 2 * 2**zoom)
+    return x, y
+
+# Pick a small, well-defined area. NOTE: country/prefecture-level place names
+# (e.g. "Tokyo, Japan") can return huge bounding boxes — Tokyo Prefecture
+# includes the Ogasawara Islands ~1,000 km offshore — which would request
+# tens of thousands of tiles. Use a city or neighborhood and a moderate zoom.
+place = "Shibuya, Tokyo, Japan"
+zoom = 14
+gdf = ox.geocode_to_gdf(place)
+west, south, east, north = gdf.geometry.union_all().bounds   # union_all() — unary_union is deprecated
+# Extend tiny bounding boxes
+if (east - west) < 0.000001: west -= 0.00005; east += 0.00005
+if (north - south) < 0.000001: south -= 0.00005; north += 0.00005
+
+x_min, y_max = latlon_to_tile(south, west, zoom)
+x_max, y_min = latlon_to_tile(north, east, zoom)
+n_tiles = (x_max - x_min + 1) * (y_max - y_min + 1)
+assert n_tiles < 500, f"Refusing to fetch {n_tiles} tiles — pick a smaller area or lower zoom."
+
+# Reproject the lon/lat bbox to Web Mercator for from_bounds (the GeoTIFF CRS)
+to_3857 = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
+west_merc, south_merc = to_3857.transform(west, south)
+east_merc, north_merc = to_3857.transform(east, north)
+
+tiles = []
+headers = {"User-Agent": "NORA-research-agent/1.0 (contact: your-email@example.com)"}
+for y in range(y_min, y_max + 1):
+    row_imgs = []
+    for x in range(x_min, x_max + 1):
+        url = f"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{zoom}/{y}/{x}"
+        r = requests.get(url, headers=headers, timeout=30)
+        r.raise_for_status()
+        row_imgs.append(np.array(Image.open(io.BytesIO(r.content)).convert("RGB")))
+    tiles.append(np.concatenate(row_imgs, axis=1))
+mosaic = np.concatenate(tiles, axis=0)
+
+# Save as GeoTIFF with EPSG:3857 bounds
+with rasterio.open("data/raw/imagery.tif", 'w', driver='GTiff',
+                   height=mosaic.shape[0], width=mosaic.shape[1],
+                   count=3, dtype='uint8', crs='EPSG:3857',
+                   transform=from_bounds(west_merc, south_merc, east_merc, north_merc,
+                                         mosaic.shape[1], mosaic.shape[0])) as dst:
+    for i in range(3):
+        dst.write(mosaic[:, :, i], i + 1)
+```
+
+
+---
+
 ## Guardrails: Common Mistakes This Skill Prevents
 
 | Mistake | How this skill prevents it |
@@ -754,16 +977,16 @@ This section provides starting points. Always verify URLs are current before dow
 This skill provides data for the rest of the research pipeline:
 
 ```
-/data-download "what data is needed"   ← you are here
-/spatial-analysis "research question"  → analyze the downloaded data
-/lit-review                            → literature context (separate concern)
-/paper-write                           → document data sources in Methodology
-/paper-figure                          → visualize the downloaded data
-/submit-check                          → verify data citations and DOIs
+/data-download "what data is needed"     ← you are here
+/spatial-analysis "research question"    → inspect, prepare, and analyze the downloaded data
+/lit-review                              → literature context (separate concern)
+/paper-write                             → document data sources in Methodology
+/paper-figure                            → visualize the downloaded data
+/submit-check                            → verify data citations and DOIs
 ```
 
 **Integration points:**
-- **To spatial-analysis**: Downloaded data lands in `data/raw/`. The `spatial-analysis` skill reads from there (or from paths the user specifies).
+- **To spatial-analysis**: Downloaded data lands in `data/raw/`. The `spatial-analysis` skill is responsible for inspection, CRS/geometry/FIPS/NaN cleanup, and analysis — see its §5.3 *Data-Side Bug Audit* and §5.4 *Fallback Ladder* before iterating on the model.
 - **To deploy-experiment**: This skill handles all external data — custom study area data, external covariates, boundary files, remote sensing imagery.
 - **To paper-write / submit-check**: The `DATA_MANIFEST.md` provides source URLs, citations, and access dates for the Methodology section and submission checklist.
 - **Knowledge base**: Read `skills/knowledge/spatial-methods.md` for CRS guidance when downloading spatial data.
