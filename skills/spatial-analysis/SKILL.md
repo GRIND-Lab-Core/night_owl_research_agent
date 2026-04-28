@@ -391,6 +391,38 @@ Apply diagnostics proportional to the complexity of the analysis and the stakes 
 
 **Guideline:** Report robustness checks that you performed AND note which checks you considered but deemed unnecessary for this analysis (with reasoning).
 
+### 5.3 Data-Side Bug Audit (run before debugging the model)
+
+A surprising fraction of "model bugs" — unstable coefficients, infinite p-values, residual autocorrelation that resists every weight specification — are actually **data bugs** that survived the prep step. The LLM-Geo experience (Li et al., 2024) is blunt: *most apparent model failures in spatial analysis trace back to data issues that masquerade as code bugs.* Run this 7-row audit *before* iterating on model specification.
+
+| # | Symptom in the model | Likely data cause | Diagnostic | Remediation |
+|---|---|---|---|---|
+| 1 | Coefficient sign or magnitude flips between runs on same data | CRS mismatch on one input layer (e.g., predictor in EPSG:4326, outcome in projected CRS) | `for g in [gdf_y, gdf_x1, gdf_x2]: print(g.crs)` | Reproject all to one analysis CRS (see §2.1) |
+| 2 | Sample size silently drops; unjoined rows become NaN | FIPS / GEOID type mismatch across joined layers (str-with-leading-zero vs int, or float that strips zeros) | Compare `df['GEOID'].head().tolist()` and `dtype` from both sides | Re-read both with `dtype={'GEOID': str}`, then `.str.zfill(N)` (state=2, county=5, tract=11, block group=12) |
+| 3 | Coefficients NaN or ±Inf | NaN in any covariate row not dropped before fit | `df[features + [target]].isna().sum()` | `df = df.dropna(subset=features + [target])` and re-document N |
+| 4 | Topology errors during weights construction (`pysal.weights.from_*`) | Mixed geometry types in one layer (Polygon + MultiPolygon + invalid) | `gdf.geometry.geom_type.value_counts()`; `(~gdf.geometry.is_valid).sum()` | `gdf.geometry = gdf.geometry.buffer(0)`, then `gdf = gdf.explode(index_parts=False)` |
+| 5 | Residual Moran's I stays significant across every weights specification | Boundary-vintage mismatch between geometry and attribute year (e.g., TIGER 2018 + ACS 2022) | Confirm TIGER year matches ACS 5-year terminal year | Re-download geometry with matching vintage |
+| 6 | A single feature dominates fit; leverage diagnostics flag one row | Outlier from data-entry error vs real local phenomenon — both possible | Map the row in spatial context; check raw value vs nearby observations | If error: drop and document; if real: report stratified result with and without it |
+| 7 | Weights matrix has unexpected island count or disconnected components | Multipart features where each part should be its own observation | `W.islands`; `gdf.geom_type == 'MultiPolygon'` count | `gdf.explode(index_parts=False)`, re-build W |
+
+**Sjoin signature reminder (LLM-Geo verified):** `gpd.sjoin(left_gdf, right_gdf, how='left', predicate='within')` — the `predicate=` keyword replaced the older `op=`. A silent argument-name mismatch returns no joined rows on some geopandas versions.
+
+**Use this checklist as a first pass before spending time on alternative specifications.** Audit findings go to `output/PROJ_NOTES.md` so the same issue is not rediscovered later.
+
+### 5.4 Fallback Ladder When Methods Fail
+
+When a method fits poorly, raises errors, or refuses to converge, escalate in this order. Tier 1 covers ~60% of failures; tier 5 should be reserved for genuine method/data incompatibility.
+
+| Tier | Action | When to escalate to next tier | What to record in `PROJ_NOTES.md` |
+|---|---|---|---|
+| 1 | Retry with cleaned inputs: drop NaN, fix invalid geometries, reproject all layers, run §5.3 audit | After 1 retry if symptom unchanged | Inputs cleaned and the audit row(s) that triggered |
+| 2 | Switch library implementation (`pysal.spreg` ↔ `mgwr` ↔ `spreg.OLS_Regimes`); the same method may converge in one and not another | After both libraries fail with identical inputs | Both libraries tried and their error messages |
+| 3 | Simplify the model: smaller bandwidth (GWR), fewer predictors, switch Queen → KNN(k=8), drop interaction terms | After simplified model still fails or fits poorly | What was simplified and what changed in the diagnostics |
+| 4 | Switch method family: GWR → spatial-lag if non-stationarity is weak (low GWR R² gain over OLS); spatial-lag → spatial-error if Moran's I points to error process; classification → regression if outcome is more naturally continuous | After tier-3 fit is poor (R² gain < 0.05 over OLS) | Why the original method was wrong for this data |
+| 5 | Coarsen the analysis unit (tract → county; block → block group) and re-attempt from tier 1 | After tier 4 still fails — most common cause is small-N tracts | New unit, new N, and the MAUP caveat to add to Discussion |
+
+**Caveats when escalation lands at tier 4 or 5.** Report the original target method, why it failed, what was substituted, and the implication for the research question. A model that worked at tier 5 is still a valid result, but the methods section must be explicit that the unit and method differ from the pre-registered plan.
+
 ---
 
 ## 6. Visualization Guidelines

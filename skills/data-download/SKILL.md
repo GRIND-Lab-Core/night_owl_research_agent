@@ -978,9 +978,7 @@ This skill provides data for the rest of the research pipeline:
 
 ```
 /data-download "what data is needed"     ← you are here
-/metadata-inspect "data/raw/file.gpkg"   → validate download, understand schema, check CRS
-/geodata-operation "reproject / join"    → fix issues found by metadata-inspect
-/spatial-analysis "research question"    → analyze the prepared data
+/spatial-analysis "research question"    → inspect, prepare, and analyze the downloaded data
 /lit-review                              → literature context (separate concern)
 /paper-write                             → document data sources in Methodology
 /paper-figure                            → visualize the downloaded data
@@ -988,9 +986,7 @@ This skill provides data for the rest of the research pipeline:
 ```
 
 **Integration points:**
-- **To metadata-inspect**: Run immediately after every download to validate format, CRS, schema, and quality. Feed the resulting JSON into downstream skills.
-- **To geodata-operation**: If metadata-inspect flags issues (wrong CRS, invalid geometries, FIPS as float), geodata-operation resolves them before analysis begins.
-- **To spatial-analysis**: Downloaded and validated data lands in `data/raw/`. The `spatial-analysis` skill reads from there (or from `data/processed/` after geodata-operation transforms).
+- **To spatial-analysis**: Downloaded data lands in `data/raw/`. The `spatial-analysis` skill is responsible for inspection, CRS/geometry/FIPS/NaN cleanup, and analysis — see its §5.3 *Data-Side Bug Audit* and §5.4 *Fallback Ladder* before iterating on the model.
 - **To deploy-experiment**: This skill handles all external data — custom study area data, external covariates, boundary files, remote sensing imagery.
 - **To paper-write / submit-check**: The `DATA_MANIFEST.md` provides source URLs, citations, and access dates for the Methodology section and submission checklist.
 - **Knowledge base**: Read `skills/knowledge/spatial-methods.md` for CRS guidance when downloading spatial data.
