@@ -438,7 +438,8 @@ osm_id = gdf_place.iloc[0]['osm_id']
 
 # Step 2: CRITICAL — ALWAYS use this pattern for area queries:
 # NEVER use: area(osm_id)->.rel  ← this silently returns empty results
-# ALWAYS use: relation({osm_id}); map_to_area->.rel;
+#   (raw osm_id is not an area_id; for relations the area_id is osm_id + 3_600_000_000)
+# ALWAYS use: relation({osm_id}); map_to_area->.searchArea;
 overpass_query = f"""
 [out:json][timeout:60];
 relation({osm_id}); map_to_area->.searchArea;
@@ -448,8 +449,13 @@ relation({osm_id}); map_to_area->.searchArea;
 );
 out center;
 """
-response = requests.get('https://overpass-api.de/api/interpreter',
-                        params={'data': overpass_query})
+# IMPORTANT: Overpass rejects the default `python-requests/x.y.z` User-Agent with
+# HTTP 406. Always send a descriptive User-Agent. POST is preferred for large queries.
+headers = {'User-Agent': 'NORA-research-agent/1.0 (contact: your-email@example.com)'}
+response = requests.post('https://overpass-api.de/api/interpreter',
+                         data={'data': overpass_query},
+                         headers=headers, timeout=90)
+response.raise_for_status()
 data = response.json()
 
 # Parse to GeoDataFrame
@@ -473,7 +479,17 @@ area['ISO3166-1'='US']['admin_level'='2']->.us;
 (relation(area.us)['admin_level'='4'];);
 out geom;
 """
+# Send the same way as above (POST + User-Agent):
+response = requests.post('https://overpass-api.de/api/interpreter',
+                         data={'data': overpass_query},
+                         headers={'User-Agent': 'NORA-research-agent/1.0'},
+                         timeout=180)
 ```
+
+Note: `relation(area.us)['admin_level'='4']` matches relations whose member nodes
+fall inside the US area. For US states this returns ~75 elements (50 states + DC +
+territories + bordering Canadian provinces / Mexican states sharing nodes). Filter
+on `tags.ISO3166-2` starting with `'US-'` if you want exactly the 50 states + DC.
 
 **Always use `out geom;`** — this includes geometry in the response. Without it, you only get metadata.
 
@@ -727,7 +743,7 @@ This section provides starting points. Always verify URLs are current before dow
 
 ## Source-Specific Download Handbooks
 
-The following handbooks encode expert knowledge for the most common geospatial data sources. Apply these rules whenever downloading from these sources. (Derived from LLM-Find and GeodataRetrieverAgent field-tested experience.)
+The following handbooks encode expert knowledge for the most common geospatial data sources. Apply these rules whenever downloading from these sources. (Derived from LLM-Find experience.)
 
 ---
 
@@ -840,37 +856,6 @@ df.to_csv("data/raw/census_acs_income_georgia.csv", index=False)
 
 ---
 
-### OpenTopography (DEM)
-
-**Use for:** Digital elevation models (DEM) — SRTM 90m/30m, Copernicus 30m, ALOS 30m, NASADEM.
-
-**API endpoint:**
-```
-https://portal.opentopography.org/API/globaldem?demtype={type}&south={S}&north={N}&west={W}&east={E}&outputFormat=GTiff&API_Key={key}
-```
-
-**DEM types:** `SRTMGL3` (90m), `SRTMGL1` (30m), `COP30` (30m, best global), `AW3D30` (30m), `NASADEM` (30m), `SRTM15Plus` (500m, ocean bathymetry).
-
-**Get bounding box from place name (using OSMnx):**
-```python
-import osmnx as ox
-import requests
-
-place = "Great Smoky Mountains National Park"
-gdf = ox.geocode_to_gdf(place)
-west, south, east, north = gdf.unary_union.bounds
-
-api_key = "your_key"   # Free registration at portal.opentopography.org
-url = (f"https://portal.opentopography.org/API/globaldem"
-       f"?demtype=COP30&south={south}&north={north}&west={west}&east={east}"
-       f"&outputFormat=GTiff&API_Key={api_key}")
-r = requests.get(url)
-with open("data/raw/dem_smoky_mountains.tif", 'wb') as f:
-    f.write(r.content)
-```
-
----
-
 ### ESRI World Imagery
 
 **Use for:** Satellite imagery tiles for visualization or background context. **Not suitable for quantitative analysis** — tiles are rendered visuals, not calibrated reflectance.
@@ -883,6 +868,7 @@ import io, math, requests, numpy as np
 from PIL import Image
 import rasterio
 from rasterio.transform import from_bounds
+from pyproj import Transformer
 import osmnx as ox
 
 def latlon_to_tile(lat, lon, zoom):
@@ -891,24 +877,37 @@ def latlon_to_tile(lat, lon, zoom):
     y = int((1 - math.log(math.tan(lat_r) + 1/math.cos(lat_r)) / math.pi) / 2 * 2**zoom)
     return x, y
 
-place = "Tokyo, Japan"
-zoom = 12
+# Pick a small, well-defined area. NOTE: country/prefecture-level place names
+# (e.g. "Tokyo, Japan") can return huge bounding boxes — Tokyo Prefecture
+# includes the Ogasawara Islands ~1,000 km offshore — which would request
+# tens of thousands of tiles. Use a city or neighborhood and a moderate zoom.
+place = "Shibuya, Tokyo, Japan"
+zoom = 14
 gdf = ox.geocode_to_gdf(place)
-west, south, east, north = gdf.unary_union.bounds
+west, south, east, north = gdf.geometry.union_all().bounds   # union_all() — unary_union is deprecated
 # Extend tiny bounding boxes
 if (east - west) < 0.000001: west -= 0.00005; east += 0.00005
 if (north - south) < 0.000001: south -= 0.00005; north += 0.00005
 
 x_min, y_max = latlon_to_tile(south, west, zoom)
 x_max, y_min = latlon_to_tile(north, east, zoom)
+n_tiles = (x_max - x_min + 1) * (y_max - y_min + 1)
+assert n_tiles < 500, f"Refusing to fetch {n_tiles} tiles — pick a smaller area or lower zoom."
+
+# Reproject the lon/lat bbox to Web Mercator for from_bounds (the GeoTIFF CRS)
+to_3857 = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
+west_merc, south_merc = to_3857.transform(west, south)
+east_merc, north_merc = to_3857.transform(east, north)
 
 tiles = []
+headers = {"User-Agent": "NORA-research-agent/1.0 (contact: your-email@example.com)"}
 for y in range(y_min, y_max + 1):
     row_imgs = []
     for x in range(x_min, x_max + 1):
         url = f"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{zoom}/{y}/{x}"
-        r = requests.get(url)
-        row_imgs.append(np.array(Image.open(io.BytesIO(r.content))))
+        r = requests.get(url, headers=headers, timeout=30)
+        r.raise_for_status()
+        row_imgs.append(np.array(Image.open(io.BytesIO(r.content)).convert("RGB")))
     tiles.append(np.concatenate(row_imgs, axis=1))
 mosaic = np.concatenate(tiles, axis=0)
 
@@ -922,44 +921,6 @@ with rasterio.open("data/raw/imagery.tif", 'w', driver='GTiff',
         dst.write(mosaic[:, :, i], i + 1)
 ```
 
----
-
-### USGS Earthquake
-
-**Use for:** Seismic event data — magnitude, location, time, depth.
-
-**API endpoint:** `https://earthquake.usgs.gov/fdsnws/event/1/query`
-
-**Key parameters:** `format=geojson`, `starttime=YYYY-MM-DD`, `endtime=YYYY-MM-DD`, `minmagnitude=`, `minlatitude=`, `maxlatitude=`, `minlongitude=`, `maxlongitude=`. Max 20,000 events per query.
-
-**GeoJSON structure:** `features[].properties` contains `mag`, `place`, `time` (Unix ms); `features[].geometry.coordinates` = `[lon, lat, depth_km]`.
-
-```python
-import requests, geopandas as gpd
-from shapely.geometry import Point
-
-params = {'format': 'geojson', 'starttime': '2023-01-01', 'endtime': '2023-12-31',
-          'minmagnitude': '4.0', 'minlatitude': '24', 'maxlatitude': '50',
-          'minlongitude': '-125', 'maxlongitude': '-65'}
-r = requests.get('https://earthquake.usgs.gov/fdsnws/event/1/query', params=params)
-data = r.json()
-features = [{'mag': f['properties']['mag'], 'place': f['properties']['place'],
-             'time': f['properties']['time'], 'depth_km': f['geometry']['coordinates'][2],
-             'geometry': Point(f['geometry']['coordinates'][:2])}
-            for f in data['features']]
-gdf = gpd.GeoDataFrame(features, crs='EPSG:4326')
-gdf.to_file("data/raw/earthquakes_2023.gpkg", driver="GPKG")
-```
-
----
-
-### OpenWeather
-
-**Use for:** Current weather, forecasts, historical data by location.
-
-**Endpoints:** Current: `/2.5/weather`, Hourly 4-day: `/2.5/forecast`, Daily 16-day: `/2.5/forecast/daily`, Historical: `/2.5/history/city` (UNIX timestamps). Max 1 week per historical query.
-
-**Notes:** Use metric units (`units=metric`). Rate limit: 3000 calls/min (free tier). Save as CSV with nested JSON keys flattened using `_` separator. Handle `weather` field (list) differently from other fields (dict).
 
 ---
 
