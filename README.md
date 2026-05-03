@@ -128,12 +128,12 @@ and then hands off to `paper-writing-pipeline` for the manuscript.
 NORA automates the complete academic research lifecycle using **Claude Code skills** — Markdown-defined workflows that Claude reads and executes, selecting appropriate tools and methods based on context.
 
 1. **Literature review** — searches ArXiv, Semantic Scholar, local papers, Zotero, and Obsidian; synthesizes findings and identifies ranked research gaps.
-2. **Idea discovery** — generates 8–12 research ideas from literature gaps, validates novelty via multi-source search + external reviewer, and pilot-tests the top candidates.
+2. **Idea discovery** — generates 8–12 research ideas from literature gaps, validates novelty via multi-source search + external reviewer, and pilot-tests the top candidates. **Pilots run a mandatory local-GPU presence check first** (`nvidia-smi` → CUDA, then MPS, then `none`); when a local GPU is detected, every pilot launches on it instead of silently falling back to CPU or remote.
 3. **Method refinement** — iteratively refines vague research directions into problem-anchored, implementation-ready proposals via adversarial review (up to 5 rounds, score ≥ 9 target).
-4. **Experiment design & execution** — produces claim-driven experiment roadmaps and deploys to local, remote SSH, or Modal serverless GPU (Track A), or runs spatial/GIScience methods on CPU (Track B), or both for mixed GeoAI.
+4. **Experiment design & execution** — produces claim-driven experiment roadmaps and deploys to local, remote SSH, or Modal serverless GPU (Track A), or runs spatial/GIScience methods on CPU (Track B), or both for mixed GeoAI. The same mandatory local-GPU check runs at Step 0 of `deploy-experiment` so any ML/DL workload (pilot or full) executes on the local GPU when present.
 5. **Data acquisition** — discovers, evaluates, downloads, validates, and documents datasets from government portals, APIs, cloud archives, and open repositories with full provenance.
-6. **Spatial analysis** — guideline-driven: classifies the analytical objective, runs ESDA, selects the right model (OLS / spatial lag / error / GWR / MGWR), validates with diagnostics, and interprets.
-7. **Adversarial review** — up to 4 rounds of generator–evaluator-separated review with per-criterion hard floors; `medium` / `hard` / `nightmare` reviewer modes via Codex MCP, `codex exec`, or a Claude subagent.
+6. **Spatial analysis** — guideline-driven: classifies the analytical objective, runs ESDA, and **applies geospatial diagnostics conditionally on the research question**. MAUP discussion, GWR/MGWR, residual Moran's I, alternative spatial weights, and spatial CV are triggered only when the claim depends on them; when in doubt the skill pauses for a human checkpoint instead of running heavyweight checks (or skipping reviewer-expected ones) by reflex.
+7. **Adversarial review** — up to 4 rounds of generator–evaluator-separated review with per-criterion hard floors; `medium` / `hard` / `nightmare` reviewer modes via Codex MCP, `codex exec`, or a Claude subagent. Domain personas (`giscience`, `remote-sensing`, `spatial-data-science`) apply geo-specific must-checks **only where the paper's claims actually depend on them** instead of penalizing every paper for missing MAUP / GWR discussion.
 8. **Report + paper writing** — consolidates every pipeline artifact into `output/NARRATIVE_REPORT.md`, then runs `paper-writing-pipeline` to produce a journal-ready manuscript (Markdown → LaTeX → PDF/DOCX) with journal-specific profiles for IJGIS, IEEE TGRS, ISPRS JPRS, RSE, AAG, TGIS, and more.
 
 ---
@@ -164,7 +164,7 @@ The single installed slash command is **`/launcher`**. Every other skill is invo
 
 ## Skills
 
-**22 workflow skills** in `skills/` plus domain knowledge in `skills/knowledge/`. Each skill is a self-contained Markdown workflow file.
+**23 workflow skills** in `skills/` plus domain knowledge in `skills/knowledge/`. Each skill is a self-contained Markdown workflow file.
 
 ### Workflow Skills
 
@@ -179,9 +179,9 @@ The single installed slash command is **`/launcher`**. Every other skill is invo
 | `refine-research` | Iterative method refinement via external review (up to 5 rounds, score ≥ 9) |
 | `experiment-design` | Claim-driven experiment roadmap with run order, budget, decision gates |
 | `experiment-design-pipeline` | One-shot wrapper: refine-research → experiment-design |
-| `deploy-experiment` | Deploy experiments — Track A (GPU ML) and/or Track B (CPU spatial) |
+| `deploy-experiment` | Deploy experiments — mandatory local-GPU check at Step 0, then Track A (GPU ML) and/or Track B (CPU spatial) |
 | `data-download` | Discover, evaluate, download datasets with provenance tracking |
-| `spatial-analysis` | Research-question-driven spatial analysis: classification → ESDA → method → diagnostics → interpretation |
+| `spatial-analysis` | Research-question-driven spatial analysis: classification → ESDA → method → conditional diagnostics → interpretation, with a human checkpoint before adding or skipping heavyweight spatial checks |
 | `auto-review-loop` | Up to 4 adversarial review rounds with per-criterion floors |
 | `generate-report` | Consolidate lit-review + idea + experiment + review artifacts into `output/NARRATIVE_REPORT.md` |
 | `paper-writing-pipeline` | Orchestrates paper-plan → paper-figure-generate → paper-draft → paper-review-loop → paper-covert |
@@ -235,7 +235,8 @@ Claude Code's hook system automates lifecycle management (configured in `setting
 |---|---|---|
 | `PreToolUse` | Before Bash/Write | Validates paths, blocks dangerous commands, logs intent |
 | `PostToolUse` | After tool execution | Updates state, caches results |
-| `Stop` | Agent session ends | Writes `handoff.json`, updates `memory/MEMORY.md`, sends notification |
+| `SkillUse` | Before/after each Skill tool call | `harness/hooks/skill_marker.sh` writes per-stage markers feeding `tools/telemetry_stage_marker.py` |
+| `Stop` | Agent session ends | Writes `handoff.json`, updates `memory/MEMORY.md`, runs `tools/telemetry_aggregate.py` to emit `output/TELEMETRY.jsonl` and `output/TELEMETRY_STAGES.jsonl`, sends notification |
 | `Notification` | Long tasks finish | Desktop alert via `notify-send` / `osascript` |
 
 ---
@@ -319,6 +320,8 @@ Declared in `.mcp.json`. Setup notes in `mcp/README_MCP.md`.
 | `output/reports/submit_check_*.md` | `submit-check` |
 | `data/DATA_MANIFEST.md`, `data/raw/` | `data-download` |
 | `output/PROJ_NOTES.md` | all skills (append-only, compact log) |
+| `output/TELEMETRY.jsonl` (per-session) and `output/TELEMETRY_STAGES.jsonl` (per-skill) | `tools/telemetry_aggregate.py` (run by Stop hook) |
+| `output/CONTRACT_VIOLATION.md` | any skill that detects a downgraded success criterion or other contract violation |
 | `memory/MEMORY.md`, `handoff.json` | Stop hook |
 
 ---
@@ -329,6 +332,8 @@ Declared in `.mcp.json`. Setup notes in `mcp/README_MCP.md`.
 night_owl_research_agent/
 ├── CLAUDE.md                        ← Dashboard and project conventions
 ├── README.md                        ← This file
+├── design_principle.md              ← Skill-level design principles (export → Excel via tools/)
+├── design_principle_agents.md       ← Sub-agent design principles
 ├── settings.json                    ← Claude Code hooks, permissions, env vars
 ├── .mcp.json                        ← MCP server declarations
 │
@@ -371,10 +376,14 @@ night_owl_research_agent/
 │   ├── training-check/SKILL.md
 │   └── knowledge/                   ← Domain reference files
 │
-├── tools/                           ← CLI utilities (called by skills)
+├── tools/                           ← CLI utilities (called by skills + harness)
 │   ├── arxiv_fetch.py
 │   ├── semantic_scholar_fetch.py
-│   └── convert_skills_to_llm_chat.py
+│   ├── convert_skills_to_llm_chat.py
+│   ├── export_design_principle_table.py        ← exports design_principle.md tables to Excel
+│   ├── export_agent_design_principle_table.py  ← exports design_principle_agents.md tables
+│   ├── telemetry_stage_marker.py               ← called by skill_marker hook (per-skill timing)
+│   └── telemetry_aggregate.py                  ← called by Stop hook (session/stage telemetry)
 │
 ├── configs/
 │   └── default.yaml                 ← Scoring weights, domain keywords
@@ -394,7 +403,7 @@ night_owl_research_agent/
 │   └── giscience/ (ijgis, transactions_gis, annals_aag)
 │
 ├── harness/
-│   ├── hooks/ (pre_tool_use, post_tool_use, stop_hook, notification)
+│   ├── hooks/ (pre_tool_use, post_tool_use, skill_marker, stop_hook, notification)
 │   └── prompts/system_geo.md
 │
 ├── mcp/                             ← MCP server implementations
@@ -433,6 +442,24 @@ MIT License. See `LICENSE` for details.
 
 ---
 
+## Design Principles
+
+Two living documents describe the rules NORA's skills and sub-agents follow. Treat them as the source of truth when you write or change a skill.
+
+| File | Scope |
+|---|---|
+| `design_principle.md` | Skill-level principles: anchored problem, smallest adequate mechanism, generator–evaluator separation, conditional geospatial checks, mandatory local-GPU check before any pilot or full experiment, human-checkpoint pattern for synthesis decisions. |
+| `design_principle_agents.md` | Sub-agent principles for the 9 specialists in `.claude/agents/` (orchestrator, literature-scout, gap-finder, hypothesis-generator, geo-specialist, paper-writer, peer-reviewer, citation-manager, synthesis-analyst). |
+
+Both files can be exported to Excel for review or workshop use:
+
+```bash
+python tools/export_design_principle_table.py
+python tools/export_agent_design_principle_table.py
+```
+
+---
+
 ## Citation
 
 If you use NORA in your research, please cite:
@@ -444,3 +471,16 @@ If you use NORA in your research, please cite:
   url    = {https://github.com/GRIND-Lab-Core/night_owl_research_agent}
 }
 ```
+
+---
+
+## Inspired By
+
+NORA's design borrows ideas from several open-source projects. Credit and gratitude to their authors:
+
+- [BZBarrett/superpowers](https://github.com/BZBarrett/superpowers) — skill-pack patterns for extending Claude Code with composable Markdown workflows.
+- [BZBarrett/get-shit-done](https://github.com/BZBarrett/get-shit-done) — pragmatic harness patterns for getting long-running agentic work to actually finish.
+- [wanshuiyin/Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep) — "research while you sleep" autonomous-loop concept that motivated NORA's overnight pipelines, handoff.json recovery, and adversarial review loop.
+- [karpathy/autoresearch](https://github.com/karpathy/autoresearch) — generator–evaluator separation and the per-criterion floors + weighted-average scoring loop adapted into `auto-review-loop` and `paper-review-loop`.
+
+If your project influenced NORA and is missing here, please open an issue and we will add it.
