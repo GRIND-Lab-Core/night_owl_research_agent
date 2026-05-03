@@ -365,31 +365,46 @@ Choose based on the spatial structure of the data and the prediction task.
 
 ## 5. Diagnostics and Robustness Guidelines
 
-Apply diagnostics proportional to the complexity of the analysis and the stakes of the conclusions.
+Apply diagnostics proportional to the complexity of the analysis and the stakes of the conclusions. **Diagnostics are a menu, not a checklist.** Pick only the ones that are relevant to the research question, the chosen method, and the data — running every spatial diagnostic on every project is wasteful and frequently misleading.
 
-### 5.1 Core Diagnostics
+### 5.1 Core Diagnostics (apply only when the trigger is met)
 
-| Diagnostic | When to apply | What it checks |
+| Diagnostic | Apply ONLY when | Skip when |
 |---|---|---|
-| Residual Moran's I | Any regression model | Remaining spatial autocorrelation |
-| Breusch-Pagan | Regression | Heteroskedasticity |
-| Jarque-Bera | Regression | Normality of residuals |
-| VIF | Multiple regression | Multicollinearity |
-| Cook's distance | Regression with suspected influential observations | Outlier influence |
-| AICc comparison | When multiple models are fit | Relative model quality |
-| Spatial CV metrics | Prediction tasks | Out-of-sample predictive accuracy |
+| Residual Moran's I | A regression / ML model is fit AND spatial dependence is theoretically plausible AND inference depends on residual independence | Question is purely descriptive, predictive on i.i.d. data, or non-spatial; or the unit of analysis has no plausible neighborhood structure |
+| Breusch-Pagan | Regression with formal inference on coefficients | Predictive-only modeling, ML pipelines reported by CV error |
+| Jarque-Bera | Regression where you rely on parametric inference | Robust / nonparametric / large-N CLT cases |
+| VIF | Multiple regression with multiple plausibly-correlated predictors | Single predictor; orthogonal-by-design features |
+| Cook's distance | Regression where leverage of individual observations could flip a substantive conclusion | Large N where single points cannot dominate |
+| AICc comparison | Multiple competing **nested or comparable** models are fit | Single chosen model justified a priori |
+| Spatial CV metrics | Prediction task on spatially structured data where leakage is plausible | Non-spatial prediction; spatial structure already removed by design (e.g., independent draws) |
+
+If unsure whether a diagnostic is necessary, default to **asking the user** rather than running it. See Section 5.3.
 
 ### 5.2 Robustness Checks — Apply When Conclusions Are Sensitive
 
-| Check | When to consider | What it tests |
+| Check | Apply ONLY when | Skip when |
 |---|---|---|
-| Alternative spatial weights | When results depend heavily on clustering detection or spatial regression | Sensitivity to neighborhood definition |
-| Alternative spatial scale (MAUP) | When data could be aggregated differently | Whether conclusions hold across scales |
-| Boundary effects | When study area has hard boundaries | Whether edge observations bias results |
-| Temporal mismatch sensitivity | When combining datasets from different years | Stability of spatial patterns over the time gap |
-| Subset analysis | When study area is heterogeneous | Whether patterns hold across subregions |
+| Alternative spatial weights | The headline claim is a clustering result or spatial regression coefficient that could plausibly flip under a different W | Pure description, prediction by CV error, or W has no causal role in the claim |
+| Alternative spatial scale (MAUP) | The unit of aggregation was a researcher choice **and** the conclusion is about magnitude, ranking, or causation across units | Unit is fixed by the data-generating process; question is at a single scale by design; result is about presence/absence rather than magnitude |
+| Boundary effects | Study area has hard administrative or natural boundaries AND inference relies on neighborhood-based statistics near those edges | Question is interior-only or edge units are excluded a priori |
+| Temporal mismatch sensitivity | Combining datasets from different years AND the spatial pattern is plausibly non-stationary over that gap | Single time slice; gap < 1 year; pattern known to be stable |
+| Subset analysis | Study area is heterogeneous AND a regional effect is plausible | Homogeneous area or N too small to subset reliably |
 
-**Guideline:** Report robustness checks that you performed AND note which checks you considered but deemed unnecessary for this analysis (with reasoning).
+**Guideline:** Report robustness checks that you performed AND **explicitly list checks you considered but skipped, with the reason** (e.g., "MAUP not assessed — unit of analysis is the individual sensor reading, not aggregated"). It is acceptable — and often correct — to skip MAUP, GWR, alternative weights, or spatial CV when the research question does not depend on them.
+
+### 5.3 Human Checkpoint — Adding or Skipping Spatial Checks
+
+Geospatial diagnostics (Moran's I on residuals, MAUP sensitivity, GWR/MGWR, alternative spatial weights, spatial CV, LISA / Gi*) are powerful but **not universally required**. Apply them only when the research question genuinely depends on them. When in doubt, **PAUSE and ask the user** rather than running them by reflex.
+
+Honor the `HUMAN_CHECKPOINT` flag in `CLAUDE.md` (default: `true`). When `true`, request explicit user approval before either of the following; when `false`, log the decision (and reasoning) to `output/PROJ_NOTES.md` and the **Diagnostics and Robustness** section of the report and proceed.
+
+| Trigger | Show before pausing |
+|---|---|
+| About to **add** a heavyweight spatial check that the question may not need (GWR/MGWR, MAUP sensitivity sweep, alternative-W sweep, spatial CV when the task is not predictive on spatially structured data) | Which check, why it might be relevant, the cost (time / compute / interpretive load), the simpler alternative, and a one-line recommendation |
+| About to **skip** a spatial check that a strict GIScience reviewer would expect (e.g., regression on aggregated areal data with no MAUP discussion, spatial regression with no residual Moran's I) | Which check, why this question / dataset arguably does not need it, and the explicit caveat that will go into the report |
+
+Default rule: **prefer the lightest analysis that answers the question.** If a choropleth and summary statistics answer it, do not run MGWR; if the question is non-spatial in substance even though the data have coordinates, do not force spatial methods.
 
 ---
 
@@ -454,8 +469,8 @@ Write to `output/spatial-analysis/analysis_report.md`:
 |---|---|
 | Report effect sizes, not just significance | p-values alone are uninformative about practical importance |
 | Never claim causality from cross-sectional observational data without explicit justification | Spatial association ≠ causation |
-| Acknowledge MAUP if results could depend on spatial scale | Results at county level may not hold at census tract level |
-| Note boundary effects for edge observations | Fewer neighbors = less reliable local statistics |
+| Acknowledge MAUP **when** results could plausibly depend on the unit of aggregation | Results at county level may not hold at census tract level — but a fixed-unit study (e.g., per-sensor measurements) does not need a MAUP statement |
+| Note boundary effects **when** the analysis relies on neighborhood statistics near hard edges | Fewer neighbors = less reliable local statistics; skip if interior-only |
 | Distinguish statistical significance from substantive importance | A Moran's I of 0.02 with p < 0.01 is significant but trivially small |
 
 ---
@@ -487,10 +502,10 @@ These are mistakes this skill is designed to prevent. Claude Code should interna
 | Using lat/lon for distance calculations | CRS guidelines require projection for any distance/area/density analysis |
 | Applying Moran's I without thoughtful weights choice | Weights selection guide requires explicit justification |
 | Interpreting raw count clusters as rate clusters | Clustering guidelines mandate normalizing by population at risk |
-| Running GWR/MGWR by default | Regression guidelines require theoretical justification |
-| Ignoring MAUP | Robustness guidelines include scale sensitivity |
-| Random CV on spatial data | Prediction guidelines mandate spatial CV |
-| Reporting OLS when residuals are spatially autocorrelated | Regression decision framework forces spatial model when Moran's I is significant |
+| Running GWR/MGWR by default | Regression guidelines require theoretical justification — and Section 5.3 requires user approval before adding it |
+| Forcing MAUP / GWR / spatial CV on questions that do not need them | Section 1.2, Section 5, and Section 5.3 make these conditional, not mandatory; skipping with documented reasoning is a valid outcome |
+| Random CV on spatial data **when** the prediction task is spatial | Prediction guidelines mandate spatial CV in that case; non-spatial prediction tasks remain free to use standard CV |
+| Reporting OLS when residuals are spatially autocorrelated **and** inference depends on residual independence | Regression decision framework escalates to a spatial model in that specific case |
 | Misleading map classification | ESDA guidelines match classification scheme to data distribution |
 | Rainbow/jet colormaps | Color scheme rules explicitly ban them |
 | Overclaiming causality | Objective mapping distinguishes explanation from causal inference |
@@ -516,6 +531,7 @@ These are mistakes this skill is designed to prevent. Claude Code should interna
 - **Research question first.** Never start with a method. The question determines everything.
 - **Justify every method choice.** If you cannot explain why a method is needed for this question, do not use it.
 - **Parsimonious workflows.** If a choropleth and summary statistics answer the question, do not run MGWR.
+- **Geospatial checks are conditional, not mandatory.** MAUP, GWR/MGWR, alternative-W sweeps, spatial CV, residual Moran's I all require a triggering reason from Section 5. When unclear, ask the user (Section 5.3) instead of running them by default.
 - **Adapt to the data.** The guidelines above are decision frameworks, not checklists. Skip what doesn't apply; go deeper where the data demands it.
 - **Honest interpretation.** Report what the analysis actually shows, including null results and limitations.
 - **Reproducibility.** Save scripts, log parameter choices, document CRS decisions.

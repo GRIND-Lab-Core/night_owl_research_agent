@@ -38,14 +38,14 @@
 - [ ] Preprocessing is specific enough to reproduce the shape of the pipeline.
 - [ ] Model / framework / algorithm described with equations or algorithmic steps the plan supplies.
 - [ ] For system / agent papers: architecture, module inventory, orchestration logic, artifact flow across skills, harness-level constraints.
-- [ ] For spatial methods: neighborhood definition, handling of spatial dependency, MAUP / scale considerations, CRS handling, uncertainty propagation.
+- [ ] For spatial methods, when the claim depends on them: neighborhood definition, handling of spatial dependency, MAUP / scale considerations, CRS handling, uncertainty propagation. Mark `[-] n/a` (with one-line reason) when the question does not turn on these — do NOT flag absence as a weakness in that case.
 - [ ] Baselines listed with rationale for each.
 - [ ] Evaluation metrics with precise definitions.
 - [ ] Implementation notes sufficient for a reader to grasp reproducibility in spirit.
 
 ## Experiments / Evaluation
 
-- [ ] Train / val / test protocol explicit; spatial cross-validation used when geography demands it.
+- [ ] Train / val / test protocol explicit; spatial cross-validation used **when the prediction task is on spatially structured data and leakage across folds is plausible**. Standard CV is acceptable otherwise — mark `[-] n/a` with reason instead of `[!] major`.
 - [ ] Metric definitions precise; unit included on every numeric column.
 - [ ] Statistical tests named; effect sizes or intervals reported, not just p-values.
 - [ ] Ablation axes chosen to isolate the proposed contributions.

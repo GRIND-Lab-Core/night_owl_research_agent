@@ -50,16 +50,20 @@ Run each item and record **PASS**, **FAIL**, or **WARN** with a specific note.
 
 ### 3. Geo-Specific
 
-| Item | How to check |
-|---|---|
-| CRS / EPSG specified for all spatial data | Every dataset description must include CRS (e.g. WGS84 EPSG:4326, UTM Zone 10N EPSG:32610) |
-| Spatial resolution of all datasets stated | E.g. "30 m resolution", "500 m MODIS grid" |
-| Map projections appropriate for study area | No distance/area analysis in geographic (degree) CRS |
-| Moran's I (or equivalent) reported for all regression residuals | Check Results section |
-| Moran's I p-value reported | Statistic alone is insufficient |
-| Scale of analysis justified | Why this spatial scale? Discuss MAUP if relevant |
-| Open data with DOIs or repository links | Every dataset must have a citable source |
-| Software citations included | mgwr, statsmodels, geopandas, etc. cited with version and DOI |
+These items apply **only when the paper's claims actually depend on them**. For each conditional item, mark **PASS**, **FAIL**, **WARN**, or **N/A** with a one-line reason. Do NOT mark **FAIL** when an item is genuinely irrelevant to the paper's question — mark **N/A** with reason.
+
+| Item | Conditional? | How to check |
+|---|---|---|
+| CRS / EPSG specified for all spatial data | **Always** when spatial data is used | Every dataset description must include CRS (e.g. WGS84 EPSG:4326, UTM Zone 10N EPSG:32610) |
+| Spatial resolution of all datasets stated | **Always** when spatial data is used | E.g. "30 m resolution", "500 m MODIS grid" |
+| Map projections appropriate for study area | **Always** when distance/area is computed | No distance/area analysis in geographic (degree) CRS |
+| Moran's I (or equivalent) reported for regression residuals | **Only if** the paper fits a regression that assumes residual independence on spatially structured data | Check Results section. Mark **N/A** for non-regression papers, descriptive cartography, deep-learning models reported by held-out spatial CV, or non-spatial outcome models. |
+| Moran's I p-value reported | **Only if** Moran's I is reported | Statistic alone is insufficient when reported |
+| Scale of analysis justified | **Always** when an aggregated areal unit is chosen by the researcher | Why this spatial scale? Discuss MAUP **only when** the conclusion could plausibly change at a different aggregation; otherwise a one-line "fixed unit by data-generating process" is sufficient. |
+| Open data with DOIs or repository links | **Always** | Every dataset must have a citable source |
+| Software citations included | **When** the listed library is load-bearing for a reported result | mgwr, statsmodels, geopandas, etc. cited with version and DOI |
+
+**Reviewer principle**: a paper whose research question is non-spatial in substance (even if the data have coordinates) should not be penalized in this section for omitting spatial diagnostics. When uncertain whether an item applies, ask the user before marking **FAIL**.
 
 ### 4. References
 

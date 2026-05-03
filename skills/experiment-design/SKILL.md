@@ -13,7 +13,7 @@ Refine and concretize: **$ARGUMENTS**
 
 Use this skill after the method is stable enough that the next question becomes: **what exact experiments should we run, in what order, to defend the paper?** If the user wants the full chain in one request, prefer `/experiment-design-pipeline`.
 
-The skill is domain-general (AI / deep learning / ML research is fully supported) **and** must handle GIScience, remote sensing, and spatial data science research as a first-class case. When the proposal is spatial, add the spatial-specific validation layer described in *Spatial Research Addendum* below; otherwise skip it.
+The skill is domain-general (AI / deep learning / ML research is fully supported) **and** must handle GIScience, remote sensing, and spatial data science research as a first-class case. **The spatial-specific validation layer (MAUP sensitivity, alternative spatial weights, GWR/MGWR, residual Moran's I, spatial CV) is conditional, not automatic** — add only the pieces the research question and chosen claims actually require, and document any spatial check that was considered and skipped (with a one-line reason). When uncertain whether to include a spatial check, **honor `HUMAN_CHECKPOINT` and ask the user** before either adding it (extra cost) or omitting it (review risk). See `spatial-analysis/SKILL.md` §5.3 for the same gating rule applied at execution time.
 
 The goal is not to generate a giant benchmark wishlist. The goal is to turn a proposal into a **claim -> evidence -> run order** roadmap that supports four things:
 

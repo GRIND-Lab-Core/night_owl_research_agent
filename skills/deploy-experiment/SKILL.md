@@ -210,7 +210,7 @@ For every claim listed in `EXPERIMENT_PLAN.md`, identify:
 | Claim / hypothesis | Section heading in `EXPERIMENT_RESULT.md` |
 | Spatial unit | CRS, geometry file in `output/experiment/data/` |
 | Method | Call into `spatial-analysis` skill (ESDA / regression / GWR / accessibility / etc.) |
-| Diagnostics required | Moran's I residuals, VIF, condition number, spatial CV — captured in `data/diagnostics.json` |
+| Diagnostics required | **Only the diagnostics the claim actually needs** (see `spatial-analysis/SKILL.md` §5.1 / §5.3). Do NOT run Moran's I residuals, MAUP sweeps, GWR, alternative-W sensitivity, or spatial CV by default — they apply only when the claim depends on them. When the plan is silent, follow `spatial-analysis` §5.3 and ask the user before adding heavyweight checks (and before omitting one that a strict GIScience reviewer would expect). Capture whatever diagnostics are run in `data/diagnostics.json`. |
 | Success criterion | Pass/fail row in the results table |
 
 ### B4. Execute via the `spatial-analysis` Skill
@@ -330,7 +330,7 @@ After all runs complete (or if `EXPERIMENT_PLAN.md` marks the run as terminal), 
 
 ## 4. Diagnostics
 <Track A: loss curves, generalization gap, ablations>
-<Track B: Moran's I on residuals, VIF, spatial CV, GWR local R², LISA significance>
+<Track B: **only the diagnostics the claim required** — pick from Moran's I on residuals, VIF, spatial CV, GWR local R², LISA significance, etc. Explicitly list any geospatial check that was considered but skipped, with the one-line reason (e.g., "MAUP sensitivity skipped: unit of analysis is fixed sensor location, not aggregated"). See `spatial-analysis/SKILL.md` §5 for the trigger conditions.>
 
 ## 5. Intermediate Artifacts (for visualization)
 <list files under output/experiment/data/ with one-line descriptions so paper-figure can pick them up>

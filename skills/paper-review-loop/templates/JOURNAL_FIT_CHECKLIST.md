@@ -21,8 +21,8 @@
 
 **Editorial emphasis**: GIScience theory + method. Spatial reasoning, representation, algorithms, scale, uncertainty.
 
-- [ ] Spatial framing: unit of analysis, scale, and MAUP discussed where relevant.
-- [ ] Spatial dependency and autocorrelation addressed when methods touch them.
+- [ ] Spatial framing: unit of analysis and scale stated. Discuss MAUP **only when** the conclusion plausibly depends on the unit of aggregation; otherwise mark `[-] n/a — fixed unit of analysis` instead of flagging it.
+- [ ] Spatial dependency and autocorrelation addressed **when the chosen methods assume residual independence on spatially structured data**. If the method does not assume independence (e.g., descriptive cartography, accessibility analysis, deep learning evaluated by held-out spatial folds), mark `[-] n/a` with reason.
 - [ ] CRS stated for every spatial dataset.
 - [ ] Discussion engages GIScience literature, not only application-side citations.
 - [ ] Contribution distinguishes GIScience theoretical / methodological advance from application.
