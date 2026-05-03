@@ -134,19 +134,41 @@ For each surviving idea, run a deeper evaluation:
 
 Before committing to a full research effort, run cheap pilot experiments to get empirical signal. This is the key differentiator from paper-only validation.
 
+**Phase 5.0: Mandatory Local GPU Availability Check (REQUIRED before any pilot launch)**
+
+Before designing or launching any pilot, run the local GPU presence check. The result decides whether pilots run locally on GPU, route to remote/Modal, or skip with a clear note.
+
+```bash
+nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader
+```
+
+Fallback to MPS only if `nvidia-smi` is missing or returns zero rows:
+
+```bash
+python -c "import torch; print('MPS available:', torch.backends.mps.is_available())"
+```
+
+Decision rules:
+
+- `nvidia-smi` exits 0 with ≥ 1 GPU row → set `LOCAL_GPU=cuda`. **All pilots MUST run on the local GPU(s)**; do not launch on CPU and do not silently route to remote.
+- Else MPS available → set `LOCAL_GPU=mps`. Pilots that fit MPS run locally; flag any pilot that requires CUDA-only ops as "needs CUDA" instead of falling back to CPU.
+- Else `LOCAL_GPU=none` → only then route to remote/Modal as configured in `CLAUDE.md`, or mark the pilots as "needs pilot validation" and skip launching.
+
+Record `LOCAL_GPU` and the device IDs assigned to each pilot in the `Pilot Experiment Results` table of `output/IDEA_REPORT.md`.
+
 1. **Design pilots**: For each top idea, define the minimal experiment that would give a positive or negative signal:
    - Single seed, small scale (e.g., small dataset subset, fewer epochs)
    - Target: 30 min - PILOT_MAX_HOURS per pilot on 1 GPU
    - **Estimate GPU-hours BEFORE launching.** If estimated time > PILOT_MAX_HOURS, reduce scale (fewer epochs, smaller subset) or flag as "needs manual pilot"
    - Clear success metric defined upfront (e.g., "if metric improves by > 1%, signal is positive")
 
-2. **Deploy in parallel**: Use `/deploy-experiment` to launch pilots on different GPUs simultaneously:
+2. **Deploy in parallel**: Use `/deploy-experiment` to launch pilots. **When `LOCAL_GPU=cuda` or `mps`, pilots MUST be launched on the local GPU** — never CPU, never silently routed to remote unless `LOCAL_GPU=none`. With multiple local GPUs, distribute pilots across them:
    ```
    GPU 0: Pilot for Idea 1
    GPU 1: Pilot for Idea 2
    GPU 2: Pilot for Idea 3
    ```
-   Use `run_in_background: true` to launch all at once.
+   Use `run_in_background: true` to launch all at once. The downstream `/deploy-experiment` Step 0 will re-verify `LOCAL_GPU` — both checks must agree.
 
 3. **Collect results**: Use `/monitor-experiment` to check progress. If any pilot exceeds PILOT_TIMEOUT_HOURS, kill it and collect partial results. Once all pilots complete (or timeout), compare:
    - Which ideas showed positive signal?
@@ -156,7 +178,7 @@ Before committing to a full research effort, run cheap pilot experiments to get 
 
 4. **Re-rank based on empirical evidence**: Update the idea ranking using pilot results. An idea with strong pilot signal jumps ahead of a theoretically appealing but untested idea.
 
-Note: Skip this phase if the ideas are purely theoretical or if no GPU is available. Flag skipped ideas as "needs pilot validation" in the report.
+Note: Skip this phase if the ideas are purely theoretical, or if Phase 5.0 returned `LOCAL_GPU=none` AND no remote/Modal GPU is configured. Flag skipped ideas as "needs pilot validation" in the report. **Never run a pilot on CPU when a local GPU is available.**
 
 ### Phase 6: Output — Ranked Idea Report
 

@@ -349,6 +349,7 @@ This file is intentionally small (~30 lines) so downstream skills and session re
 
 - **Don't skip phases.** Each phase filters and validates — skipping leads to wasted effort later.
 - **Checkpoint between phases.** Briefly summarize what was found before moving on.
+- **Mandatory local GPU check before pilots.** Phase 2 delegates pilot launch to `/generate-idea`, which MUST run its Phase 5.0 local GPU presence check (`nvidia-smi` → CUDA, else MPS, else `LOCAL_GPU=none`). When a local GPU is detected, every pilot in this pipeline MUST run on it — never fall back to CPU and never silently re-route to remote/Modal while a local GPU is available.
 - **Kill ideas early.** It's better to kill 10 bad ideas in Phase 3 than to implement one and fail.
 - **Empirical signal > theoretical appeal.** An idea with a positive pilot outranks a "sounds great" idea without evidence.
 - **Document everything.** Dead ends are just as valuable as successes for future reference.

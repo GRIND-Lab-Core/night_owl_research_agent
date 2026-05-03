@@ -37,7 +37,48 @@ Create the `output/experiment/`, `output/experiment/data/`, `output/experiment/f
 
 ---
 
-## Step 0: Classify the Experiment
+## Step 0: Mandatory Local GPU Availability Check (pilot AND full experiments)
+
+**This check is REQUIRED before classification, regardless of whether the run is a pilot, a full experiment, Track A, Track B, or mixed.** The goal is to guarantee that when a local GPU is present, every ML / DL component runs on it — never silently on CPU.
+
+Run the local GPU presence check first:
+
+**Local CUDA:**
+```bash
+nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader
+```
+
+**Local Mac MPS (only if `nvidia-smi` is missing or returns zero rows):**
+```bash
+python -c "import torch; print('MPS available:', torch.backends.mps.is_available())"
+```
+
+Decision rules (apply in order):
+
+1. If `nvidia-smi` exits 0 and returns at least one GPU row → record `LOCAL_GPU=cuda`, capture the `<gpu_id>` and the chosen device for use in Step A5 and any pilot launch. Do **NOT** gate on idle memory; a desktop GPU with a display attached normally reports 0.7–1.5 GiB used.
+2. Else if `torch.backends.mps.is_available()` returns `True` → record `LOCAL_GPU=mps`.
+3. Else → record `LOCAL_GPU=none`. Only in this case may an ML / DL component fall back to CPU or to remote / Modal as defined in `CLAUDE.md`.
+
+Write the result as the first lines of `output/experiment/EXPERIMENT_LOG.md`:
+
+```markdown
+- LOCAL_GPU: cuda | mps | none
+- Device chosen: <e.g. CUDA:0 / mps / cpu / remote-A100>
+- GPU check command + output: <verbatim>
+```
+
+**Hard rule:** if `LOCAL_GPU` is `cuda` or `mps`, every ML / DL pilot AND every ML / DL full-experiment run launched by this skill MUST use that local GPU. Do not switch to remote / Modal / CPU just because the plan's default is set elsewhere — local GPU takes precedence whenever it is present. Record any deviation as a `CONTRACT_VIOLATION.md` with the user's explicit override.
+
+If `LOCAL_GPU=none` and `CLAUDE.md` lists `gpu: remote` or `gpu: modal`, route ML / DL work there as documented in Step A1; otherwise stop and report to the user before proceeding.
+
+This check applies equally to:
+- Pilot experiments invoked from `/generate-idea` (Phase 5)
+- Full experiments invoked from `/full-pipeline` Stage 2
+- Any mixed GeoAI experiment whose Track A leg requires GPU
+
+---
+
+## Step 0.1: Classify the Experiment
 
 Read `EXPERIMENT_PLAN.md` and `FINAL_PROPOSAL.md`, then classify into ONE of the two tracks below. Record the choice at the top of `EXPERIMENT_LOG.md`.
 
@@ -67,24 +108,14 @@ From `CLAUDE.md`:
 
 ### A2. Pre-flight GPU Check
 
-**Remote (SSH):**
+The local presence check from **Step 0** has already determined `LOCAL_GPU`. Re-use that result — do not re-decide here. Only run remote / multi-GPU contention checks below.
+
+**Remote (SSH), only when `LOCAL_GPU=none` and `CLAUDE.md` says `gpu: remote`:**
 ```bash
 ssh <server> nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader
 ```
 
-**Local (CUDA):**
-```bash
-nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader
-```
-
-**Presence check (local CUDA):** if `nvidia-smi` exits 0 and returns at least one GPU row, a GPU is detected — continue to A3/A5. Do NOT gate on memory thresholds for the presence check; a desktop GPU with a display attached normally reports 0.7–1.5 GiB used at idle and must not be rejected as "busy." Only treat the GPU as unavailable if `nvidia-smi` is missing, exits non-zero, or returns zero rows.
-
-**Local (Mac MPS):**
-```bash
-python -c "import torch; print('MPS available:', torch.backends.mps.is_available())"
-```
-
-**Contention check (optional, only when sharing a multi-GPU box):** pick a GPU where `memory.free / memory.total > 0.7` to avoid colliding with another running job. On a single-GPU workstation, skip this and proceed once presence is confirmed.
+**Contention check (optional, only when sharing a multi-GPU box):** pick a GPU where `memory.free / memory.total > 0.7` to avoid colliding with another running job. On a single-GPU workstation, skip this and proceed once presence is confirmed in Step 0.
 
 ### A3. Sync Code (Remote Only)
 
@@ -315,9 +346,10 @@ Append a one-line entry to `output/EXPERIMENT_LOG.md` (the repo-level log listed
 ## Key Rules
 
 - ALWAYS read `EXPERIMENT_PLAN.md` and `FINAL_PROPOSAL.md` before any execution; never improvise the experiment.
+- ALWAYS run the **Step 0** local GPU presence check before any pilot or full experiment. If `LOCAL_GPU` is `cuda` or `mps`, every ML/DL run MUST execute on the local GPU; fall back to remote / Modal / CPU only when `LOCAL_GPU=none`.
 - Route data acquisition through the `data-download` skill — preserves provenance.
 - Route spatial execution through the `spatial-analysis` skill — preserves generator-evaluator separation.
-- For Track A: check GPU availability first; one experiment = one screen/process = one GPU.
+- For Track A: GPU is already verified in Step 0; one experiment = one screen/process = one GPU.
 - Use `tee` or explicit log files so `EXPERIMENT_LOG.md` can reference them.
 - Persist intermediate data under `output/experiment/data/` with documented schemas so figures are reproducible.
 - Never fabricate numbers. If a run fails, record FAILED and do NOT invent a plausible result.

@@ -112,10 +112,11 @@ Invoke the subskill:
 The subskill will:
 
 1. Read `output/refine-logs/EXPERIMENT_PLAN.md` (authoritative plan) and `output/refine-logs/FINAL_PROPOSAL.md` (context).
-2. Classify the experiment into Track A (ML/DL on GPU) or Track B (spatial/GIScience on CPU) — or both for mixed GeoAI.
-3. Acquire data via `/data-download` if any required dataset is missing from `data/raw/`.
-4. Pre-flight environment checks (GPU availability for Track A, package availability for Track B).
-5. Launch runs (long-running jobs go to background or remote screen sessions).
+2. **Run the mandatory local GPU availability check (Step 0 of `/deploy-experiment`)** before any classification. This applies to every pilot or full experiment in this pipeline. If a local GPU (CUDA or MPS) is detected, all ML/DL runs MUST execute on it; only when `LOCAL_GPU=none` may runs route to remote/Modal/CPU.
+3. Classify the experiment into Track A (ML/DL on GPU) or Track B (spatial/GIScience on CPU) — or both for mixed GeoAI.
+4. Acquire data via `/data-download` if any required dataset is missing from `data/raw/`.
+5. Pre-flight environment checks (GPU re-confirmed from Step 0 for Track A, package availability for Track B).
+6. Launch runs (long-running jobs go to background or remote screen sessions).
 6. For Track B, route execution through `/spatial-analysis` per claim.
 7. Periodically invoke `/training-check` (Track A with W&B) to monitor for stalls/failures.
 
@@ -238,6 +239,7 @@ If context overflows mid-pipeline:
 
 - **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
 - **Brief precedence**: `RESEARCH_PLAN.md` > `BRIEF.md` > `$ARGUMENTS`. The first one with usable content wins; the others provide supplementary scope only.
+- **Mandatory local GPU check before any pilot or full experiment.** Stage 1 (`/idea-discovery-pipeline` → `/generate-idea` Phase 5.0) and Stage 2 (`/deploy-experiment` Step 0) MUST each run the local GPU presence check (`nvidia-smi`, then MPS) before launching. If a local GPU is detected, all ML/DL runs MUST execute on it; remote/Modal/CPU is only allowed when `LOCAL_GPU=none`.
 - **Gate 1 is controlled by `AUTO_PROCEED`.** When `false`, do not proceed past Stage 1 without user confirmation. When `true`, the subskill auto-selects the top idea after presenting results.
 - **Stages 2–4 can run autonomously** once the user confirms the idea. This is the "sleep and wake up to results" part.
 - **Respect the canonical output paths** above — do NOT relocate subskill outputs. Downstream skills (and the paper-writing pipeline) read them at fixed locations.
