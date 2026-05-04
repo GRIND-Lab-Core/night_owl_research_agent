@@ -2,6 +2,8 @@
 
 > A fully automatic, domain-aware AI research agent for Geoscientists, Remote Sensing researchers, and GIScientists — powered entirely by Claude Code skills.
 
+![NORA Banner](res/NORA_Banner.png)
+
 ---
 
 ## Quick Start
@@ -460,6 +462,19 @@ python tools/export_agent_design_principle_table.py
 
 ---
 
+## Inspired By
+
+NORA's design borrows ideas from several open-source projects. Credit and gratitude to their authors:
+
+- [BZBarrett/superpowers](https://github.com/BZBarrett/superpowers) — skill-pack patterns for extending Claude Code with composable Markdown workflows.
+- [BZBarrett/get-shit-done](https://github.com/BZBarrett/get-shit-done) — pragmatic harness patterns for getting long-running agentic work to actually finish.
+- [wanshuiyin/Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep) — "research while you sleep" autonomous-loop concept that motivated NORA's overnight pipelines, handoff.json recovery, and adversarial review loop.
+- [karpathy/autoresearch](https://github.com/karpathy/autoresearch) — generator–evaluator separation and the per-criterion floors + weighted-average scoring loop adapted into `auto-review-loop` and `paper-review-loop`.
+
+If your project influenced NORA and is missing here, please open an issue and we will add it.
+
+---
+
 ## Citation
 
 If you use NORA in your research, please cite:
@@ -471,16 +486,3 @@ If you use NORA in your research, please cite:
   url    = {https://github.com/GRIND-Lab-Core/night_owl_research_agent}
 }
 ```
-
----
-
-## Inspired By
-
-NORA's design borrows ideas from several open-source projects. Credit and gratitude to their authors:
-
-- [BZBarrett/superpowers](https://github.com/BZBarrett/superpowers) — skill-pack patterns for extending Claude Code with composable Markdown workflows.
-- [BZBarrett/get-shit-done](https://github.com/BZBarrett/get-shit-done) — pragmatic harness patterns for getting long-running agentic work to actually finish.
-- [wanshuiyin/Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep) — "research while you sleep" autonomous-loop concept that motivated NORA's overnight pipelines, handoff.json recovery, and adversarial review loop.
-- [karpathy/autoresearch](https://github.com/karpathy/autoresearch) — generator–evaluator separation and the per-criterion floors + weighted-average scoring loop adapted into `auto-review-loop` and `paper-review-loop`.
-
-If your project influenced NORA and is missing here, please open an issue and we will add it.
