@@ -477,12 +477,18 @@ If your project influenced NORA and is missing here, please open an issue and we
 
 ## Citation
 
-If you use NORA in your research, please cite:
+If you use NORA in your research, please cite the arXiv preprint:
+
+> Zhou, B., Wu, Q., Huang, X., Ning, H., Li, D., & Zhang, Z. (2026). *NORA: Night Owl Research Agent — Autonomous AI Research for Geoscience, Remote Sensing, and GIScience*. arXiv:2605.02092. <https://arxiv.org/abs/2605.02092>
 
 ```bibtex
-@software{nora,
-  title  = {NORA: Night Owl Research Agent — Autonomous AI Research for Geoscience, Remote Sensing, and GIScience},
-  year   = {2026},
-  url    = {https://github.com/GRIND-Lab-Core/night_owl_research_agent}
+@misc{zhou2026nora,
+  title         = {NORA: Night Owl Research Agent --- Autonomous AI Research for Geoscience, Remote Sensing, and GIScience},
+  author        = {Zhou, Bing and Wu, Qiusheng and Huang, Xiao and Ning, Huan and Li, Diya and Zhang, Ziyi},
+  year          = {2026},
+  eprint        = {2605.02092},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2605.02092},
+  howpublished  = {\url{https://github.com/GRIND-Lab-Core/night_owl_research_agent}}
 }
 ```
